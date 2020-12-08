@@ -1,0 +1,110 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="">
+
+        <EditTextPreference
+            app:dialogTitle="@string/title_user_name_edit"
+            app:key="key_user_name"
+            app:title="@string/title_user_name"
+            app:useSimpleSummaryProvider="true" />
+
+        <Preference
+            app:summary="@string/call_duration"
+            app:title="@string/title_call_duration" />
+
+        <Preference
+            app:summary="@string/call_max_attendees"
+            app:title="@string/title_call_max_attendees" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="">
+
+        <SwitchPreference
+            app:defaultValue="false"
+            app:key="key_auto_mute_audio"
+            app:title="@string/title_auto_mute_audio"
+            app:summaryOn="@string/switch_summary_on"
+            app:summaryOff="@string/switch_summary_off" />
+
+        <SwitchPreference
+            app:defaultValue="true"
+            app:key="key_auto_start_camera"
+            app:title="@string/title_auto_start_camera"
+            app:summaryOn="@string/switch_summary_on"
+            app:summaryOff="@string/switch_summary_off" />
+
+        <ListPreference
+            app:defaultValue="1"
+            app:entries="@array/video_resolution_entries"
+            app:entryValues="@array/video_resolution_values"
+            app:key="key_video_sending_resolution"
+            app:title="@string/title_video_sending_resolution"
+            app:useSimpleSummaryProvider="true" />
+
+        <SwitchPreference
+            app:defaultValue="true"
+            app:key="key_auto_start_speaker"
+            app:title="@string/title_auto_start_speaker"
+            app:summaryOn="@string/switch_summary_on"
+            app:summaryOff="@string/switch_summary_off" />
+
+        <SwitchPreference
+            app:defaultValue="true"
+            app:key="key_leave_confirm"
+            app:title="@string/title_leave_confirm"
+            app:summaryOn="@string/switch_summary_on"
+            app:summaryOff="@string/switch_summary_off" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="">
+
+        <!-- app:icon="@drawable/messages" -->
+        <Preference
+            app:fragment="video.pano.panocall.FaceBeautyFragment"
+            app:key="key_face_beauty"
+            app:title="@string/title_face_beauty" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="">
+        <Preference
+            app:fragment="video.pano.panocall.FeedbackFragment"
+            app:key="key_send_feedback"
+            app:title="@string/title_send_feedback" />
+
+        <Preference
+            app:fragment="video.pano.panocall.WebPageFragment"
+            app:key="key_help"
+            app:title="@string/title_help" />
+
+        <Preference
+            app:fragment="video.pano.panocall.WebPageFragment"
+            app:key="key_about_us"
+            app:title="@string/title_about_us"/>
+
+        <SwitchPreference
+            app:defaultValue="false"
+            app:key="key_enable_debug_mode"
+            app:title="@string/title_enable_debug_mode"
+            app:summaryOn="@string/switch_summary_on"
+            app:summaryOff="@string/switch_summary_off" />
+
+        <!--
+        <ListPreference
+            app:defaultValue="0"
+            app:entries="@array/language_entries"
+            app:entryValues="@array/language_values"
+            app:key="key_language"
+            app:title="@string/title_change_language"
+            app:useSimpleSummaryProvider="true" />
+            -->
+
+        <Preference
+            app:key="key_pref_version"
+            app:summary="@string/app_version_string"
+            app:title="@string/title_version" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

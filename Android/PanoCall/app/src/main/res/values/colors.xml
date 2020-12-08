@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#6200EE</color>
+    <color name="colorPrimaryDark">#3700B3</color>
+    <color name="colorPrimaryLight">#21a3f5</color>
+    <color name="colorAccent">#03DAC5</color>
+    <color name="colorButton">#52AFD0</color>
+    <color name="colorButtonPressed">#21a3f5</color>
+    <color name="colorWhite">#FFFFFF</color>
+    <color name="colorTransparent">#60000000</color>
+    <color name="colorOrange">#ffa500</color>
+    <color name="colorDeepSkyBlue">#00bfff</color>
+    <color name="page_indicator_selected_color">#FFFFFF</color>
+    <color name="page_indicator_default_color">#c0c0c0</color>
+</resources>

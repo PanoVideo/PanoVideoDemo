@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PanoVideoDemo</string>
+    <string name="action_settings">设置</string>
+
+    <string name="title_start_call">开始通话</string>
+    <string name="title_join_call">加入通话</string>
+
+    <string name="title_activity_call">CallActivity</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="float_fragment_label">Float Fragment</string>
+    <string name="grid_fragment_label">Grid Fragment</string>
+    <string name="whiteboard_fragment_label">Whiteboard Fragment</string>
+
+    <string name="title_activity_room">RoomActivity</string>
+    <string name="title_room_id">房间号</string>
+    <string name="title_user_name">用户名</string>
+    <string name="title_start_channel">确认开始</string>
+    <string name="title_join_channel">立即加入</string>
+
+
+    <string name="title_button_ok">确定</string>
+    <string name="title_button_cancel">取消</string>
+
+    <!-- Strings used for call -->
+    <string name="title_call_audio_muted">打开语音</string>
+    <string name="title_call_audio_normal">静音</string>
+    <string name="title_call_video_normal">关闭视频</string>
+    <string name="title_call_video_closed">打开视频</string>
+    <string name="title_call_wb_normal">关闭白板</string>
+    <string name="title_call_wb_closed">打开白板</string>
+    <string name="title_call_settings">设置</string>
+
+    <string name="title_pano_page">https://pano.video</string>
+    <string name="title_activity_settings">设置</string>
+
+    <!-- Preference Titles -->
+    <string name="title_call_duration">单次通话时长</string>
+    <string name="title_call_max_attendees">通话人数上限</string>
+    <string name="title_auto_mute_audio">进入通话时自动静音</string>
+    <string name="title_auto_start_speaker">进入通话时自动打开扬声器</string>
+    <string name="title_auto_start_camera">进入通话时自动打开摄像头</string>
+    <string name="title_leave_confirm">离开通话时需要确认</string>
+    <string name="title_video_sending_resolution">我的分辨率</string>
+    <string name="title_face_beauty">美颜</string>
+    <string name="title_help">帮助中心</string>
+    <string name="title_about_us">关于我们</string>
+    <string name="title_version">版本号</string>
+    <string name="title_send_feedback">故障上报</string>
+    <string name="title_enable_debug_mode">打开调试模式</string>
+    <string name="title_change_language">语言</string>
+    <string name="title_user_name_edit">更改用户名</string>
+
+    <string name="url_pano">https://pano.video/</string>
+
+    <string name="call_duration">40 分钟</string>
+    <string name="call_max_attendees">4 人</string>
+    <string name="app_version_string">0.9.3 (4096)</string>
+
+    <string name="switch_summary_on">已启用</string>
+    <string name="switch_summary_off">未启用</string>
+
+    <!-- Feedback -->
+    <string name="title_audio">语音</string>
+    <string name="title_video">视频</string>
+    <string name="title_whiteboard">白板</string>
+    <string name="title_feedback_type_general">通用</string>
+    <string name="title_feedback_type">问题类型</string>
+    <string name="title_feedback_desc">问题描述</string>
+    <string name="title_feedback_upload_log">上传日志</string>
+    <string name="title_feedback_contact">联系方式(选填)</string>
+    <string name="hint_feedback_desc">最多输入300个字符</string>
+    <string name="hint_feedback_contact">邮箱地址或手机号码</string>
+    <string name="msg_feedback_desc_empty">问题描述不能为空</string>
+    <string name="msg_feedback_report_done">报告已提交，谢谢反馈</string>
+    <string name="msg_network_error">网络错误</string>
+    <string name="msg_call_exit_alert">确定要离开通话吗？</string>
+    <string name="msg_call_left_alert">你已离开通话，请点击确定回到首页</string>
+    <string name="msg_call_exit">退出通话</string>
+    <string name="msg_call_ended">通话已结束</string>
+    <string name="msg_whiteboard_unavailable">白板服务不可用</string>
+
+    <string name="msg_permission_update">请允许后续对话框中的权限请求</string>
+    <string name="msg_permission_call">请允许后续对话框中的权限请求</string>
+
+    <!-- Face Beauty -->
+    <string name="title_face_beauty_enable">打开美颜</string>
+    <string name="title_face_beauty_intensity">美颜度</string>
+</resources>

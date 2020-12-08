@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/FloatFragment">
+
+    <fragment
+        android:id="@+id/FloatFragment"
+        android:name="video.pano.panocall.FloatFragment"
+        android:label="@string/float_fragment_label"
+        tools:layout="@layout/fragment_float">
+
+        <action
+            android:id="@+id/action_FloatFragment_to_GridFragment"
+            app:destination="@id/GridFragment" />
+        <action
+            android:id="@+id/action_FloatFragment_to_WhiteboardFragment"
+            app:destination="@id/WhiteboardFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/GridFragment"
+        android:name="video.pano.panocall.GridFragment"
+        android:label="@string/grid_fragment_label"
+        tools:layout="@layout/fragment_grid">
+
+        <action
+            android:id="@+id/action_GridFragment_to_FloatFragment"
+            app:destination="@id/FloatFragment" />
+        <action
+            android:id="@+id/action_GridFragment_to_WhiteboardFragment"
+            app:destination="@id/WhiteboardFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/WhiteboardFragment"
+        android:name="video.pano.panocall.WhiteboardFragment"
+        android:label="@string/whiteboard_fragment_label"
+        tools:layout="@layout/fragment_whiteboard" >
+
+        <action
+            android:id="@+id/action_WhiteboardFragment_to_FloatFragment"
+            app:destination="@id/FloatFragment" />
+        <action
+            android:id="@+id/action_WhiteboardFragment_to_GridFragment"
+            app:destination="@id/GridFragment" />
+    </fragment>
+</navigation>

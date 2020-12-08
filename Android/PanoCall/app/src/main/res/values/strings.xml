@@ -1,0 +1,88 @@
+<resources>
+    <string name="app_name">PanoVideoDemo</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="title_start_call">Start Call</string>
+    <string name="title_join_call">Join Call</string>
+
+    <string name="title_activity_call">CallActivity</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="float_fragment_label">Float Fragment</string>
+    <string name="grid_fragment_label">Grid Fragment</string>
+    <string name="whiteboard_fragment_label">Whiteboard Fragment</string>
+
+    <string name="title_activity_room">RoomActivity</string>
+    <string name="title_room_id">Room number</string>
+    <string name="title_user_name">User name</string>
+    <string name="title_start_channel">Start</string>
+    <string name="title_join_channel">Join</string>
+
+    <string name="title_button_ok">OK</string>
+    <string name="title_button_cancel">Cancel</string>
+
+    <!-- Strings used for call -->
+    <string name="title_call_audio_muted">Unmute</string>
+    <string name="title_call_audio_normal">Mute</string>
+    <string name="title_call_video_normal">Close video</string>
+    <string name="title_call_video_closed">Open video</string>
+    <string name="title_call_wb_normal">Whiteboard</string>
+    <string name="title_call_wb_closed">Whiteboard</string>
+    <string name="title_call_settings">Settings</string>
+
+    <string name="title_pano_page">https://pano.video</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Preference Titles -->
+    <string name="title_call_duration">Call duration</string>
+    <string name="title_call_max_attendees">Max participants</string>
+    <string name="title_auto_mute_audio">Mute self when entering call</string>
+    <string name="title_auto_start_speaker">Use speaker when entering call</string>
+    <string name="title_auto_start_camera">Turn on camera when entering call</string>
+    <string name="title_leave_confirm">Confirm when leaving call</string>
+    <string name="title_video_sending_resolution">My resolution</string>
+    <string name="title_face_beauty">Beauty settings</string>
+    <string name="title_help">Help</string>
+    <string name="title_about_us">About US</string>
+    <string name="title_version">Version</string>
+    <string name="title_send_feedback">Send feedback</string>
+    <string name="title_enable_debug_mode">Debugging mode</string>
+    <string name="title_change_language">Language</string>
+    <string name="title_user_name_edit">Change user name</string>
+
+    <string name="url_pano">https://pano.video/</string>
+
+    <string name="call_duration">40 mins</string>
+    <string name="call_max_attendees">4</string>
+    <string name="app_version_string">0.9.3 (4096)</string>
+
+    <string name="switch_summary_on">Enabled</string>
+    <string name="switch_summary_off">Disabled</string>
+
+    <!-- Feedback -->
+    <string name="title_audio">Audio</string>
+    <string name="title_video">Video</string>
+    <string name="title_whiteboard">Whiteboard</string>
+    <string name="title_feedback_type_general">General</string>
+    <string name="title_feedback_type">Problem Type</string>
+    <string name="title_feedback_desc">Description</string>
+    <string name="title_feedback_upload_log">Upload Logs</string>
+    <string name="title_feedback_contact">Contact Details(optional)</string>
+    <string name="hint_feedback_desc">Up to 300 characters</string>
+    <string name="hint_feedback_contact">Email or phone</string>
+    <string name="msg_feedback_desc_empty">Description cannot be empty</string>
+    <string name="msg_feedback_report_done">Report submitted，Thanks for your feedback</string>
+    <string name="msg_network_error">Network error</string>
+    <string name="msg_call_exit_alert">Leave the call?</string>
+    <string name="msg_call_left_alert">You have left the call, please click OK to return to the home page</string>
+    <string name="msg_call_exit">Exit call</string>
+    <string name="msg_call_ended">Call is end</string>
+    <string name="msg_whiteboard_unavailable">Whiteboard service is unavailable</string>
+
+    <string name="msg_permission_update">Please allow the permission requests</string>
+    <string name="msg_permission_call">Please allow the permission requests</string>
+
+    <!-- Face Beauty -->
+    <string name="title_face_beauty_enable">Open beauty</string>
+    <string name="title_face_beauty_intensity">Beauty intensity</string>
+
+</resources>

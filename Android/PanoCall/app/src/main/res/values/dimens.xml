@@ -1,0 +1,17 @@
+<resources>
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="button_text_size">20sp</dimen>
+    <dimen name="button_small_text_size">12sp</dimen>
+    <dimen name="small_view_width">90dp</dimen>
+    <dimen name="small_view_height">160dp</dimen>
+    <dimen name="medium_view_width">180dp</dimen>
+    <dimen name="medium_view_height">320dp</dimen>
+    <dimen name="top_control_button_width">24dp</dimen>
+    <dimen name="top_control_button_height">24dp</dimen>
+    <dimen name="bottom_control_button_width">48dp</dimen>
+    <dimen name="bottom_control_button_height">64dp</dimen>
+    <dimen name="wb_toolbox_width">30dp</dimen>
+    <dimen name="wb_toolbox_height">30dp</dimen>
+    <dimen name="wb_page_width">25dp</dimen>
+    <dimen name="wb_page_height">25dp</dimen>
+</resources>
