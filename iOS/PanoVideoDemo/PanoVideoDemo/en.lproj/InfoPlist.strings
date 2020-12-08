@@ -1,0 +1,9 @@
+/* 
+  InfoPlist.string.strings
+  PanoVideoDemo
+
+  Copyright © 2020 Pano. All rights reserved.
+*/
+
+NSCameraUsageDescription = "For people to see you during calls, PanoVideoDemo needs access to your camera.";
+NSMicrophoneUsageDescription = "For people to hear you during calls, PanoVideoDemo needs access to your microphone.";

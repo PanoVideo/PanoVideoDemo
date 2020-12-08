@@ -1,0 +1,9 @@
+/* 
+  InfoPlist.string.strings
+  PanoVideoDemo
+
+  Copyright © 2020 Pano. All rights reserved.
+*/
+
+NSCameraUsageDescription = "为了让他人在通话中看到您，我们需要您授予相机访问权限。";
+NSMicrophoneUsageDescription = "为了让他人在通话中听见您的声音，我们需要您授予麦克风访问权限。";

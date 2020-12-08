@@ -1,0 +1,501 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		5711DC08243F19CC00A32DBC /* PanoRtc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5711DC07243F19CC00A32DBC /* PanoRtc.framework */; };
+		5711DC0A243F19FE00A32DBC /* PanoRtc.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 5711DC07243F19CC00A32DBC /* PanoRtc.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		5711DC0D243F27BB00A32DBC /* UserInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 5711DC0C243F27BB00A32DBC /* UserInfo.m */; };
+		5711DC1B24401FC600A32DBC /* UserView.m in Sources */ = {isa = PBXBuildFile; fileRef = 5711DC1A24401FC600A32DBC /* UserView.m */; };
+		571D36D924581EEB00BA1F9A /* StylesView.m in Sources */ = {isa = PBXBuildFile; fileRef = 571D36D824581EEB00BA1F9A /* StylesView.m */; };
+		572A0B0E2436E8D60003C457 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 572A0B102436E8D60003C457 /* Localizable.strings */; };
+		572A0B14243715600003C457 /* SettingTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 572A0B13243715600003C457 /* SettingTableViewController.m */; };
+		5752F3EB2437653400CAEA64 /* BeautifyTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5752F3EA2437653400CAEA64 /* BeautifyTableViewController.m */; };
+		575943D4243D7B7F00266F59 /* FeedbackViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 575943D3243D7B7F00266F59 /* FeedbackViewController.m */; };
+		575943D7243D811100266F59 /* PanoCallClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 575943D6243D811100266F59 /* PanoCallClient.m */; };
+		579ABD31245290AC00ACF456 /* ColorButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 579ABD30245290AB00ACF456 /* ColorButton.m */; };
+		57C6E49A2434780200ADF2CB /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 57C6E4992434780200ADF2CB /* AppDelegate.m */; };
+		57C6E49D2434780200ADF2CB /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 57C6E49C2434780200ADF2CB /* SceneDelegate.m */; };
+		57C6E4A02434780200ADF2CB /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57C6E49F2434780200ADF2CB /* MainViewController.m */; };
+		57C6E4A32434780200ADF2CB /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 57C6E4A12434780200ADF2CB /* Main.storyboard */; };
+		57C6E4A52434780500ADF2CB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 57C6E4A42434780500ADF2CB /* Assets.xcassets */; };
+		57C6E4A82434780500ADF2CB /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 57C6E4A62434780500ADF2CB /* LaunchScreen.storyboard */; };
+		57C6E4AB2434780500ADF2CB /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 57C6E4AA2434780500ADF2CB /* main.m */; };
+		57C6E4C62434A4C400ADF2CB /* JoinViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57C6E4BF2434A4C400ADF2CB /* JoinViewController.m */; };
+		57C6E4C72434A4C400ADF2CB /* CallViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57C6E4C02434A4C400ADF2CB /* CallViewController.m */; };
+		57C6E4C82434A4C400ADF2CB /* WhiteboardViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57C6E4C22434A4C400ADF2CB /* WhiteboardViewController.m */; };
+		57D7E07F24DAACF100761E83 /* VideoFilterDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 57D7E07E24DAACF100761E83 /* VideoFilterDelegate.m */; };
+		57E4F32F244A18170004A856 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 57E4F331244A18170004A856 /* InfoPlist.strings */; };
+		57FC408C243769B500508035 /* WebViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57FC408B243769B500508035 /* WebViewController.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		5711DC09243F19D800A32DBC /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				5711DC0A243F19FE00A32DBC /* PanoRtc.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		5711DC07243F19CC00A32DBC /* PanoRtc.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PanoRtc.framework; path = ../SDK/PanoRtc.framework; sourceTree = "<group>"; };
+		5711DC0B243F27BB00A32DBC /* UserInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UserInfo.h; sourceTree = "<group>"; };
+		5711DC0C243F27BB00A32DBC /* UserInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UserInfo.m; sourceTree = "<group>"; };
+		5711DC16244018C400A32DBC /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
+		5711DC1924401FC600A32DBC /* UserView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UserView.h; sourceTree = "<group>"; };
+		5711DC1A24401FC600A32DBC /* UserView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UserView.m; sourceTree = "<group>"; };
+		571D36D724581EEB00BA1F9A /* StylesView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StylesView.h; sourceTree = "<group>"; };
+		571D36D824581EEB00BA1F9A /* StylesView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = StylesView.m; sourceTree = "<group>"; };
+		572A0B0F2436E8D60003C457 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		572A0B12243715600003C457 /* SettingTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SettingTableViewController.h; sourceTree = "<group>"; };
+		572A0B13243715600003C457 /* SettingTableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SettingTableViewController.m; sourceTree = "<group>"; };
+		5752F3E92437653400CAEA64 /* BeautifyTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BeautifyTableViewController.h; sourceTree = "<group>"; };
+		5752F3EA2437653400CAEA64 /* BeautifyTableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BeautifyTableViewController.m; sourceTree = "<group>"; };
+		575943D2243D7B7F00266F59 /* FeedbackViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FeedbackViewController.h; sourceTree = "<group>"; };
+		575943D3243D7B7F00266F59 /* FeedbackViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FeedbackViewController.m; sourceTree = "<group>"; };
+		575943D5243D811100266F59 /* PanoCallClient.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PanoCallClient.h; sourceTree = "<group>"; };
+		575943D6243D811100266F59 /* PanoCallClient.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PanoCallClient.m; sourceTree = "<group>"; };
+		579ABD2F245290AB00ACF456 /* ColorButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ColorButton.h; sourceTree = "<group>"; };
+		579ABD30245290AB00ACF456 /* ColorButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ColorButton.m; sourceTree = "<group>"; };
+		57A7E64B2466B2FD002A04F1 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
+		57A7E64C2466B3CB002A04F1 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		57A7E64D2466B3D7002A04F1 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		57C6E4952434780200ADF2CB /* PanoVideoDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PanoVideoDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		57C6E4982434780200ADF2CB /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		57C6E4992434780200ADF2CB /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		57C6E49B2434780200ADF2CB /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
+		57C6E49C2434780200ADF2CB /* SceneDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SceneDelegate.m; sourceTree = "<group>"; };
+		57C6E49E2434780200ADF2CB /* MainViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MainViewController.h; sourceTree = "<group>"; };
+		57C6E49F2434780200ADF2CB /* MainViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MainViewController.m; sourceTree = "<group>"; };
+		57C6E4A22434780200ADF2CB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		57C6E4A42434780500ADF2CB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		57C6E4A72434780500ADF2CB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		57C6E4A92434780500ADF2CB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		57C6E4AA2434780500ADF2CB /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		57C6E4BC2434A4C400ADF2CB /* WhiteboardViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WhiteboardViewController.h; sourceTree = "<group>"; };
+		57C6E4BD2434A4C400ADF2CB /* JoinViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JoinViewController.h; sourceTree = "<group>"; };
+		57C6E4BF2434A4C400ADF2CB /* JoinViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JoinViewController.m; sourceTree = "<group>"; };
+		57C6E4C02434A4C400ADF2CB /* CallViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CallViewController.m; sourceTree = "<group>"; };
+		57C6E4C12434A4C400ADF2CB /* CallViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CallViewController.h; sourceTree = "<group>"; };
+		57C6E4C22434A4C400ADF2CB /* WhiteboardViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WhiteboardViewController.m; sourceTree = "<group>"; };
+		57D7E07D24DAACF100761E83 /* VideoFilterDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VideoFilterDelegate.h; sourceTree = "<group>"; };
+		57D7E07E24DAACF100761E83 /* VideoFilterDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VideoFilterDelegate.m; sourceTree = "<group>"; };
+		57E4F330244A18170004A856 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		57FC408A243769B500508035 /* WebViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WebViewController.h; sourceTree = "<group>"; };
+		57FC408B243769B500508035 /* WebViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WebViewController.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		57C6E4922434780200ADF2CB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5711DC08243F19CC00A32DBC /* PanoRtc.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		5711DC06243F19B700A32DBC /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				5711DC07243F19CC00A32DBC /* PanoRtc.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		57C6E48C2434780200ADF2CB = {
+			isa = PBXGroup;
+			children = (
+				57C6E4972434780200ADF2CB /* PanoVideoDemo */,
+				5711DC06243F19B700A32DBC /* Frameworks */,
+				57C6E4962434780200ADF2CB /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		57C6E4962434780200ADF2CB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				57C6E4952434780200ADF2CB /* PanoVideoDemo.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		57C6E4972434780200ADF2CB /* PanoVideoDemo */ = {
+			isa = PBXGroup;
+			children = (
+				57C6E4982434780200ADF2CB /* AppDelegate.h */,
+				57C6E4992434780200ADF2CB /* AppDelegate.m */,
+				57C6E49B2434780200ADF2CB /* SceneDelegate.h */,
+				57C6E49C2434780200ADF2CB /* SceneDelegate.m */,
+				57C6E49E2434780200ADF2CB /* MainViewController.h */,
+				57C6E49F2434780200ADF2CB /* MainViewController.m */,
+				57C6E4BD2434A4C400ADF2CB /* JoinViewController.h */,
+				57C6E4BF2434A4C400ADF2CB /* JoinViewController.m */,
+				57C6E4C12434A4C400ADF2CB /* CallViewController.h */,
+				57C6E4C02434A4C400ADF2CB /* CallViewController.m */,
+				57C6E4BC2434A4C400ADF2CB /* WhiteboardViewController.h */,
+				57C6E4C22434A4C400ADF2CB /* WhiteboardViewController.m */,
+				572A0B12243715600003C457 /* SettingTableViewController.h */,
+				572A0B13243715600003C457 /* SettingTableViewController.m */,
+				5752F3E92437653400CAEA64 /* BeautifyTableViewController.h */,
+				5752F3EA2437653400CAEA64 /* BeautifyTableViewController.m */,
+				575943D2243D7B7F00266F59 /* FeedbackViewController.h */,
+				575943D3243D7B7F00266F59 /* FeedbackViewController.m */,
+				57FC408A243769B500508035 /* WebViewController.h */,
+				57FC408B243769B500508035 /* WebViewController.m */,
+				575943D5243D811100266F59 /* PanoCallClient.h */,
+				575943D6243D811100266F59 /* PanoCallClient.m */,
+				5711DC0B243F27BB00A32DBC /* UserInfo.h */,
+				5711DC0C243F27BB00A32DBC /* UserInfo.m */,
+				5711DC1924401FC600A32DBC /* UserView.h */,
+				5711DC1A24401FC600A32DBC /* UserView.m */,
+				579ABD2F245290AB00ACF456 /* ColorButton.h */,
+				579ABD30245290AB00ACF456 /* ColorButton.m */,
+				571D36D724581EEB00BA1F9A /* StylesView.h */,
+				571D36D824581EEB00BA1F9A /* StylesView.m */,
+				57D7E07D24DAACF100761E83 /* VideoFilterDelegate.h */,
+				57D7E07E24DAACF100761E83 /* VideoFilterDelegate.m */,
+				57C6E4A12434780200ADF2CB /* Main.storyboard */,
+				57C6E4A42434780500ADF2CB /* Assets.xcassets */,
+				57C6E4A62434780500ADF2CB /* LaunchScreen.storyboard */,
+				572A0B102436E8D60003C457 /* Localizable.strings */,
+				57C6E4A92434780500ADF2CB /* Info.plist */,
+				57E4F331244A18170004A856 /* InfoPlist.strings */,
+				57C6E4AA2434780500ADF2CB /* main.m */,
+			);
+			path = PanoVideoDemo;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		57C6E4942434780200ADF2CB /* PanoVideoDemo */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 57C6E4AE2434780500ADF2CB /* Build configuration list for PBXNativeTarget "PanoVideoDemo" */;
+			buildPhases = (
+				57C6E4912434780200ADF2CB /* Sources */,
+				57C6E4922434780200ADF2CB /* Frameworks */,
+				57C6E4932434780200ADF2CB /* Resources */,
+				5711DC09243F19D800A32DBC /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PanoVideoDemo;
+			productName = PanoCall;
+			productReference = 57C6E4952434780200ADF2CB /* PanoVideoDemo.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		57C6E48D2434780200ADF2CB /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1140;
+				ORGANIZATIONNAME = Pano;
+				TargetAttributes = {
+					57C6E4942434780200ADF2CB = {
+						CreatedOnToolsVersion = 11.4;
+					};
+				};
+			};
+			buildConfigurationList = 57C6E4902434780200ADF2CB /* Build configuration list for PBXProject "PanoVideoDemo" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				"zh-Hans",
+				en,
+			);
+			mainGroup = 57C6E48C2434780200ADF2CB;
+			productRefGroup = 57C6E4962434780200ADF2CB /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				57C6E4942434780200ADF2CB /* PanoVideoDemo */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		57C6E4932434780200ADF2CB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				57C6E4A82434780500ADF2CB /* LaunchScreen.storyboard in Resources */,
+				572A0B0E2436E8D60003C457 /* Localizable.strings in Resources */,
+				57C6E4A52434780500ADF2CB /* Assets.xcassets in Resources */,
+				57C6E4A32434780200ADF2CB /* Main.storyboard in Resources */,
+				57E4F32F244A18170004A856 /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		57C6E4912434780200ADF2CB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				57C6E4A02434780200ADF2CB /* MainViewController.m in Sources */,
+				57C6E49A2434780200ADF2CB /* AppDelegate.m in Sources */,
+				57C6E4AB2434780500ADF2CB /* main.m in Sources */,
+				579ABD31245290AC00ACF456 /* ColorButton.m in Sources */,
+				57D7E07F24DAACF100761E83 /* VideoFilterDelegate.m in Sources */,
+				57C6E4C82434A4C400ADF2CB /* WhiteboardViewController.m in Sources */,
+				575943D7243D811100266F59 /* PanoCallClient.m in Sources */,
+				5752F3EB2437653400CAEA64 /* BeautifyTableViewController.m in Sources */,
+				5711DC0D243F27BB00A32DBC /* UserInfo.m in Sources */,
+				57C6E4C72434A4C400ADF2CB /* CallViewController.m in Sources */,
+				57FC408C243769B500508035 /* WebViewController.m in Sources */,
+				572A0B14243715600003C457 /* SettingTableViewController.m in Sources */,
+				571D36D924581EEB00BA1F9A /* StylesView.m in Sources */,
+				57C6E4C62434A4C400ADF2CB /* JoinViewController.m in Sources */,
+				575943D4243D7B7F00266F59 /* FeedbackViewController.m in Sources */,
+				5711DC1B24401FC600A32DBC /* UserView.m in Sources */,
+				57C6E49D2434780200ADF2CB /* SceneDelegate.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		572A0B102436E8D60003C457 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				572A0B0F2436E8D60003C457 /* zh-Hans */,
+				57A7E64C2466B3CB002A04F1 /* en */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		57C6E4A12434780200ADF2CB /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				57C6E4A22434780200ADF2CB /* Base */,
+				5711DC16244018C400A32DBC /* zh-Hans */,
+				57A7E64B2466B2FD002A04F1 /* en */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		57C6E4A62434780500ADF2CB /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				57C6E4A72434780500ADF2CB /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		57E4F331244A18170004A856 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				57E4F330244A18170004A856 /* zh-Hans */,
+				57A7E64D2466B3D7002A04F1 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		57C6E4AC2434780500ADF2CB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				"ARCHS[sdk=iphonesimulator*]" = x86_64;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_BITCODE = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		57C6E4AD2434780500ADF2CB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				"ARCHS[sdk=iphonesimulator*]" = x86_64;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_BITCODE = NO;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		57C6E4AF2434780500ADF2CB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/../SDK",
+				);
+				INFOPLIST_FILE = PanoVideoDemo/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.pano.videoDemo;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		57C6E4B02434780500ADF2CB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/../SDK",
+				);
+				INFOPLIST_FILE = PanoVideoDemo/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.pano.videoDemo;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		57C6E4902434780200ADF2CB /* Build configuration list for PBXProject "PanoVideoDemo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				57C6E4AC2434780500ADF2CB /* Debug */,
+				57C6E4AD2434780500ADF2CB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		57C6E4AE2434780500ADF2CB /* Build configuration list for PBXNativeTarget "PanoVideoDemo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				57C6E4AF2434780500ADF2CB /* Debug */,
+				57C6E4B02434780500ADF2CB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 57C6E48D2434780200ADF2CB /* Project object */;
+}

@@ -1,0 +1,198 @@
+
+/* Class = "UISegmentedControl"; 2N6-Qc-IG2.segmentTitles[0] = "360P"; ObjectID = "2N6-Qc-IG2"; */
+"2N6-Qc-IG2.segmentTitles[0]" = "360P";
+
+/* Class = "UISegmentedControl"; 2N6-Qc-IG2.segmentTitles[1] = "720P"; ObjectID = "2N6-Qc-IG2"; */
+"2N6-Qc-IG2.segmentTitles[1]" = "720P";
+
+/* Class = "UILabel"; text = "高级美颜"; ObjectID = "2WS-WV-BjM"; */
+"2WS-WV-BjM.text" = "Advanced Beautify";
+
+/* Class = "UIButton"; normalTitle = "开始通话"; ObjectID = "3Jy-tn-27B"; */
+"3Jy-tn-27B.normalTitle" = "Start Call";
+
+/* Class = "UILabel"; text = "https://pano.video"; ObjectID = "3uH-O5-2jF"; */
+"3uH-O5-2jF.text" = "https://pano.video";
+
+/* Class = "UILabel"; text = "Pano 01"; ObjectID = "7ef-f0-i4t"; */
+"7ef-f0-i4t.text" = "Pano 01";
+
+/* Class = "UILabel"; text = "Pano 03"; ObjectID = "8Fc-Xd-VI0"; */
+"8Fc-Xd-VI0.text" = "Pano 03";
+
+/* Class = "UIButton"; normalTitle = "确定"; ObjectID = "8k3-qk-A9I"; */
+"8k3-qk-A9I.normalTitle" = "Confirm";
+
+/* Class = "UILabel"; text = "Pano 02"; ObjectID = "9Nb-6C-hlY"; */
+"9Nb-6C-hlY.text" = "Pano 02";
+
+/* Class = "UIButton"; normalTitle = "立即加入"; ObjectID = "9yv-6j-5q9"; */
+"9yv-6j-5q9.normalTitle" = "Join";
+
+/* Class = "UILabel"; text = "离开通话时需要确认"; ObjectID = "A1z-dJ-y1D"; */
+"A1z-dJ-y1D.text" = "Confirm When Leaving Call";
+
+/* Class = "UILabel"; text = "100%"; ObjectID = "B0B-9k-fLd"; */
+"B0B-9k-fLd.text" = "100%";
+
+/* Class = "UILabel"; text = "瘦脸"; ObjectID = "BqS-yL-zGh"; */
+"BqS-yL-zGh.text" = "Cheek Thinning";
+
+/* Class = "UILabel"; text = "Pano 03"; ObjectID = "CYz-7q-Y4b"; */
+"CYz-7q-Y4b.text" = "Pano 03";
+
+/* Class = "UILabel"; text = "用户名"; ObjectID = "Cuc-dn-vOh"; */
+"Cuc-dn-vOh.text" = "Name";
+
+/* Class = "UILabel"; text = "单次通话时长"; ObjectID = "Dtx-eH-pg2"; */
+"Dtx-eH-pg2.text" = "Call Duration";
+
+/* Class = "UILabel"; text = "剩余300字"; ObjectID = "EUq-pu-QEq"; */
+"EUq-pu-QEq.text" = "Remaining 300 characters";
+
+/* Class = "UILabel"; text = "版本号"; ObjectID = "ErH-Q4-jAg"; */
+"ErH-Q4-jAg.text" = "Version";
+
+/* Class = "UISegmentedControl"; Evv-vI-a8E.segmentTitles[0] = "语音"; ObjectID = "Evv-vI-a8E"; */
+"Evv-vI-a8E.segmentTitles[0]" = "Voice";
+
+/* Class = "UISegmentedControl"; Evv-vI-a8E.segmentTitles[1] = "视频"; ObjectID = "Evv-vI-a8E"; */
+"Evv-vI-a8E.segmentTitles[1]" = "Video";
+
+/* Class = "UISegmentedControl"; Evv-vI-a8E.segmentTitles[2] = "白板"; ObjectID = "Evv-vI-a8E"; */
+"Evv-vI-a8E.segmentTitles[2]" = "Whiteboard";
+
+/* Class = "UISegmentedControl"; Evv-vI-a8E.segmentTitles[3] = "通用"; ObjectID = "Evv-vI-a8E"; */
+"Evv-vI-a8E.segmentTitles[3]" = "General";
+
+/* Class = "UILabel"; text = "40分钟"; ObjectID = "Hj5-t5-kam"; */
+"Hj5-t5-kam.text" = "40 Minutes";
+
+/* Class = "UILabel"; text = "房间号"; ObjectID = "Hjv-0Z-NnT"; */
+"Hjv-0Z-NnT.text" = "Room ID";
+
+/* Class = "UILabel"; text = "问题描述"; ObjectID = "K39-u5-V9a"; */
+"K39-u5-V9a.text" = "Problem Description";
+
+/* Class = "UITextField"; placeholder = "在此输入手机号"; ObjectID = "Kk8-go-Yb8"; */
+"Kk8-go-Yb8.placeholder" = "Enter Your Phone Number Here";
+
+/* Class = "UILabel"; text = "通话人数上限"; ObjectID = "LFx-sc-6UU"; */
+"LFx-sc-6UU.text" = "Max Participants";
+
+/* Class = "UILabel"; text = "倒计时"; ObjectID = "Lh6-wr-Uai"; */
+"Lh6-wr-Uai.text" = "Countdown";
+
+/* Class = "UIButton"; normalTitle = "打开白板"; ObjectID = "LmE-Px-QYP"; */
+"LmE-Px-QYP.normalTitle" = "Whiteboard";
+
+/* Class = "UILabel"; text = "进入通话时打开扬声器"; ObjectID = "MaA-ms-yzn"; */
+"MaA-ms-yzn.text" = "Use Speaker When Joining Call";
+
+/* Class = "UILabel"; text = "上传日志"; ObjectID = "Nug-N4-xJC"; */
+"Nug-N4-xJC.text" = "Upload Log";
+
+/* Class = "UILabel"; text = "v1.0.0 (1234)"; ObjectID = "Q08-AB-COR"; */
+"Q08-AB-COR.text" = "v1.0.0 (1234)";
+
+/* Class = "UILabel"; text = "进入通话时静音"; ObjectID = "QNB-Rl-uAG"; */
+"QNB-Rl-uAG.text" = "Mute When Joining Call";
+
+/* Class = "UIButton"; normalTitle = "加入通话"; ObjectID = "Qh9-yw-JPR"; */
+"Qh9-yw-JPR.normalTitle" = "Join Call";
+
+/* Class = "UILabel"; text = "美颜度"; ObjectID = "R3O-ZT-99S"; */
+"R3O-ZT-99S.text" = "Beautify Intensity";
+
+/* Class = "UILabel"; text = "问题类型"; ObjectID = "SEJ-jN-5aY"; */
+"SEJ-jN-5aY.text" = "Problem Type";
+
+/* Class = "UILabel"; text = "1/1"; ObjectID = "SWj-fv-Gvz"; */
+"SWj-fv-Gvz.text" = "1/1";
+
+/* Class = "UILabel"; text = "Pano 01"; ObjectID = "XLx-fg-iDY"; */
+"XLx-fg-iDY.text" = "Pano 01";
+
+/* Class = "UILabel"; text = "Pano 03"; ObjectID = "XZf-IU-RsC"; */
+"XZf-IU-RsC.text" = "Pano 03";
+
+/* Class = "UITextField"; placeholder = "邮箱/手机"; ObjectID = "Zpq-5K-Hz9"; */
+"Zpq-5K-Hz9.placeholder" = "Email / Phone Number";
+
+/* Class = "UILabel"; text = "Pano 04"; ObjectID = "bb9-4o-5f8"; */
+"bb9-4o-5f8.text" = "Pano 04";
+
+/* Class = "UINavigationItem"; title = "输入手机号"; ObjectID = "cSj-Lw-GOT"; */
+"cSj-Lw-GOT.title" = "Enter Phone Number";
+
+/* Class = "UIButton"; normalTitle = "打开视频"; ObjectID = "cjM-85-kLW"; */
+"cjM-85-kLW.normalTitle" = "Open Video";
+
+/* Class = "UILabel"; text = "故障上报"; ObjectID = "fQz-w8-0YW"; */
+"fQz-w8-0YW.text" = "Send Feedback";
+
+/* Class = "UILabel"; text = "我的分辨率"; ObjectID = "gia-dc-b4X"; */
+"gia-dc-b4X.text" = "My Resolution";
+
+/* Class = "UILabel"; text = "Pano 04"; ObjectID = "hBY-Pf-AhR"; */
+"hBY-Pf-AhR.text" = "Pano 04";
+
+/* Class = "UILabel"; text = "房间号"; ObjectID = "j73-zn-KOS"; */
+"j73-zn-KOS.text" = "Room";
+
+/* Class = "UILabel"; text = "4人"; ObjectID = "jAa-8L-i1B"; */
+"jAa-8L-i1B.text" = "4 Members";
+
+/* Class = "UIButton"; normalTitle = "设置"; ObjectID = "jst-Zf-oCl"; */
+"jst-Zf-oCl.normalTitle" = "Setting";
+
+/* Class = "UILabel"; text = "Pano 01"; ObjectID = "k2w-PH-1Hi"; */
+"k2w-PH-1Hi.text" = "Pano 01";
+
+/* Class = "UILabel"; text = "用户名"; ObjectID = "k5r-TU-REc"; */
+"k5r-TU-REc.text" = "Name";
+
+/* Class = "UIButton"; normalTitle = "发送验证码"; ObjectID = "kkn-Z4-mGL"; */
+"kkn-Z4-mGL.normalTitle" = "Get Code";
+
+/* Class = "UILabel"; text = "美颜"; ObjectID = "luv-pB-rYl"; */
+"luv-pB-rYl.text" = "Face Beautify";
+
+/* Class = "UINavigationItem"; title = "加入通话"; ObjectID = "mTc-og-o90"; */
+"mTc-og-o90.title" = "Join Call";
+
+/* Class = "UILabel"; text = "Pano 02"; ObjectID = "nxb-AS-IAd"; */
+"nxb-AS-IAd.text" = "Pano 02";
+
+/* Class = "UILabel"; text = "Pano 04"; ObjectID = "ocK-mb-c7u"; */
+"ocK-mb-c7u.text" = "Pano 04";
+
+/* Class = "UILabel"; text = "联系方式(选填)"; ObjectID = "oru-NJ-jbs"; */
+"oru-NJ-jbs.text" = "Contact (Optional)";
+
+/* Class = "UILabel"; text = "美颜"; ObjectID = "pEE-aW-6zv"; */
+"pEE-aW-6zv.text" = "Beautify Setting";
+
+/* Class = "UILabel"; text = "Pano 02"; ObjectID = "qcs-3N-B0j"; */
+"qcs-3N-B0j.text" = "Pano 02";
+
+/* Class = "UILabel"; text = "+86"; ObjectID = "rRb-e6-7cm"; */
+"rRb-e6-7cm.text" = "+86";
+
+/* Class = "UIButton"; normalTitle = "确认发送"; ObjectID = "sZP-eq-gZj"; */
+"sZP-eq-gZj.normalTitle" = "Send";
+
+/* Class = "UITextField"; placeholder = "验证码"; ObjectID = "uBU-nw-gSB"; */
+"uBU-nw-gSB.placeholder" = "Verification Code";
+
+/* Class = "UIButton"; normalTitle = "静音"; ObjectID = "vmS-C0-w5S"; */
+"vmS-C0-w5S.normalTitle" = "Mute";
+
+/* Class = "UILabel"; text = "大眼"; ObjectID = "w50-PG-loc"; */
+"w50-PG-loc.text" = "Eye Enlarging";
+
+/* Class = "UILabel"; text = "调试模式"; ObjectID = "wVN-8Y-7O0"; */
+"wVN-8Y-7O0.text" = "Debug Mode";
+
+/* Class = "UILabel"; text = "进入通话时打开摄像头"; ObjectID = "zxd-ha-yQH"; */
+"zxd-ha-yQH.text" = "Open Video When Joining Call";

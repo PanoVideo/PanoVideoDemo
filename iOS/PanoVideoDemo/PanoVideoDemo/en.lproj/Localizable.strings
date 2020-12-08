@@ -1,0 +1,73 @@
+/* 
+  Localizable.strings
+  PanoVideoDemo
+
+  Copyright © 2020 Pano. All rights reserved.
+*/
+
+"ok"            = "OK";
+"cancel"        = "Cancel";
+
+"upgradeTitle"  = "Version Upgrade";
+"upgradeAlert"  = "Found a new version, do you want to upgrade?";
+"upgrade"       = "Upgrade Now";
+"notUpgrade"    = "Not Upgrade";
+
+"startCall"     = "Start Call";
+"start"         = "Start";
+"joinCall"      = "Join Call";
+"join"          = "Join";
+//"roomId"        = "Room";
+//"roomIdTips"    = "Your Room ID";
+//"userName"      = "Name";
+//"userNameTips"  = "Your User Name";
+"joinAlert"     = "Room and Name cannot be empty";
+
+//"bindMobile"    = "Enter Phone Number";
+//"mobileTips"    = "Enter Your Phone Number Here";
+//"codeTips"      = "Verification Code";
+"sendCode"      = "Get Code";
+"sendCountdown" = "%u seconds";
+"sendSuccess"   = "The verification code has been sent, please check your SMS";
+"sendFail"      = "Failed to send verification code";
+"verifyFail"    = "Failed to verify code";
+"invalidMobile" = "Please enter a valid phone number";
+"invalidCode"   = "Please enter a valid verification code";
+
+"mute"          = "Mute";
+"unmute"        = "Unmute";
+"openVideo"     = "Open Video";
+"closeVideo"    = "Close Video";
+//"whiteboard"    = "Whiteboard";
+"whiteboardOff"     = "The whiteboard is not turned on";
+"exitAlert"     = "You have left the call, please click OK to return to the first page";
+"exitConfirm"   = "Are you sure to leave the call？";
+"fetchFail"     = "Failed to fetch the call token";
+"joinFail"      = "Failed to join the call";
+
+"setting"       = "Settting";
+
+//"duration"      = "Call Duration";
+//"minutes"       = "15 Minutes";
+//"participants"  = "Max Participants";
+//"members"       = "4 Members";
+
+//"autoMute"      = "Mute When Joining Call";
+//"autoVideo"     = "Open Video When Joining Call";
+//"resolution"    = "My Resolution";
+//"autoSpeaker"   = "Use Speaker When Joining Call";
+
+"faceBeautify"  = "Beautify Setting";
+
+"feedback"      = "Send Feedback";
+"help"          = "Help Center";
+"about"         = "About Us";
+//"debug"         = "Debug Mode";
+"debugAlert"    = "Enable debug mode will generate more logs (up to 200M). Please disable debug mode in time after debugging. Are you sure to enable debug mode?";
+//"version"       = "Version";
+
+//"beautify"      = "Face Beautify";
+//"intensity"     = "Beautify Intensity";
+
+"remainder"     = "Remaining %u characters";
+"feedbackAlert" = "The problem has been sent, thank your feedback";

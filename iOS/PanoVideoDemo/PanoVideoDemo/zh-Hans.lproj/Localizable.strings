@@ -1,0 +1,73 @@
+/* 
+  Localizable.strings
+  PanoVideoDemo
+
+  Copyright © 2020 Pano. All rights reserved.
+*/
+
+"ok"            = "确定";
+"cancel"        = "取消";
+
+"upgradeTitle"  = "版本升级";
+"upgradeAlert"  = "发现有新版本，是否升级？";
+"upgrade"       = "马上升级";
+"notUpgrade"    = "暂不升级";
+
+"startCall"     = "开始通话";
+"start"         = "确认开始";
+"joinCall"      = "加入通话";
+"join"          = "立即加入";
+//"roomId"        = "房间号";
+//"roomIdTips"    = "你的房间号";
+//"userName"      = "用户名";
+//"userNameTips"  = "你的用户名";
+"joinAlert"     = "房间号和用户名不能为空";
+
+//"bindMobile"    = "输入手机号";
+//"mobileTips"    = "在此输入手机号";
+//"codeTips"      = "验证码";
+"sendCode"      = "发送验证码";
+"sendCountdown" = "%u 秒";
+"sendSuccess"   = "验证码已发送，请查收短信";
+"sendFail"      = "发送验证码失败";
+"verifyFail"    = "验证失败";
+"invalidMobile" = "请输入有效的手机号码";
+"invalidCode"   = "请输入有效的验证码";
+
+"mute"          = "静音";
+"unmute"        = "取消静音";
+"openVideo"     = "打开视频";
+"closeVideo"    = "关闭视频";
+//"whiteboard"    = "打开白板";
+"whiteboardOff"     = "白板未开启";
+"exitAlert"     = "你已离开通话，请点击确认回到首页";
+"exitConfirm"   = "确定要离开通话吗？";
+"fetchFail"     = "获取通话令牌失败";
+"joinFail"      = "加入通话失败";
+
+"setting"       = "设置";
+
+//"duration"      = "单次通话时长";
+//"minutes"       = "15分钟";
+//"participants"  = "通话人数上限";
+//"members"       = "4人";
+
+//"autoMute"      = "进入通话时静音";
+//"autoVideo"     = "进入通话时打开摄像头";
+//"resolution"    = "我的分辨率";
+//"autoSpeaker"   = "进入通话时打开扬声器";
+
+"faceBeautify"  = "美颜";
+
+"feedback"      = "故障上报";
+"help"          = "帮助中心";
+"about"         = "关于我们";
+//"debug"         = "调试模式";
+"debugAlert"    = "打开调试模式将会生成更多日志（最多200M），调试结束后请及时关闭调试模式。确定要打开调试模式吗？";
+//"version"       = "版本号";
+
+//"beautify"      = "美颜";
+//"intensity"     = "美颜度";
+
+"remainder"     = "剩余%u字";
+"feedbackAlert" = "故障已上报，谢谢你的反馈";
