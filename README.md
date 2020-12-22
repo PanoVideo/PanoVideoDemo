@@ -4,7 +4,7 @@
 
 ## 平台支持
 
-示例程序支持 Windows、Android、iOS、Web、Electron 平台。
+示例程序支持 Android、iOS、Web 平台。
 
 ## 演示功能
 
