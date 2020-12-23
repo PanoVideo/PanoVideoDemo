@@ -900,13 +900,14 @@
   resolved "https://registry.npm.taobao.org/@nodelib/fs.stat/download/@nodelib/fs.stat-1.1.3.tgz#2b5a3ab3f918cca48a8c754c08168e3f03eba61b"
   integrity sha1-K1o6s/kYzKSKjHVMCBaOPwPrphs=
 
-"@pano.video/panortc@^1.1.5":
-  version "1.1.5"
-  resolved "https://registry.npm.taobao.org/@pano.video/panortc/download/@pano.video/panortc-1.1.5.tgz#5dd3b98246cdc94a45b71151fe2d6a027a2a2020"
-  integrity sha1-XdO5gkbNyUpFtxFR/i1qAnoqICA=
+"@pano.video/panortc@1.1.9":
+  version "1.1.9"
+  resolved "https://registry.npm.taobao.org/@pano.video/panortc/download/@pano.video/panortc-1.1.9.tgz#baadf74eb8cc7d994438421731dfb1e87e49be69"
+  integrity sha1-uq33TrjMfZlEOEIXMd+x6H5Jvmk=
   dependencies:
     axios "^0.19.2"
     lodash-es "^4.17.15"
+    pako "^2.0.2"
     utf8 "^3.0.0"
 
 "@soda/friendly-errors-webpack-plugin@^1.7.1":
@@ -6044,6 +6045,11 @@ p-try@^2.0.0:
   version "2.2.0"
   resolved "https://registry.npm.taobao.org/p-try/download/p-try-2.2.0.tgz#cb2868540e313d61de58fafbe35ce9004d5540e6"
   integrity sha1-yyhoVA4xPWHeWPr741zpAE1VQOY=
+
+pako@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.npm.taobao.org/pako/download/pako-2.0.2.tgz#8a72af7a93431ef22aa97e0d53b0acaa3c689220"
+  integrity sha1-inKvepNDHvIqqX4NU7CsqjxokiA=
 
 pako@~1.0.5:
   version "1.0.11"

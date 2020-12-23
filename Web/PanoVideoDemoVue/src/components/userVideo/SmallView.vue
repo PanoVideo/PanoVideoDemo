@@ -117,22 +117,15 @@ export default {
         ? this.user.screenDomRef
         : this.user.videoDomRef;
       if (
-        !this.user.showInMainView ||
-        (this.showScreenShare && !this.user.isScreenInMainView) ||
-        (!this.showScreenShare &&
-          this.user.screenOpen &&
-          this.user.isScreenInMainView) ||
-        this.forceUseSrcView
+        ((this.user.showInMainView &&
+          this.user.isScreenInMainView &&
+          this.showScreenShare) ||
+          (this.user.showInMainView &&
+            !this.user.isScreenInMainView &&
+            !this.showScreenShare)) &&
+        !this.forceUseSrcView
       ) {
-        // 大多数用户直接显示video就可以了
-        this.$refs.domRef.innerHTML = '';
-        this.$refs.domRef.appendChild(userViewRef);
-        const video = userViewRef.getElementsByTagName('video');
-        if (video.length) {
-          video[0].autoplay = true;
-          video[0].play();
-        }
-      } else {
+        // 大图用户对应的小图需要从大图clone渲染
         clearInterval(this.renderInterval);
         this.$refs.domRef.innerHTML = '';
         this.$refs.domRef.appendChild(this.smallViewCanvas);
@@ -141,6 +134,16 @@ export default {
           this.renderSmallVideo,
           1000 / RENDER_RATE
         );
+      } else {
+        clearInterval(this.renderInterval);
+        // 大多数用户直接显示video就可以了
+        this.$refs.domRef.innerHTML = '';
+        this.$refs.domRef.appendChild(userViewRef);
+        const video = userViewRef.getElementsByTagName('video');
+        if (video.length) {
+          video[0].autoplay = true;
+          video[0].play();
+        }
       }
     },
     renderSmallVideo() {

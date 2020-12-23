@@ -11,7 +11,11 @@
     <div class="subvideos" ref="subvideos">
       <div class="userVideos" ref="subvideoInner">
         <template v-for="user in allUsers">
-          <SmallView :key="user.userId" :user="user" />
+          <SmallView
+            :key="user.userId"
+            :user="user"
+            :forceUseSrcView="isWhiteboardOpen"
+          />
           <SmallView
             :key="`${user.userId}-screen`"
             :user="user"

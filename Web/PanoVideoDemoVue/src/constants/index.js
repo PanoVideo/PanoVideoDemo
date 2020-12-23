@@ -1,8 +1,9 @@
 export const VideoProfileType = {
-  Low: '2', // 180P
-  Standard: '4', // 360P
-  HD720P: '8',
-  HD1080P: '16'
+  Lowest: 'Lowest',
+  Low: 'Low',
+  Standard: 'Standard',
+  HD720P: 'HD720P',
+  HD1080P: 'HD1080P'
 };
 
 export const ChannelMode = {
