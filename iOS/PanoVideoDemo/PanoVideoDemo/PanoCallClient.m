@@ -574,4 +574,14 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
     return [url stringByAddingPercentEncodingWithAllowedCharacters:NSCharacterSet.URLUserAllowedCharacterSet];
 }
 
++ (void)updatePanoConfigWithAppId:(NSString *)appId
+                         rtcServer:(NSString *)server
+                             token:(NSString *)token
+{
+    kDemoAppId = appId;
+    kDemoPanoServer = server;
+    kDemoTempToken = token;
+    [[PanoCallClient sharedInstance] createEngineKit];
+}
+
 @end

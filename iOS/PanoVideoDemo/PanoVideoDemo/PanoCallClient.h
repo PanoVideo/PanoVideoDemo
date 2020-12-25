@@ -56,6 +56,9 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)productName;
 + (NSString *)productVersion;
 
++ (void)updatePanoConfigWithAppId:(NSString *)appId
+                         rtcServer:(NSString *)server
+                             token:(NSString *)token;
 @end
 
 NS_ASSUME_NONNULL_END

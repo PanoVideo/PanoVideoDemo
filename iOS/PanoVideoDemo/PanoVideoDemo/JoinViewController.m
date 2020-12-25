@@ -9,7 +9,7 @@
 #import "PanoCallClient.h"
 
 static NSTimeInterval kDelayDismissAlertTime = 3.0;
-
+static NSString *inputUserId = @"";
 @interface JoinViewController () <UITextFieldDelegate>
 
 @property (strong, nonatomic) IBOutlet UINavigationItem * navigation;
@@ -30,6 +30,7 @@ static NSTimeInterval kDelayDismissAlertTime = 3.0;
     [self setUserName];
     [self setFirstResponder];
     [self setButtonRoundedCorners:self.joinButton withRadius:5.0];
+    self.navigation.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(showPanoInfoAlert)];
 }
 
 - (IBAction)clickBack:(id)sender {
@@ -40,7 +41,8 @@ static NSTimeInterval kDelayDismissAlertTime = 3.0;
     if (self.roomId.text.length && self.userName.text.length) {
         PanoCallClient.sharedInstance.roomId = self.roomId.text;
         PanoCallClient.sharedInstance.userName = self.userName.text;
-        PanoCallClient.sharedInstance.userId = [self getRandomUserId];
+        PanoCallClient.sharedInstance.userId = inputUserId.length > 0 ?
+                                               inputUserId.integerValue : [self getRandomUserId];
         if (PanoCallClient.sharedInstance.mobileNumber.length != 0) {
             [self openCallView];
         } else {
@@ -50,6 +52,34 @@ static NSTimeInterval kDelayDismissAlertTime = 3.0;
         [self presentAlert:NSLocalizedString(@"joinAlert", nil)];
     }
 }
+
+- (void)showPanoInfoAlert {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"请输入Pano配置信息" message:nil preferredStyle:UIAlertControllerStyleAlert];
+    [alert addTextFieldWithConfigurationHandler:nil];
+    [alert addTextFieldWithConfigurationHandler:nil];
+    [alert addTextFieldWithConfigurationHandler:nil];
+    [alert addTextFieldWithConfigurationHandler:nil];
+    UIAlertAction *comfirmAction = [UIAlertAction actionWithTitle:@"确认" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        inputUserId = alert.textFields[0].text;
+        NSString *rtcServer = alert.textFields[1].text;
+        NSString *token = alert.textFields[2].text;
+        NSString *appID = alert.textFields[3].text;
+        [PanoCallClient updatePanoConfigWithAppId:appID rtcServer:rtcServer token:token];
+    }];
+    comfirmAction.enabled = false;
+    [alert addAction:comfirmAction];
+    [alert addAction:[UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:nil]];
+    NSArray *placeholders = @[@"请输入UserId", @"请输入PanoServer", @"请输入Token",@"请输入AppID"];
+    for (NSInteger i=0; i<alert.textFields.count; i++) {
+        UITextField *textField = alert.textFields[i];
+        textField.placeholder = placeholders[i];
+        [textField addTarget:self action:@selector(textFielEditingChanged:) forControlEvents:UIControlEventEditingChanged];
+    }
+    [self presentViewController:alert animated:true completion:^{
+    }];
+}
+
+
 
 #pragma mark - Editing
 
@@ -61,6 +91,20 @@ static NSTimeInterval kDelayDismissAlertTime = 3.0;
 - (BOOL)textFieldShouldReturn:(UITextField *)textField {
     [textField resignFirstResponder];
     return YES;
+}
+
+- (void)textFielEditingChanged:(UITextField *)textField {
+    UIAlertController *alert = (UIAlertController *)self.presentedViewController;
+    if ([alert isKindOfClass:[UIAlertController class]]) {
+        BOOL enable = true;
+        for (NSInteger i=0; i<alert.textFields.count; i++) {
+            UITextField *textField = alert.textFields[i];
+            if (textField.text.length <= 0) {
+                enable = false;
+            }
+        }
+        alert.actions.firstObject.enabled = enable;
+    }
 }
 
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
