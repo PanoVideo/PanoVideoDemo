@@ -119,11 +119,17 @@ export default {
       'wbAdminUser',
       'meetingStatus',
       'meetingEndReason',
-      'myVideoProfileType',
+      'videoPorfile',
       'whiteboardAvailable'
     ])
   },
   watch: {
+    videoPorfile() {
+      if (!this.userMe.videoMuted) {
+        const r = window.rtcEngine.startVideo(this.videoPorfile);
+        console.log('startVideo with new profile type', this.videoPorfile, r);
+      }
+    },
     meetingStatus() {
       switch (this.meetingStatus) {
         case 'ended':
@@ -189,7 +195,7 @@ export default {
     },
     onClickCamMute() {
       if (this.userMe.videoMuted) {
-        window.rtcEngine.startVideo(this.myVideoProfileType);
+        window.rtcEngine.startVideo(this.videoPorfile);
       } else {
         window.rtcEngine.stopVideo();
       }

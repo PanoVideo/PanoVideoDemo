@@ -5,20 +5,20 @@
         <img alt="logo" :src="logopng" />
       </a>
     </div>
-    <el-form class="tableListForm" :model="form">
-      <el-form-item label="AppId" key="appid">
+    <el-form class="tableListForm" :model="form" v-loading="loading">
+      <el-form-item label="AppId" key="appid" required>
         <el-input v-model="form.appId" />
       </el-form-item>
-      <el-form-item label="Token" key="token">
+      <el-form-item label="Token" key="token" required>
         <el-input v-model="form.token" />
       </el-form-item>
-      <el-form-item label="房间号" key="channelId">
+      <el-form-item label="房间号" key="channelId" required>
         <el-input v-model="form.channelId" />
       </el-form-item>
       <el-form-item label="用户名" key="userName">
         <el-input v-model="form.userName" />
       </el-form-item>
-      <el-form-item label="用户Id" key="userId">
+      <el-form-item label="用户Id" key="userId" required>
         <el-input v-model="form.userId" />
       </el-form-item>
       <el-row>
@@ -64,16 +64,17 @@ export default {
       form: {
         channelId: '',
         userName: '',
-        audioOn: false,
-        videoOn: false,
+        audioOn: true,
+        videoOn: true,
         appId: '',
         userId: '',
         token: ''
-      }
+      },
+      loading: false
     };
   },
   computed: {
-    ...mapGetters(['userMe', 'myVideoProfileType'])
+    ...mapGetters(['userMe', 'videoPorfile'])
   },
   methods: {
     ...mapMutations(['updateChannelId', 'updateUserMe', 'setMeetingStatus']),
@@ -83,9 +84,13 @@ export default {
      */
     async joinChannel() {
       const { channelId, userName, appId, userId, token } = this.form;
+      if (!channelId || !appId || !userId || !token) {
+        this.$message.warning('请填写必要的参数再加入会议');
+        return;
+      }
       localStorage.setItem(Constants.localCacheKeyUserName, userName);
       localStorage.setItem(Constants.localCacheKeyChannelId, channelId);
-      this.joinLoading = true;
+      this.loading = true;
       this.updateChannelId(channelId);
       this.updateUserMe({
         userName,
@@ -123,13 +128,14 @@ export default {
      * 入会成功回调
      */
     onJoinChannelConfirm(data) {
+      this.loading = false;
       const { audioOn, videoOn } = this.form;
       if (data.result === 'success') {
         if (audioOn) {
           window.rtcEngine.startAudio();
         }
         if (videoOn) {
-          window.rtcEngine.startVideo(this.myVideoProfileType);
+          window.rtcEngine.startVideo(this.videoPorfile);
         }
         localStorage.setItem(
           Constants.localCacheKeyMuteMicAtStart,

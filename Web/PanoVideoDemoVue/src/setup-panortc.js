@@ -344,8 +344,8 @@ export default function initPanoRtc() {
 
   // video stop
   rtcEngine.on(PanoRtc.RtcEngine.Events.userVideoStop, data => {
-    console.log(`onUserVideoStop, userId: ${userId}`);
     const { userId } = data;
+    console.log(`onUserVideoStop, userId: ${userId}`);
     const user = store.getters.getUserById(userId);
     if (user) {
       store.commit('updateUser', { userId, videoMuted: true });
@@ -356,36 +356,36 @@ export default function initPanoRtc() {
 
   // audio start
   rtcEngine.on(PanoRtc.RtcEngine.Events.userAudioStart, data => {
-    console.log(`onUserAudioStart, userId: ${userId}`);
     const { userId } = data;
+    console.log(`onUserAudioStart, userId: ${userId}`);
     store.commit('updateUser', { userId, audioMuted: false });
   });
 
   // audio stop
   rtcEngine.on(PanoRtc.RtcEngine.Events.userAudioStop, data => {
-    console.log(`onUserAudioStop, userId: ${userId}`);
     const { userId } = data;
+    console.log(`onUserAudioStop, userId: ${userId}`);
     store.commit('updateUser', { userId, audioMuted: true });
   });
 
   // audio mute
   rtcEngine.on(PanoRtc.RtcEngine.Events.userAudioMute, data => {
-    console.log(`userAudioMute, userId: ${userId}`);
     const { userId } = data;
+    console.log(`userAudioMute, userId: ${userId}`);
     store.commit('updateUser', { userId, audioMuted: true });
   });
 
   // audio unmute
   rtcEngine.on(PanoRtc.RtcEngine.Events.userAudioUnmute, data => {
-    console.log(`userAudioUnmute, userId: ${userId}`);
     const { userId } = data;
+    console.log(`userAudioUnmute, userId: ${userId}`);
     store.commit('updateUser', { userId, audioMuted: false });
   });
 
   // 别的用户开启桌面共享
   rtcEngine.on(PanoRtc.RtcEngine.Events.userScreenStart, data => {
-    console.log(`userScreenStart, userId: ${userId}`);
     const { userId } = data;
+    console.log(`userScreenStart, userId: ${userId}`);
     const user = store.getters.getUserById(`${userId}`);
     if (user) {
       store.commit('updateUser', { userId, screenOpen: true });
@@ -400,8 +400,8 @@ export default function initPanoRtc() {
 
   // 别的用户停止视频共享
   rtcEngine.on(PanoRtc.RtcEngine.Events.userScreenStop, data => {
-    console.log(`userScreenStop, userId: ${userId}`);
     const { userId } = data;
+    console.log(`userScreenStop, userId: ${userId}`);
     const user = store.getters.getUserById(`${userId}`);
     if (user) {
       store.commit('updateUser', {
@@ -473,29 +473,15 @@ export default function initPanoRtc() {
 
   rtcEngine.on(PanoRtc.RtcEngine.Events.videoDeviceChange, () => {
     // 如果当前使用的设备被拔出，那么选择默认的设备
-    if (store.getters.micId !== 'default') {
-      rtcEngine.getMics(devices => {
-        if (!devices.find(item => item.deviceId === store.getters.micId)) {
-          store.commit('setMic', 'default');
-          rtcEngine.selectMic('default');
+    rtcEngine.getCams(cameras => {
+      if (!cameras.find(item => item.deviceId === store.getters.cameraId)) {
+        if (cameras[0]) {
+          // rtcEngine.stopPreview();
+          store.commit('setCamera', cameras[0].deviceId);
+          rtcEngine.selectCam(cameras[0].deviceId);
         }
-      });
-    }
-    if (store.getters.speakerId !== 'default') {
-      rtcEngine.getCams(captureDeviceList => {
-        if (
-          !captureDeviceList.find(
-            item => item.deviceId === store.getters.cameraId
-          )
-        ) {
-          if (captureDeviceList[0]) {
-            // rtcEngine.stopPreview();
-            store.commit('setCamera', captureDeviceList[0].deviceId);
-            rtcEngine.selectCam(captureDeviceList[0].deviceId);
-          }
-        }
-      });
-    }
+      }
+    });
   });
 
   const onLocalScreenEnd = () => {

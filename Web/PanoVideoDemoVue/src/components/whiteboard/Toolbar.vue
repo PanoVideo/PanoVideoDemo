@@ -209,12 +209,13 @@
               v-for="color in colors"
               class="pano-wb-popup__item__colors"
               :key="color"
+              @click="selectColor(color)"
             >
               <div
                 :class="{
                   'pano-wb-popup__item__colors__color-dot': true,
                   'pano-wb-popup__item__colors__color-dot--selected':
-                    strokeStyle === color
+                    selectedColor === color
                 }"
                 :style="{
                   backgroundColor: color
@@ -232,7 +233,7 @@
           <span class="iconfont icon-tools" />
           <div
             class="pano-wb-tb__item__color-dot"
-            :style="{ backgroundColor: strokeStyle }"
+            :style="{ backgroundColor: selectedColor }"
           />
         </div>
       </Popover>
@@ -814,7 +815,7 @@ export default {
       pageCount: this.whiteboard.getTotalNumberOfPages(),
       pageIndex: this.whiteboard.getCurrentPageNumber(),
       lineWidth: this.whiteboard.lineWidth,
-      strokeStyle: this.whiteboard.strokeStyle,
+      selectedColor: this.whiteboard.strokeStyle,
       insertType: this.whiteboard.getToolType(),
       fillType: this.whiteboard.fillType,
       docs: this.whiteboard.enumerateDocs(),
@@ -859,7 +860,7 @@ export default {
      * 从白板中获取最新的状态
      */
     getDataFromWhiteboard() {
-      this.strokeStyle = get(
+      this.selectedColor = get(
         this.whiteboard.selectedShape,
         'shapeStyle.strokeStyle',
         this.whiteboard.strokeStyle
@@ -1088,6 +1089,18 @@ export default {
           this.$message.error('上传失败');
         }
       }, false);
+    },
+    selectColor(color) {
+      if (this.whiteboard.selectedShape) {
+        this.whiteboard.setSelectedShapeStyle({
+          strokeStyle: color,
+          fillStyle: color
+        });
+      } else {
+        this.whiteboard.strokeStyle = color;
+        this.whiteboard.fillStyle = color;
+      }
+      this.selectedColor = color;
     },
     undo() {
       this.whiteboard.undo();

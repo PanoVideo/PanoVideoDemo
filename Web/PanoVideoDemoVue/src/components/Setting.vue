@@ -12,7 +12,7 @@
       </div>
       <el-form>
         <el-form-item label="分辨率" label-position="left">
-          <el-radio-group v-model="videoProfileType">
+          <el-radio-group v-model="selectedVideoProfile">
             <el-radio-button label="Standard">360P</el-radio-button>
             <el-radio-button label="HD720P">720P</el-radio-button>
           </el-radio-group>
@@ -76,7 +76,7 @@ import * as Constants from '../constants';
 export default {
   data() {
     return {
-      videoProfileType: Constants.VideoProfileType.HD720P,
+      selectedVideoProfile: Constants.VideoProfileType.HD720P,
       camera: '',
       cameras: [],
       mic: 'default',
@@ -89,7 +89,7 @@ export default {
   computed: {
     ...mapGetters([
       'settingVisible',
-      'myVideoProfileType',
+      'videoPorfile',
       'micId',
       'speakerId',
       'cameraId'
@@ -103,7 +103,7 @@ export default {
         this.videoTag && window.rtcEngine.stopPreview(this.videoTag);
       }
     },
-    videoProfileType() {
+    selectedVideoProfile() {
       this.onCameraChange();
     },
     camera() {
@@ -124,7 +124,7 @@ export default {
       'setMic',
       'setSpeaker',
       'setCamera',
-      'setMyVideoProfileType'
+      'setVideoProfile'
     ]),
     onCameraChange() {
       this.videoTag && window.rtcEngine.stopPreview(this.videoTag);
@@ -132,13 +132,11 @@ export default {
         this.camera,
         this.onPreviewSuccess,
         this.onPreviewFailed,
-        this.videoProfileType
+        this.selectedVideoProfile
       );
       this.setCamera(this.camera);
-      this.setMyVideoProfileType(this.videoProfileType);
+      this.setVideoProfile(this.selectedVideoProfile);
       window.rtcEngine.selectCam(this.camera);
-      const r = window.rtcEngine.startVideo(this.videoProfileType);
-      console.log(this.videoProfileType, r);
     },
     onPreviewSuccess(videoTag) {
       const wrapper = this.$refs.view;
@@ -162,7 +160,7 @@ export default {
       this.setSettingVisible(false);
     },
     init() {
-      this.videoProfileType = this.myVideoProfileType;
+      this.selectedVideoProfile = this.videoPorfile;
       this.camera = this.cameraId;
       this.speaker = this.speakerId;
       this.mic = this.micId;
@@ -172,7 +170,7 @@ export default {
           this.camera,
           this.onPreviewSuccess,
           this.onPreviewFailed,
-          this.videoProfileType
+          this.selectedVideoProfile
         );
       });
       window.rtcEngine.getMics(mics => {

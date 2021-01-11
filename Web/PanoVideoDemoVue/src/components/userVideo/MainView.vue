@@ -76,6 +76,9 @@ export default {
     ['mainViewUser.userId']() {
       this.updateVideoView();
     },
+    ['mainViewUser.isScreenInMainView']() {
+      this.updateVideoView();
+    },
     ['mainViewUser.videoMuted']() {
       this.updateVideoView();
     },

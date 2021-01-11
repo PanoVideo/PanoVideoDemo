@@ -21,7 +21,7 @@ function getInitialState() {
       localStorage.getItem(Constants.localCacheKeyChannelId) ||
       `${Math.random()}`.substring(2, 7),
     meetingStatus: '',
-    myVideoProfileType:
+    videoPorfile:
       localStorage.getItem(Constants.localCacheKeyVideoProfileType) ||
       Constants.VideoProfileType.HD720P, // 自己的分辨率
     meetingEndReason: '',
@@ -81,8 +81,8 @@ export default {
       state.cameraId = id;
       localStorage.setItem(Constants.localCacheKeySelectedCam, id);
     },
-    setMyVideoProfileType(state, videoProfileType) {
-      state.myVideoProfileType = videoProfileType;
+    setVideoProfile(state, videoProfileType) {
+      state.videoPorfile = videoProfileType;
       localStorage.setItem(
         Constants.localCacheKeyVideoProfileType,
         videoProfileType
@@ -114,7 +114,7 @@ export default {
     meetingStatus: state => state.meetingStatus,
     meetingEndReason: state => state.meetingEndReason,
     remainSeconds: state => state.remainSeconds,
-    myVideoProfileType: state => state.myVideoProfileType,
+    videoPorfile: state => state.videoPorfile,
     whiteboardUpdated: state => state.whiteboardUpdated,
     whiteboardAvailable: state => state.whiteboardAvailable,
     settingVisible: state => state.settingVisible
