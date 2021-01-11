@@ -85,4 +85,11 @@
     <string name="title_face_beauty_enable">Open beauty</string>
     <string name="title_face_beauty_intensity">Beauty intensity</string>
 
+    <!-- Room Advanced Settings-->
+    <string name="action_advanced_settings">Advanced Setting</string>
+    <string name="room_advanced_settings_title">Please input Pano config</string>
+    <string name="room_advanced_settings_app_id">Please input AppID</string>
+    <string name="room_advanced_settings_app_server">Please input PanoServer</string>
+    <string name="room_advanced_settings_token">Please input Token</string>
+    <string name="room_advanced_settings_user_id">Please input UserId</string>
 </resources>

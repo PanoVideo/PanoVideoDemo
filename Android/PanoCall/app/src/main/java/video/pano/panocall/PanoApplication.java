@@ -20,11 +20,13 @@ import java.util.UUID;
 
 
 public class PanoApplication extends Application {
-    public static final String TAG = "PanoApplication";
-    public static final String APPID = 填写你的APPID;
-    public static final String PANO_SERVER = "api.pano.video";
+    public static String TAG = "PanoApplication";
+    public static String APPID = 填写你的APPID;
+    public static String PANO_SERVER = "api.pano.video";
     public static long kMaxAudioDumpSize = 200*1024*1024; // 200 MB
-    public static final String APP_TOKEN = 填写你的TOKEN;
+    public static String APP_TOKEN = 填写你的TOKEN;
+    public static String USER_ID;
+
 
     private RtcEngine mRtcEngine;
     private PanoEngineCallback mRtcCallback = new PanoEngineCallback();
@@ -62,7 +64,10 @@ public class PanoApplication extends Application {
         if (lang != 0) {
             updateLanguage(lang);
         }*/
+        createPanoEngine();
+    }
 
+    private void createPanoEngine() {
 
         // 设置PANO媒体引擎的配置参数
         RtcEngineConfig engineConfig = new RtcEngineConfig();
@@ -82,6 +87,12 @@ public class PanoApplication extends Application {
     }
 
     public RtcEngine getPanoEngine() { return mRtcEngine; }
+
+    public void refreshPanoEngine() {
+        RtcEngine.destroy();
+        createPanoEngine();
+    }
+
     public PanoEngineCallback getPanoCallback() { return mRtcCallback; }
     public String getAppUuid() { return mAppUuid; }
     public void updateLanguage(int lang) {

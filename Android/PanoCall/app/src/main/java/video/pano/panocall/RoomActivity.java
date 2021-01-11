@@ -1,12 +1,17 @@
 package video.pano.panocall;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -97,6 +102,45 @@ public class RoomActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_room, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_advanced_settings) {
+            View customView = LayoutInflater.from(this).inflate(R.layout.dialog_room_advanced_setting, null);
+            EditText appId = customView.findViewById(R.id.app_id);
+            appId.setText(PanoApplication.APPID);
+            EditText appServer = customView.findViewById(R.id.app_server);
+            appServer.setText(PanoApplication.PANO_SERVER);
+            EditText token = customView.findViewById(R.id.token);
+            token.setText(PanoApplication.APP_TOKEN);
+            EditText userId = customView.findViewById(R.id.user_id);
+            userId.setText(PanoApplication.USER_ID);
+            Dialog dialog = new AlertDialog.Builder(this)
+                    .setTitle(R.string.room_advanced_settings_title)
+                    .setView(customView)
+                    .setPositiveButton(R.string.title_button_ok, (dialog1, which) -> {
+                        PanoApplication.APPID = appId.getText().toString();
+                        PanoApplication.PANO_SERVER = appServer.getText().toString();
+                        PanoApplication.APP_TOKEN = token.getText().toString();
+                        PanoApplication.USER_ID = userId.getText().toString();
+                        ((PanoApplication) getApplication()).refreshPanoEngine();
+                    })
+                    .setNegativeButton(R.string.title_button_cancel, null)
+                    .create();
+            dialog.show();
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+
+    @Override
     protected void onPause() {
         super.onPause();
         mPBarIndicator.setVisibility(View.GONE);
@@ -167,7 +211,12 @@ public class RoomActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(KEY_USER_NAME, userName);
         editor.apply();
-        long localUserId = 10000 + new Random().nextInt(5000);
+        long localUserId;
+        if (!TextUtils.isEmpty(PanoApplication.USER_ID)) {
+            localUserId = Long.parseLong(PanoApplication.USER_ID);
+        } else {
+            localUserId = 10000 + new Random().nextInt(5000);
+        }
         CallActivity.launch(this, PanoApplication.APP_TOKEN, roomId, localUserId, userName, mIsHost);
     }
 
