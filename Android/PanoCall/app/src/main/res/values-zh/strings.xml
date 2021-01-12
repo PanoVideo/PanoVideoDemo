@@ -86,4 +86,12 @@
     <!-- Face Beauty -->
     <string name="title_face_beauty_enable">打开美颜</string>
     <string name="title_face_beauty_intensity">美颜度</string>
+
+    <!-- Room Advanced Settings-->
+    <string name="action_advanced_settings">高级设置</string>
+    <string name="room_advanced_settings_title">请输入Pano配置信息</string>
+    <string name="room_advanced_settings_app_id">请输入AppID</string>
+    <string name="room_advanced_settings_app_server">请输入PanoServer</string>
+    <string name="room_advanced_settings_token">请输入Token</string>
+    <string name="room_advanced_settings_user_id">请输入UserId</string>
 </resources>
