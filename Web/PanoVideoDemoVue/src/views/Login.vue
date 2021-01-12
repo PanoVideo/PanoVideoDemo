@@ -1,53 +1,78 @@
 <template>
-  <div class="main">
-    <div class="logo">
-      <a href="https://www.pano.video" target="_blank" rel="noreferrer">
-        <img alt="logo" :src="logopng" />
-      </a>
+  <div>
+    <div class="main">
+      <div class="logo">
+        <a href="https://www.pano.video" target="_blank" rel="noreferrer">
+          <img alt="logo" :src="logopng" />
+        </a>
+      </div>
+      <el-form class="tableListForm" :model="form" v-loading="loading">
+        <el-form-item label="AppId" key="appid" required>
+          <el-input v-model="form.appId" />
+        </el-form-item>
+        <el-form-item label="Token" key="token" required>
+          <el-input v-model="form.token" />
+        </el-form-item>
+        <el-form-item label="房间号" key="channelId" required>
+          <el-input v-model="form.channelId" />
+        </el-form-item>
+        <el-form-item label="用户名" key="userName">
+          <el-input v-model="form.userName" />
+        </el-form-item>
+        <el-form-item label="用户Id" key="userId" required>
+          <el-input v-model="form.userId" />
+        </el-form-item>
+        <el-row>
+          <el-col :span="9">
+            <el-form-item label="开启麦克风" key="audioOn">
+              <el-checkbox v-model="form.audioOn" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="9">
+            <el-form-item label="开启摄像头" key="videoOn">
+              <el-checkbox v-model="form.videoOn" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="6" :push="2">
+            <el-form-item>
+              <el-tooltip content="私有化设置" placement="top">
+                <i
+                  class="el-icon-setting setting-icon"
+                  @click="togglePriSettings"
+                />
+              </el-tooltip>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-form-item>
+          <el-button
+            style="width: 100%;"
+            type="primary"
+            @click="joinChannel"
+            round
+            >加入通话</el-button
+          >
+        </el-form-item>
+      </el-form>
     </div>
-    <el-form class="tableListForm" :model="form" v-loading="loading">
-      <el-form-item label="AppId" key="appid" required>
-        <el-input v-model="form.appId" />
-      </el-form-item>
-      <el-form-item label="Token" key="token" required>
-        <el-input v-model="form.token" />
-      </el-form-item>
-      <el-form-item label="房间号" key="channelId" required>
-        <el-input v-model="form.channelId" />
-      </el-form-item>
-      <el-form-item label="用户名" key="userName">
-        <el-input v-model="form.userName" />
-      </el-form-item>
-      <el-form-item label="用户Id" key="userId" required>
-        <el-input v-model="form.userId" />
-      </el-form-item>
-      <el-row>
-        <el-col :span="9">
-          <el-form-item label="开启麦克风" key="audioOn">
-            <el-checkbox v-model="form.audioOn" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="9">
-          <el-form-item label="开启摄像头" key="videoOn">
-            <el-checkbox v-model="form.videoOn" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6">
-          <el-form-item>
-            <i class="el-icon-setting" />
-          </el-form-item>
-        </el-col>
-      </el-row>
-      <el-form-item>
-        <el-button
-          style="width: 100%;"
-          type="primary"
-          @click="joinChannel"
-          round
-          >加入通话</el-button
-        >
-      </el-form-item>
-    </el-form>
+    <el-dialog
+      title="私有化服务设置"
+      :visible.sync="priSettingsVisible"
+      width="500px"
+    >
+      <el-form :model="priSettings">
+        <el-form-item label="RtcServer" key="rtcServer" required>
+          <el-input
+            v-model="priSettings.rtcServer"
+            placeholder="输入私有化server地址"
+          />
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="togglePriSettings">取 消</el-button>
+        <el-button type="primary" @click="confirmPriSettings">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -70,7 +95,9 @@ export default {
         userId: '',
         token: ''
       },
-      loading: false
+      loading: false,
+      priSettingsVisible: false,
+      priSettings: { rtcServer: '' }
     };
   },
   computed: {
@@ -151,6 +178,18 @@ export default {
       } else {
         this.$message.error('joinChannel Failed ' + data.message);
       }
+    },
+    togglePriSettings() {
+      this.priSettingsVisible = !this.priSettingsVisible;
+    },
+    confirmPriSettings() {
+      if (!this.priSettings.rtcServer) {
+        this.$message.error('请填写必要的参数再确认修改');
+        return;
+      }
+      PanoRtc.RtcEngine._setAisle(this.priSettings.rtcServer);
+      PanoRtc.RtcWhiteboard._DOC_UPLOAD_URL = `${this.priSettings.rtcServer}/docs`;
+      this.priSettingsVisible = !this.priSettingsVisible;
     }
   },
   created() {
@@ -250,6 +289,10 @@ export default {
     .ant-form-item-control-wrapper {
       flex: 1;
     }
+  }
+  .setting-icon {
+    color: #606266;
+    cursor: pointer;
   }
 }
 
