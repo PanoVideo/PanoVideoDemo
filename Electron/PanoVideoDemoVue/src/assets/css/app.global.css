@@ -1,0 +1,100 @@
+/*
+ * @NOTE: Prepend a `~` to css file paths that are in your node_modules
+ *        See https://github.com/webpack-contrib/sass-loader#imports
+ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+}
+
+body {
+  position: relative;
+  color: white;
+  height: 100vh;
+  font-family: Arial, Helvetica, Helvetica Neue, serif;
+  overflow-y: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  list-style: none;
+}
+
+a {
+  color: white;
+  opacity: 0.75;
+  text-decoration: none;
+}
+
+a:hover {
+  opacity: 1;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.local-view {
+  width: 800px;
+  height: 400px;
+  border: 1px solid #fff;
+}
+
+.pano-whiteboard__bg-img {
+  user-select: none;
+}
+
+.mask {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  transition: all 0.3s ease-in-out;
+  z-index: 99;
+  background-color: rgba(0, 0, 0, 0.45);
+}
+
+.mask-enter {
+  opacity: 0;
+}
+
+.mask-enter-active {
+  opacity: 1;
+  transition: opacity 300ms, transform 300ms;
+}
+
+.mask-exit {
+  opacity: 1;
+}
+
+.mask-exit-active {
+  opacity: 0;
+  transition: opacity 300ms, transform 300ms;
+}
+
+.leaveConfirm-enter {
+  opacity: 0;
+  transform: scale(0.7);
+}
+
+.leaveConfirm-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.leaveConfirm-exit {
+  opacity: 1;
+}
+
+.leaveConfirm-exit-active {
+  opacity: 0;
+  transform: scale(0.7);
+  transition: opacity 300ms, transform 300ms;
+}
