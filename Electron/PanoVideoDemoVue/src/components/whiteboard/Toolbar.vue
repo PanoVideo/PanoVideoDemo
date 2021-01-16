@@ -572,7 +572,7 @@
         <el-popconfirm
           v-if="index !== 0"
           title="确认删除文档?"
-          @confirm="deleteDoc"
+          @confirm="deleteDoc(doc.docId)"
           okText="是"
           cancelText="否"
         >
