@@ -18,8 +18,8 @@
   },
   "main": "background.js",
   "dependencies": {
-    "@pano.video/panortc-electron-sdk": "0.2.7",
-    "@pano.video/whiteboard": "^1.2.0",
+    "@pano.video/panortc-electron-sdk": "^0.3.2",
+    "@pano.video/whiteboard": "^1.2.1",
     "element-ui": "^2.14.1",
     "lodash-es": "^4.17.20",
     "vue": "^2.6.11",

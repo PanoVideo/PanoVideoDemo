@@ -619,23 +619,108 @@
 
     <!-- 右侧admin权限相关 -->
     <div class="wb-admin">
-      <div class="wb-admin__admin-user">
-        <span>
-          <span class="wb-admin__admin-user-name">
-            {{ wbAdminUser ? wbAdminUser.userName : '-' }}
-            {{ userMe === wbAdminUser ? '(Me)' : '' }}
-          </span>
-          <span class="wb-admin__admin-user-label">正在演示</span>
-        </span>
+      <el-popover
+        placement="bottom"
+        width="150"
+        v-model="visionFollowPopVisible"
+        trigger="manual"
+      >
+        <div>
+          <div>
+            {{ followVisionUser.name || followVisionUser.userId }}
+            正在分享视角，是否跟随？
+          </div>
+          <div>
+            <el-button type="primary" size="mini" @click="confirmFllowVision">
+              确认
+            </el-button>
+            <el-button size="mini" @click="rejectFllowVision">
+              取消
+            </el-button>
+          </div>
+        </div>
+        <div class="wb-admin__admin-user" slot="reference">
+          <el-tooltip
+            :content="
+              followVision
+                ? `正在跟随${followVisionUser.name ||
+                    followVisionUser.userId}的视角，点击关闭跟随`
+                : `${followVisionUser.name || followVisionUser.userId}
+                  正在分享视角，点击开始跟随`
+            "
+            placement="bottom"
+          >
+            <el-button
+              v-show="followVisionUser.userId || followVision"
+              type="default"
+              size="mini"
+              :style="{
+                marginRight: '10px',
+                ...(followVision
+                  ? {
+                      backgroundColor: '#73d13d',
+                      borderColor: '#73d13d',
+                      color: '#fff'
+                    }
+                  : {})
+              }"
+              @click="toggleVisionFllowing"
+            >
+              <i class="iconfont icon-eye" style="font-size: 12px" />
+            </el-button>
+          </el-tooltip>
+        </div>
+      </el-popover>
+
+      <el-button
+        :type="isSharingVision ? 'primary' : 'default'"
+        size="mini"
+        @click="toggleVisionSharing"
+      >
+        {{ isSharingVision ? '关闭视角跟随' : '开启视角跟随' }}
+      </el-button>
+
+      <el-tooltip
+        content="点击穿透开启时可以透过白板直接和课件交互，例如播放课件中的媒体文件，点击课件翻页等"
+        placement="bottom"
+      >
         <el-button
+          :type="penetrable ? 'primary' : 'default'"
           size="mini"
-          type="primary"
-          @click="applyForWbAdmin"
-          v-if="userMe !== wbAdminUser"
+          @click="togglePenetrable"
         >
-          申请演示
+          {{ penetrable ? '关闭点击穿透' : '开启点击穿透' }}
         </el-button>
-      </div>
+      </el-tooltip>
+
+      <el-tooltip
+        content="隐藏轨迹后白板上绘制的轨迹将不再显示，但仍可和课件交互"
+        placement="bottom"
+      >
+        <el-button
+          :type="isWhiteboardHidden ? 'primary' : 'default'"
+          size="mini"
+          @click="toggleHidden"
+        >
+          {{ isWhiteboardHidden ? '隐藏轨迹' : '显示轨迹' }}
+        </el-button>
+      </el-tooltip>
+
+      <span style="margin-left: 8px;">
+        <span class="wb-admin__admin-user-name">
+          {{ wbAdminUser ? wbAdminUser.userName : '-' }}
+          {{ userMe === wbAdminUser ? '(Me)' : '' }}
+        </span>
+        <span class="wb-admin__admin-user-label">正在演示</span>
+      </span>
+      <el-button
+        size="mini"
+        type="primary"
+        @click="applyForWbAdmin"
+        v-if="userMe !== wbAdminUser"
+      >
+        申请演示
+      </el-button>
     </div>
 
     <!-- 上传进度 -->
@@ -825,7 +910,13 @@ export default {
       uploading: false,
       snapshotingView: false,
       snapshotingAll: false,
-      drawerVisible: false
+      drawerVisible: false,
+      penetrable: false, // 是否开启白板点击穿透
+      isSharingVision: false, // 是否正在共享视角
+      followVision: false, //是否正在跟随别人的视角
+      followVisionUser: { userId: '', name: '' }, // 正在跟随谁的视角
+      visionFollowPopVisible: false, // 视角共享邀请提示框是否可见
+      isWhiteboardHidden: false
     };
   },
   props: {
@@ -848,6 +939,48 @@ export default {
     }
   },
   methods: {
+    toggleHidden() {
+      if (!this.isWhiteboardHidden) {
+        this.whiteboard.hideWhiteboard();
+      } else {
+        this.whiteboard.showWhiteboard();
+      }
+      this.isWhiteboardHidden = !this.isWhiteboardHidden;
+    },
+    toggleVisionFllowing() {
+      if (this.followVision) {
+        this.whiteboard.stopFollowVision();
+        this.followVision = false;
+        this.visionFollowPopVisible = false;
+      } else {
+        this.whiteboard.startFollowVision();
+        this.followVision = true;
+      }
+    },
+    confirmFllowVision() {
+      this.whiteboard.startFollowVision();
+      this.followVision = true;
+      this.visionFollowPopVisible = false;
+    },
+    rejectFllowVision() {
+      this.visionFollowPopVisible = false;
+    },
+    toggleVisionSharing() {
+      if (this.isSharingVision) {
+        this.whiteboard.stopVisionShare();
+        this.$message.success('您已停止视角分享');
+      } else {
+        this.$message.success('其他用户将收到您的视角跟随邀请');
+        this.followVision = false;
+        this.followVisionUser = { userId: '', name: '' };
+        this.whiteboard.startVisionShare();
+      }
+      this.isSharingVision = !this.isSharingVision;
+    },
+    togglePenetrable() {
+      this.penetrable = !this.penetrable;
+      this.whiteboard.setPenetrable(this.penetrable);
+    },
     setDrawerVisible(drawerVisible) {
       this.drawerVisible = drawerVisible;
     },
@@ -1160,7 +1293,58 @@ export default {
     this.whiteboard.on(RtcWhiteboard.Events.docSwitched, this.onDocChanged);
     this.whiteboard.on(RtcWhiteboard.Events.docDeleted, this.onDocChanged);
     this.whiteboard.on(RtcWhiteboard.Events.docUpdated, this.onDocChanged);
+    // 某个人开启视角共享
+    this.whiteboard.on(
+      RtcWhiteboard.Events.userVisionFollowStart,
+      (userId, name) => {
+        console.log('userVisionFollowStart event received');
+        if (this.isSharingVision) {
+          // 因为只能有一个人开启视角共享，当有人共享时需要把自己的状态关闭
+          this.isSharingVision = false;
+          this.$message.info(
+            `${name || userId}正在分享视角，您的视角分享已自动取消`
+          );
+        }
+        if (this.followVision) {
+          // 正在跟随别人的视角，继续跟随
+          this.followVisionUser = { name, userId };
+          this.$message.info(`${name || userId}正在分享视角`);
+        } else {
+          this.followVisionUser = { name, userId };
+          this.visionFollowPopVisible = true;
+        }
+      }
+    );
+    // 视角跟随结束
+    this.whiteboard.on(
+      RtcWhiteboard.Events.userVisionFollowStop,
+      (userId, name) => {
+        console.log('onUserVisionFollowStop', userId, name);
+        if (userId === this.followVisionUser.userId) {
+          if (!this.isSharingVision) {
+            this.$message.info(
+              `${this.followVisionUser.name ||
+                this.followVisionUser.userId}已经停止视角分享`
+            );
+          }
+          this.followVision = false;
+          this.followVisionUser = { name: '', userId: '' };
+          this.visionFollowPopVisible = false;
+        }
+      }
+    );
     this.onDocChanged();
+  },
+  beforeDestroy() {
+    this.whiteboard.batchOff([
+      RtcWhiteboard.Events.whiteboardContentUpdate,
+      RtcWhiteboard.Events.docCreated,
+      RtcWhiteboard.Events.docSwitched,
+      RtcWhiteboard.Events.docDeleted,
+      RtcWhiteboard.Events.docUpdated,
+      RtcWhiteboard.Events.userVisionFollowStart,
+      RtcWhiteboard.Events.userVisionFollowStop
+    ]);
   }
 };
 </script>
@@ -1296,7 +1480,7 @@ $fixed-left: 40px;
   font-size: 12px;
   align-items: center;
   user-select: none;
-  max-width: calc(100% - 380px);
+  max-width: calc(100% - 520px);
   color: #555;
   &__item {
     display: flex;

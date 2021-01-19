@@ -45,6 +45,9 @@ export default {
     if (this.isWhiteboardOpen && !whiteboardLoaded) {
       this.initWhiteboard();
     }
+  },
+  beforeDestroy() {
+    whiteboardLoaded = false;
   }
 };
 </script>

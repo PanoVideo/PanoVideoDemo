@@ -1482,7 +1482,7 @@ $fixed-left: 40px;
   font-size: 12px;
   align-items: center;
   user-select: none;
-  max-width: calc(100% - 380px);
+  max-width: calc(100% - 520px);
   color: #555;
   &__item {
     display: flex;

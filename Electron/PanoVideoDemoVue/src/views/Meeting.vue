@@ -5,7 +5,7 @@
 
     <!-- 大图/白板 -->
     <div class="areaUpTools">
-      <PanoWhiteboard v-if="isWhiteboardOpen" />
+      <PanoWhiteboard v-show="isWhiteboardOpen" />
       <MainView v-if="!isWhiteboardOpen" />
     </div>
 
