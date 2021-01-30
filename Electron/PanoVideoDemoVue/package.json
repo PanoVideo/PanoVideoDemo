@@ -19,7 +19,7 @@
   "main": "background.js",
   "dependencies": {
     "@pano.video/panortc-electron-sdk": "^0.3.2",
-    "@pano.video/whiteboard": "^1.2.1",
+    "@pano.video/whiteboard": "^1.2.4",
     "element-ui": "^2.14.1",
     "lodash-es": "^4.17.20",
     "vue": "^2.6.11",

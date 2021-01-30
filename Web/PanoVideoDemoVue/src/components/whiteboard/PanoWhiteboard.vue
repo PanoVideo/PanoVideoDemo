@@ -1,7 +1,7 @@
 <template>
   <div class="pvcWbWrapper">
     <div class="pvc-whiteboard-rapper" ref="whiteboardWrapper"></div>
-    <Toolbar :whiteboard="whiteboard" />
+    <Toolbar v-if="whiteboardLoaded" :whiteboard="whiteboard" />
   </div>
 </template>
 
@@ -9,12 +9,13 @@
 import { mapGetters } from 'vuex';
 import Toolbar from './Toolbar';
 
-let whiteboardLoaded = false;
-
 export default {
   data() {
     return {
-      whiteboard: window.rtcWhiteboard
+      whiteboard: window.rtcWhiteboard,
+      // whiteboardLoaded 控制每次进入meeting页面，白板只会初始化一次，
+      // 可以优化白板打开速度，等到退出会议界面再销毁白板和toolbar
+      whiteboardLoaded: false
     };
   },
   computed: {
@@ -22,7 +23,9 @@ export default {
   },
   watch: {
     isWhiteboardOpen() {
-      if (this.isWhiteboardOpen && !whiteboardLoaded) {
+      // 在 mounted 和 isWhiteboardOpen 变化时检测是否初始化过白板，但是白板只会初始化一次
+      // 关闭白板再打开不会再次初始化
+      if (this.isWhiteboardOpen && !this.whiteboardLoaded) {
         this.initWhiteboard();
       }
     }
@@ -32,22 +35,23 @@ export default {
   },
   methods: {
     initWhiteboard() {
-      whiteboardLoaded = true;
+      this.whiteboard = window.rtcWhiteboard;
+      this.whiteboardLoaded = true;
       this.$nextTick(() => {
         window.rtcWhiteboard.open(this.$refs.whiteboardWrapper);
         setTimeout(() => {
           window.rtcWhiteboard.updateCanvasSize();
-        }, 2000);
+        }, 1000);
       });
     }
   },
   mounted() {
-    if (this.isWhiteboardOpen && !whiteboardLoaded) {
+    if (this.isWhiteboardOpen && !this.whiteboardLoaded) {
       this.initWhiteboard();
     }
   },
   beforeDestroy() {
-    whiteboardLoaded = false;
+    this.whiteboardLoaded = false;
   }
 };
 </script>
