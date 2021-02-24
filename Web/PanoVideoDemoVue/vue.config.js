@@ -8,5 +8,9 @@ module.exports = {
   runtimeCompiler: true,
   chainWebpack: config => {
     config.resolve.alias.set('@', resolve('src'));
+  },
+  devServer: {
+    https: true,
+    open: true,
   }
 };
