@@ -8,12 +8,13 @@
 #import "PanoCallClient.h"
 #import "VideoFilterDelegate.h"
 
-// https://developer.pano.video/getting-started/firstapp/#1-注册账号
-// https://developer.pano.video/getting-started/firstapp/#14-%E7%94%9F%E6%88%90%E4%B8%B4%E6%97%B6token
+//https://developer.pano.video/getting-started/firstapp/#1-注册账号
+//https://developer.pano.video/getting-started/firstapp/#14-%E7%94%9F%E6%88%90%E4%B8%B4%E6%97%B6token
 
+#error("Enter the kDemoAppId and kDemoTempToken. Visit the above link for help.")
 NSString * kDemoAppId = @"请输入AppID";
-NSString * kDemoPanoServer = @"api.pano.video";
 NSString * kDemoTempToken = @"请输入Token";
+NSString * kDemoPanoServer = @"api.pano.video";
 
 
 // Http Request
