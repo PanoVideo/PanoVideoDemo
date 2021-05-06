@@ -2,6 +2,21 @@
   <div>
     <!-- 工具条 -->
     <div class="pano-wb-tb">
+      <!-- 课件操作 -->
+      <div
+        :class="{
+          'pano-wb-tb__item': true,
+          'pano-withtip': true,
+          'pano-wb-tb__item--selected':
+            insertType === Constants.ShapeType.Click
+        }"
+        @click="setToolType(Constants.ShapeType.Click)"
+        class="pano-wb-tb__item pano-withtip "
+        data-tip="click"
+      >
+        <span class="iconfont icon-click" />
+      </div>
+
       <!-- 选择 -->
       <div
         :class="{
@@ -681,19 +696,6 @@
       </el-button>
 
       <el-tooltip
-        content="点击穿透开启时可以透过白板直接和课件交互，例如播放课件中的媒体文件，点击课件翻页等"
-        placement="bottom"
-      >
-        <el-button
-          :type="penetrable ? 'primary' : 'default'"
-          size="mini"
-          @click="togglePenetrable"
-        >
-          {{ penetrable ? '关闭点击穿透' : '开启点击穿透' }}
-        </el-button>
-      </el-tooltip>
-
-      <el-tooltip
         content="隐藏轨迹后白板上绘制的轨迹将不再显示，但仍可和课件交互"
         placement="bottom"
       >
@@ -911,7 +913,6 @@ export default {
       snapshotingView: false,
       snapshotingAll: false,
       drawerVisible: false,
-      penetrable: false, // 是否开启白板点击穿透
       isSharingVision: false, // 是否正在共享视角
       followVision: false, //是否正在跟随别人的视角
       followVisionUser: { userId: '', name: '' }, // 正在跟随谁的视角
@@ -976,10 +977,6 @@ export default {
         this.whiteboard.startVisionShare();
       }
       this.isSharingVision = !this.isSharingVision;
-    },
-    togglePenetrable() {
-      this.penetrable = !this.penetrable;
-      this.whiteboard.setPenetrable(this.penetrable);
     },
     setDrawerVisible(drawerVisible) {
       this.drawerVisible = drawerVisible;

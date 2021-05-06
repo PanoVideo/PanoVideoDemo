@@ -28,7 +28,7 @@
     <!-- 放大或缩小视频按钮 -->
     <span
       class="iconfont icon-enlarge iconEnlarge"
-      v-if="!user.videoMuted"
+      v-if="!user.videoMuted || showScreenShare"
       @click="onEnlarge"
     />
 
@@ -108,7 +108,7 @@ export default {
     ...mapMutations(['lockUser', 'setWhiteboardOpenState']),
     ...mapActions(['setAsMainView']),
     onEnlarge() {
-      this.lockUser(this.user.userId);
+      // this.lockUser(this.user.userId);
       this.setWhiteboardOpenState(false);
       this.setAsMainView({
         user: this.user,

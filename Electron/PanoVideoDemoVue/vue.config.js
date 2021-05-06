@@ -7,11 +7,13 @@ module.exports = {
       .loader('native-ext-loader')
       .options({
         emit: true,
+        basePath: process.env.NODE_ENV === 'production'
+          && process.env.PLATFORM === 'win' ? ['..'] : [],
         rewritePath:
           // eslint-disable-next-line no-nested-ternary
           process.env.NODE_ENV === 'production'
             ? process.env.PLATFORM === 'win'
-              ? './resources'
+              ? undefined
               : '../Resources'
             : './node_modules/@pano.video/panortc-electron-sdk/native'
       })
@@ -19,6 +21,7 @@ module.exports = {
   },
   pluginOptions: {
     electronBuilder: {
+      nodeIntegration: true,
       builderOptions: {
         appId: 'demo.pano.video',
         directories: {
@@ -46,7 +49,8 @@ module.exports = {
           ]
         },
         win: {
-          target: ['nsis', 'msi'],
+          target: ['nsis'],
+          asar: false,
           extraResources: [
             {
               from: 'node_modules/@pano.video/panortc-electron-sdk/native/',
