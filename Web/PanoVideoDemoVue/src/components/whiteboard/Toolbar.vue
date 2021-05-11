@@ -7,8 +7,7 @@
         :class="{
           'pano-wb-tb__item': true,
           'pano-withtip': true,
-          'pano-wb-tb__item--selected':
-            insertType === Constants.ShapeType.Click
+          'pano-wb-tb__item--selected': insertType === Constants.ShapeType.Click
         }"
         @click="setToolType(Constants.ShapeType.Click)"
         class="pano-wb-tb__item pano-withtip "

@@ -83,7 +83,12 @@ export default {
     ...mapGetters(['userMe', 'myVideoProfileType'])
   },
   methods: {
-    ...mapMutations(['updateChannelId', 'updateUserMe', 'setMeetingStatus']),
+    ...mapMutations([
+      'updateChannelId',
+      'updateUserMe',
+      'setMeetingStatus',
+      'resetMeetingStore'
+    ]),
     initWhiteboard() {},
     /**
      * 加会逻辑
@@ -125,6 +130,7 @@ export default {
         () => {},
         () => {}
       );
+      this.resetMeetingStore();
     },
     /**
      * 入会成功回调

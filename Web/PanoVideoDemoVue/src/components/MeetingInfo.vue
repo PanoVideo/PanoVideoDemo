@@ -36,7 +36,7 @@ export default {
     ...mapGetters(['isWhiteboardOpen', 'channelId', 'remainSeconds']),
     seconds() {
       const seconds = this.remainSeconds % 60;
-      return seconds > 10 ? seconds : `0${seconds}`;
+      return seconds >= 10 ? seconds : `0${seconds}`;
     },
     mins() {
       return Math.floor(this.remainSeconds / 60);

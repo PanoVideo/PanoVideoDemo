@@ -104,7 +104,12 @@ export default {
     ...mapGetters(['userMe', 'videoPorfile'])
   },
   methods: {
-    ...mapMutations(['updateChannelId', 'updateUserMe', 'setMeetingStatus']),
+    ...mapMutations([
+      'updateChannelId',
+      'updateUserMe',
+      'setMeetingStatus',
+      'resetMeetingStore'
+    ]),
     initWhiteboard() {},
     /**
      * 加会逻辑
@@ -138,6 +143,7 @@ export default {
           joinChannelType: PanoRtc.Constants.JoinChannelType.mediaAndWhiteboard
         }
       );
+      this.resetMeetingStore();
       // this.initWhiteboard();
       // window.rtcWhiteboard.joinChannel(
       //   {
