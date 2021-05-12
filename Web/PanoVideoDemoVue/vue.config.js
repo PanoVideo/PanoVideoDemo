@@ -10,7 +10,7 @@ module.exports = {
     config.resolve.alias.set('@', resolve('src'));
   },
   devServer: {
-    https: true,
+    // https: true,
     open: true,
   }
 };

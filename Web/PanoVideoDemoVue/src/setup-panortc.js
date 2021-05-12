@@ -513,23 +513,19 @@ export default function initPanoRtc() {
 
     rtcWhiteboard.on(PanoRtc.RtcWhiteboard.Events.messageReceived, payload => {
       console.log('got whiteboard message:', payload);
-      try {
-        const msg = JSON.parse(payload.message);
-        if (msg.wbHostId) {
-          if (
-            msg.wbHostId.toString() !== store.getters.userMe.userId &&
-            store.getters.getUserById(msg.wbHostId.toString())
-          ) {
-            Message.info(
-              `${
-                store.getters.getUserById(msg.wbHostId.toString())?.userName
-              } 正在演示`
-            );
-          }
-          store.commit('setWbHost', msg.wbHostId.toString());
+      const msg = payload.message;
+      if (msg.wbHostId) {
+        if (
+          msg.wbHostId.toString() !== store.getters.userMe.userId &&
+          store.getters.getUserById(msg.wbHostId.toString())
+        ) {
+          Message.info(
+            `${
+              store.getters.getUserById(msg.wbHostId.toString())?.userName
+            } 正在演示`
+          );
         }
-      } catch (error) {
-        console.error(error);
+        store.commit('setWbHost', msg.wbHostId.toString());
       }
     });
 
