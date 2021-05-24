@@ -11,7 +11,7 @@
         }"
         @click="setToolType(Constants.ShapeType.Click)"
         class="pano-wb-tb__item pano-withtip "
-        data-tip="click"
+        data-tip="课件操作"
       >
         <span class="iconfont icon-click" />
       </div>
@@ -28,7 +28,7 @@
         class="pano-wb-tb__item pano-withtip "
         data-tip="选择"
       >
-        <span class="iconfont icon-mouse-pointer" />
+        <span class="iconfont icon-move" />
       </div>
 
       <!-- 画笔 -->
@@ -260,14 +260,30 @@
               class="wb-img-wrapper__input-wrapper"
               :style="{ flexWrap: 'wrap' }"
             >
-              <div class="wb-img-wrapper__header">图片元素</div>
+              <div class="wb-img-wrapper__header">媒体元素</div>
               <Button
                 shape="round"
-                size="small"
+                size="mini"
                 :style="{ marginTop: '5px' }"
                 @click="uploadImage"
               >
-                本地上传
+                上传图片
+              </Button>
+              <Button
+                shape="round"
+                size="mini"
+                :style="{ marginTop: '5px' }"
+                @click="uploadVideo"
+              >
+                上传视频
+              </Button>
+              <Button
+                shape="round"
+                size="mini"
+                :style="{ marginTop: '5px' }"
+                @click="uploadAudio"
+              >
+                上传音频
               </Button>
             </div>
 
@@ -331,7 +347,7 @@
               <input type="text" v-model="imgUrl" />
               <Button
                 shape="round"
-                size="small"
+                size="mini"
                 :style="{ marginLeft: '5px' }"
                 @click="setBackgroundImageUrl"
               >
@@ -343,7 +359,7 @@
               class="wb-img-wrapper__input-wrapper"
               :style="{ marginTop: '5px' }"
             >
-              <Button shape="round" size="small" @click="upLoadBgImage">
+              <Button shape="round" size="mini" @click="upLoadBgImage">
                 本地上传
               </Button>
             </div>
@@ -364,7 +380,7 @@
               <input type="checkbox" v-model="bAddToCurrentDoc" />
               <Button
                 shape="round"
-                size="small"
+                size="mini"
                 :style="{ marginLeft: '10px' }"
                 @click="addImagBgList"
               >
@@ -478,7 +494,7 @@
         data-tip="激光笔"
         @click="setToolType(Constants.ShapeType.LaserPointer)"
       >
-        <span class="iconfont icon-laserPointer" style="font-size: 20px" />
+        <span class="iconfont icon-laser-pointer" style="font-size: 20px" />
       </div>
 
       <!-- 撤销 -->
@@ -867,7 +883,7 @@
 import { RtcWhiteboard, Constants } from '@pano.video/whiteboard';
 import { mapGetters } from 'vuex';
 import { get } from 'lodash-es';
-import { Popover } from 'element-ui';
+import { Popover, Button } from 'element-ui';
 import { applyForWbAdmin } from '../../setup-panortc';
 
 const colors = [
@@ -926,7 +942,8 @@ export default {
     }
   },
   components: {
-    Popover
+    Popover,
+    Button
   },
   computed: {
     ...mapGetters(['userMe', 'wbAdminUser']),
@@ -1214,6 +1231,36 @@ export default {
           );
         } else {
           this.$message.error('上传失败');
+        }
+      }, false);
+    },
+    uploadAudio() {
+      this.whiteboard.uploadAudio(state => {
+        if (state.code === 1) {
+          console.log('upload success!');
+        } else if (state.code === 2) {
+          console.log(
+            `audio upload ${(state.uploadProgress.loaded /
+              state.uploadProgress.total) *
+              100}%`
+          );
+        } else {
+          this.$message.error('audio upload failed!');
+        }
+      }, false);
+    },
+    uploadVideo() {
+      this.whiteboard.uploadVideo(state => {
+        if (state.code === 1) {
+          console.log('video upload!');
+        } else if (state.code === 2) {
+          console.log(
+            `video upload ${(state.uploadProgress.loaded /
+              state.uploadProgress.total) *
+              100}%`
+          );
+        } else {
+          this.$message.error('video upload failed!');
         }
       }, false);
     },
