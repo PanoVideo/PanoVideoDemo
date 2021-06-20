@@ -36,7 +36,8 @@ function getInitialState() {
       localStorage.getItem(Constants.localCacheKeySelectedMic) || 'default', // 麦克风
     speakerId:
       localStorage.getItem(Constants.localCacheKeySelectedSpeaker) || 'default', // 扬声器
-    cameraId: localStorage.getItem(Constants.localCacheKeySelectedCam) // 摄像头
+    cameraId: localStorage.getItem(Constants.localCacheKeySelectedCam), // 摄像头
+    isRemoteControling: false // 是否正在远程控制
   };
 }
 
@@ -101,6 +102,9 @@ export default {
           clearInterval(countdownInterval);
         }
       }, 1000);
+    },
+    setIsRemoteControling(state, isRemoteControling) {
+      state.isRemoteControling = isRemoteControling;
     }
   },
   actions: {},
@@ -115,6 +119,7 @@ export default {
     remainSeconds: state => state.remainSeconds,
     myVideoProfileType: state => state.myVideoProfileType,
     whiteboardUpdated: state => state.whiteboardUpdated,
-    whiteboardAvailable: state => state.whiteboardAvailable
+    whiteboardAvailable: state => state.whiteboardAvailable,
+    isRemoteControling: state => state.isRemoteControling
   }
 };

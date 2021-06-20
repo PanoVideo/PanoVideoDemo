@@ -99,7 +99,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['mainViewUser', 'userMe']),
+    ...mapGetters(['mainViewUser', 'userMe', 'isRemoteControling']),
     isUserMe() {
       return this.user.userId === this.userMe.userId;
     }
@@ -108,6 +108,10 @@ export default {
     ...mapMutations(['lockUser', 'setWhiteboardOpenState']),
     ...mapActions(['setAsMainView']),
     onEnlarge() {
+      if (this.isRemoteControling) {
+        this.$message.info('正在远程控制，无法切换用户');
+        return;
+      }
       // this.lockUser(this.user.userId);
       this.setWhiteboardOpenState(false);
       this.setAsMainView({

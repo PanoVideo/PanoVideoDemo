@@ -6,7 +6,10 @@
     <!-- 大图/白板 -->
     <div class="areaUpTools">
       <PanoWhiteboard v-show="isWhiteboardOpen" />
-      <MainView v-if="!isWhiteboardOpen" />
+      <MainView
+        v-if="!isWhiteboardOpen"
+        @toggleRemoteControl="onToggleRemoteControl"
+      />
     </div>
 
     <!-- 会议信息 -->
@@ -95,6 +98,7 @@
 <script>
 import { mapGetters, mapMutations } from 'vuex';
 import { VideoScalingMode } from '@pano.video/panortc-electron-sdk';
+import { RtsService, RemoteControl } from '@pano.video/whiteboard';
 import MainView from '../components/userVideo/MainView';
 import SmallVideoList from '../components/SmallVideoList';
 import PanoWhiteboard from '../components/whiteboard/PanoWhiteboard';
@@ -102,6 +106,9 @@ import MeetingInfo from '../components/MeetingInfo';
 import ShareSelector from '../components/ShareSelector';
 import Setting from '../components/Setting';
 import { applyForWbAdmin } from '../setup-panortc';
+import robotjs from '@pano.video/robotjs';
+
+const electron = window.require('electron');
 
 export default {
   name: 'Meeting',
@@ -112,7 +119,11 @@ export default {
       hideToolbarTimer: '',
       closeConfirmVisible: false,
       settingVisible: false,
-      shareSelectorVisible: false
+      shareSelectorVisible: false,
+      isControlledByOthers: false, // 是否正在被别人远程控制
+      sharedScreenOrAppDispay: undefined, // 共享桌面时窗口位置信息
+      captureRect: undefined,
+      remoteControl: undefined // 远程控制对象
     };
   },
   components: {
@@ -132,7 +143,9 @@ export default {
       'meetingStatus',
       'meetingEndReason',
       'myVideoProfileType',
-      'whiteboardAvailable'
+      'whiteboardAvailable',
+      'getUserById',
+      'isRemoteControling'
     ])
   },
   watch: {
@@ -172,7 +185,8 @@ export default {
       'updateUser',
       'setWhiteboardOpenState',
       'resetUserStore',
-      'resetMeetingStore'
+      'resetMeetingStore',
+      'setIsRemoteControling'
     ]),
     onMouseMove() {
       this.showToolbar = true;
@@ -233,6 +247,9 @@ export default {
         });
       } else {
         window.rtcEngine.stopScreen();
+        window.rtcEngine.stopSoundCardShare();
+        this.resetRemoteControlState();
+        this.resetAnonotation();
         this.updateUser({
           userId: this.userMe.userId,
           screenOpen: !this.userMe.screenOpen
@@ -249,15 +266,218 @@ export default {
       this.$msgbox
         .confirm('确认退出会议', '提示')
         .then(this.leaveChannel)
-        .catch(() => console.log('取消退出'));
+        .catch(e => console.error(e));
     },
     leaveChannel(goLogin = true) {
+      electron.remote.getCurrentWindow().setFullScreen(false);
       window.rtcEngine.leaveChannel();
+      this.resetShareWindow();
       window.rtcWhiteboard && window.rtcWhiteboard.leaveChannel();
       this.resetMeetingStore();
       this.resetUserStore();
       window.onbeforeunload = null;
       goLogin && this.$router.replace({ name: 'Login' });
+    },
+    resetAnonotation() {
+      // TODO 关闭标注功能
+    },
+    resetRemoteControlState() {
+      // 重置远程控制和共享控制窗口
+      this.remoteControl?.stop();
+      this.sendmsgToShareWindow({
+        command: 'resetState'
+      });
+    },
+    // share 窗口显示提示
+    showToastInShareWindow(msg) {
+      this.sendmsgToShareWindow({
+        command: 'showIndication',
+        payload: { text: msg }
+      });
+    },
+    sendmsgToShareWindow(msaage) {
+      electron.remote.app.sendToShareWindow(msaage);
+    },
+    onRemoteControlStateChange(control) {
+      this.isControlledByOthers = control;
+      if (!control && this.userMe.screenShareType === 'screen') {
+        console.log('结束远程控制，关闭优化模式');
+        window.rtcEngine.cancelUserControl(this.userMe.userId);
+      }
+      this.sendmsgToShareWindow({
+        command: 'syncSettings',
+        payload: {
+          videoMuted: this.userMe.videoMuted,
+          audioMuted: this.userMe.audioMuted,
+          isControl: this.isControlledByOthers
+        }
+      });
+    },
+    // 当桌面共享的屏幕id，或者共享的app所处的屏幕变化时触发，首次共享时也会触发
+    // 用来确定当前正在共享哪个窗口
+    onScreenCaptureDisplayChanged(displayId, info) {
+      console.log('捕获屏幕/APP所处的屏幕变化', displayId, info);
+      const { left, top, right, bottom } = info;
+      this.sharedScreenOrAppDispay = {
+        displayId,
+        x: left,
+        y: top,
+        width: right - left,
+        height: bottom - top
+      };
+      // 设置桌面共享控制窗口转移到对应的屏幕
+      electron.remote.app.setShareWindow(this.sharedScreenOrAppDispay);
+    },
+    // 屏幕捕捉分辨率变化
+    // 一般桌面的分辨率是不会变化的，共享app时app可以由用户手动拖拽放大缩小
+    onScreenCaptureRegionChanged(info) {
+      const { left, top, right, bottom } = info;
+      const payload = {
+        x: left,
+        y: top,
+        width: right - left,
+        height: bottom - top,
+        shareType: this.userMe.screenShareType
+      };
+      console.log('共享窗口/app 的位置变化: ', payload);
+      this.sendmsgToShareWindow({ command: 'setSharePosition', payload });
+      // 远程控制部分代码
+      this.captureRect = payload;
+      this.remoteControl?.setShareRect(this.captureRect);
+    },
+    // 其他用户屏幕共享分辨率变化的回调
+    onUserScreenResolutionChanged(userId, width, height) {
+      this.updateUser({
+        userId,
+        shareResolution: { x: 0, y: 0, width, height }
+      });
+    },
+    onConnectDisconnected() {
+      if (this.isControlledByOthers) {
+        this.showToastInShareWindow('远程控制连接已断开');
+        this.onRemoteControlStateChange(false);
+      }
+    },
+    onControlCancelled() {
+      this.showToastInShareWindow('对方已取消远程控制');
+      this.onRemoteControlStateChange(false);
+    },
+    // 远程控制回复
+    onControlResponse(result) {
+      // 长时间没有响应请求，Hide 提示框
+      if (result === -16) {
+        this.sendmsgToShareWindow({ command: 'resetState' });
+      }
+    },
+    // 打开或关闭远程控制
+    onToggleRemoteControl(isRemoteControling) {
+      this.setIsRemoteControling(isRemoteControling);
+      if (isRemoteControling) {
+        electron.remote.getCurrentWindow().setFullScreen(true);
+      } else {
+        electron.remote.getCurrentWindow().setFullScreen(false);
+      }
+    },
+    // 清除事件监听
+    removeObservers() {
+      this.remoteControl?.off(
+        RemoteControl.Events.onControlRequest,
+        this.showRequestModal
+      );
+      this.remoteControl?.off(
+        RemoteControl.Events.onConnectDisconnected,
+        this.onConnectDisconnected
+      );
+      this.remoteControl?.off(
+        RemoteControl.Events.onControlCancelled,
+        this.onControlCancelled
+      );
+    },
+    showRequestModal(msg) {
+      const targetUserId = msg.from;
+      const user = this.getUserById(targetUserId);
+      if (!user) {
+        return;
+      }
+      this.sendmsgToShareWindow({
+        command: 'showRemoteControlConfirmDialog',
+        payload: {
+          userName: user.userName,
+          userId: user.userId
+        }
+      });
+    },
+    // 远程控制连接建立
+    onRemoteControlConnected(remoteControl) {
+      this.removeObservers();
+      this.remoteControl = remoteControl;
+      this.remoteControl.setRobot(robotjs);
+      this.remoteControl.setShareRect(this.captureRect);
+      this.remoteControl.on(
+        RemoteControl.Events.onConnectDisconnected,
+        this.onConnectDisconnected
+      );
+      this.remoteControl.on(
+        RemoteControl.Events.onControlRequest,
+        this.showRequestModal
+      );
+      this.remoteControl.on(
+        RemoteControl.Events.onControlCancelled,
+        this.onControlCancelled
+      );
+      this.remoteControl.on(
+        RemoteControl.Events.onControlResponse,
+        this.onControlResponse
+      );
+    },
+    resetShareWindow() {
+      this.resetAnonotation();
+      this.resetRemoteControlState();
+      this.sendmsgToShareWindow({ command: 'hideShareCtrlWindow' });
+    },
+    handleCommand(_, data) {
+      switch (data.command) {
+        case 'stopShare':
+          this.onClickScreen();
+          break;
+        case 'exit':
+          // 退出前取消共享
+          this.userMe.screenOpen && this.onClickScreen();
+          this.resetRemoteControlState();
+          this.resetAnonotation();
+          this.onExit();
+          break;
+        case 'toggleMic':
+          this.onClickMicMute();
+          break;
+        case 'toggleCamera':
+          this.onClickCamMute();
+          break;
+        case 'replyForRemoteControl':
+          if (data.payload.confirm) {
+            this.remoteControl?.acceptControl(data.payload.userId);
+            const user = this.getUserById(data.payload.userId);
+            if (user) {
+              this.showToastInShareWindow(
+                `您的屏幕正在被 ${user.userName} 远程控制`
+              );
+            }
+            this.onRemoteControlStateChange(true);
+            if (this.userMe.screenShareType === 'screen') {
+              console.log('接受远程控制，开启优化模式');
+              window.rtcEngine.acceptUserControl(`${data.payload.userId}`);
+            }
+          } else {
+            this.remoteControl?.rejectControl(data.payload.userId);
+          }
+          break;
+        case 'stopRemoteCtrl':
+          this.remoteControl?.remoteUserId &&
+            this.remoteControl?.cancelControl(this.remoteControl.remoteUserId);
+          break;
+        default:
+          break;
+      }
     }
   },
   mounted() {
@@ -272,10 +492,50 @@ export default {
       }
       return '确定离开？';
     };
+    // 监听远程控制连接请求
+    RtsService.getInstance().on(
+      RtsService.Events.remoteControlConnected,
+      this.onRemoteControlConnected
+    );
+    // 其他窗口的IPC消息
+    electron.ipcRenderer.on('msgToMainWindow', this.handleCommand);
+    // 捕获桌面共享时，屏幕/APP所处的屏幕变化
+    window.rtcEngine.on(
+      'screenCaptureDisplayChanged',
+      this.onScreenCaptureDisplayChanged
+    );
+    window.rtcEngine.on(
+      'screenCaptureRegionChanged',
+      this.onScreenCaptureRegionChanged
+    );
+    window.rtcEngine.on(
+      'userScreenResolutionChanged',
+      this.onUserScreenResolutionChanged
+    );
   },
   beforeDestroy() {
     this.leaveChannel(false);
+    this.resetShareWindow();
     window.onbeforeunload = null;
+    // 取消监听远程控制连接请求
+    RtsService.getInstance().off(
+      RtsService.Events.remoteControlConnected,
+      this.onRemoteControlConnected
+    );
+    // 其他窗口的IPC消息
+    electron.ipcRenderer.off('msgToMainWindow', this.handleCommand);
+    window.rtcEngine.off(
+      'screenCaptureDisplayChanged',
+      this.onScreenCaptureDisplayChanged
+    );
+    window.rtcEngine.off(
+      'screenCaptureRegionChanged',
+      this.onScreenCaptureRegionChanged
+    );
+    window.rtcEngine.off(
+      'userScreenResolutionChanged',
+      this.onUserScreenResolutionChanged
+    );
   }
 };
 </script>

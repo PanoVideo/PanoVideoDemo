@@ -360,11 +360,14 @@ export default function initPanoRtc() {
     if (user) {
       store.commit('updateUser', { userId, screenOpen: true });
       subscribeUserScreen(user, true);
-      store.dispatch('trySelectMainView', {
-        user,
-        isScreen: true
-      });
-      store.commit('setWhiteboardOpenState', false);
+      if (!store.getters.isRemoteControling) {
+        // 远程控制时不可切换主视图
+        store.dispatch('trySelectMainView', {
+          user,
+          isScreen: true
+        });
+        store.commit('setWhiteboardOpenState', false);
+      }
     }
   });
 
@@ -526,7 +529,10 @@ export default function initPanoRtc() {
 
   // 其他用户初次打开白板，本端收到事件直接打开白板
   rtcWhiteboard.on(RtcWhiteboard.Events.openStateChanged, () => {
-    store.commit('setWhiteboardOpenState', true);
+    if (!store.getters.isRemoteControling) {
+      // 远程控制时不打开白板
+      store.commit('setWhiteboardOpenState', true);
+    }
   });
 
   // 如果关闭白板时有新收到的绘制消息提示白板内容有更新

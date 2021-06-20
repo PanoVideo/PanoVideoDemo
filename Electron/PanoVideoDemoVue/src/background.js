@@ -1,17 +1,101 @@
 'use strict';
 
-import { app, protocol, BrowserWindow } from 'electron';
+import { app, protocol, BrowserWindow, screen } from 'electron';
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
-const lock = app.requestSingleInstanceLock()
+app.setAsDefaultProtocolClient('pano');
+app.allowRendererProcessReuse = false;
+
+const isMac = process.platform === 'darwin';
+const lock = app.requestSingleInstanceLock();
+
+let mainWindow;
+let shareWindow;
+let shareCtrlWindowReadyToShow = false;
 
 if (!lock) {
-  app.quit()
+  app.quit();
 }
 
-app.setAsDefaultProtocolClient("pano")
+// ipc tool function
+
+app.sendToMainWindow = data => {
+  mainWindow.webContents.send('msgToMainWindow', data);
+};
+
+app.sendToShareWindow = data => {
+  shareWindow && shareWindow.webContents.send('msgToShareWindow', data);
+};
+
+app.getDisplayByPosition = position => {
+  let d;
+  screen.getAllDisplays().forEach(display => {
+    if (
+      position.x >= display.bounds.x &&
+      position.x < display.bounds.x + display.bounds.width &&
+      position.y >= display.bounds.y &&
+      position.y < display.bounds.y + display.bounds.height
+    ) {
+      d = display;
+    }
+  });
+  return d;
+};
+
+// 设置共享窗口位置，根据位置坐标判断是在哪个屏幕上（多屏幕的情况下）
+app.setShareWindow = display => {
+  let scaleFactor = 1;
+  if (!isMac) {
+    // windows 高分屏需要处理 scaleFactor 计算出屏幕的真实大小
+    scaleFactor = screen.getPrimaryDisplay().scaleFactor;
+  }
+  // 标注窗口
+  shareWindow.setPosition(display.x, display.y);
+  shareWindow.setSize(
+    display.width / scaleFactor,
+    display.height / scaleFactor
+  );
+  if (shareCtrlWindowReadyToShow) {
+    // annotation 窗口
+    shareWindow.show();
+  }
+};
+
+app.closeShareCtrlWindow = function closeShareCtrlWindow() {
+  setTimeout(() => {
+    shareWindow.once('closed', () => {
+      shareWindow = undefined;
+    });
+    shareWindow.destroy();
+  }, 1000);
+};
+
+app.hideShareCtrlWindow = () => {
+  shareCtrlWindowReadyToShow = false;
+  shareWindow.hide();
+  if (isMac) {
+    mainWindow.show();
+  } else {
+    mainWindow.restore();
+  }
+  app.closeShareCtrlWindow();
+};
+
+app.showShareCtrlWindow = async () => {
+  shareCtrlWindowReadyToShow = true;
+  // 隐藏主窗口
+  if (mainWindow.isFullScreen()) {
+    mainWindow.setFullScreen(false);
+    await sleep(1000);
+  }
+  if (isMac) {
+    mainWindow.hide();
+  } else {
+    mainWindow.minimize();
+  }
+};
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
@@ -20,7 +104,7 @@ protocol.registerSchemesAsPrivileged([
 
 async function createWindow() {
   // Create the browser window.
-  const win = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
     webPreferences: {
@@ -32,15 +116,54 @@ async function createWindow() {
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
-    await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL);
+    await mainWindow.loadURL(process.env.WEBPACK_DEV_SERVER_URL);
   } else {
     createProtocol('app');
-    win.loadURL('app://./index.html');
+    mainWindow.loadURL('app://./index.html');
   }
   if (isDevelopment) {
-    win.webContents.openDevTools();
+    mainWindow.webContents.openDevTools();
   }
 }
+
+app.createShareCtrlWindow = function createShareCtrlWindow() {
+  const windowConfig = {
+    show: false,
+    hasShadow: false, // 关闭窗口阴影效果
+    transparent: true,
+    resizable: false,
+    maximizable: false,
+    minimizable: false,
+    frame: false,
+    backgroundColor: '#00000000',
+    fullscreenable: false,
+    enableLargerThanScreen: true, // 可以设置大于screen size
+    webPreferences: {
+      nodeIntegration: true,
+      webSecurity: false,
+      enableRemoteModule: true
+    }
+  };
+  // annotation window
+  shareWindow = new BrowserWindow(windowConfig);
+  shareWindow.setSkipTaskbar(true);
+
+  if (isMac) {
+    shareWindow.setAlwaysOnTop(true, 'screen-saver', 2);
+  } else {
+    shareWindow.setAlwaysOnTop(true, 'screen-saver', 2);
+  }
+
+  if (process.env.WEBPACK_DEV_SERVER_URL) {
+    // Load the url of the dev server if in development mode
+    shareWindow.loadURL(
+      `${process.env.WEBPACK_DEV_SERVER_URL}/share.html#/annotation`
+    );
+  } else {
+    createProtocol('app');
+    shareWindow.loadURL('app://./share.html#/annotation');
+  }
+};
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {

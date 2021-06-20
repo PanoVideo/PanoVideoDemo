@@ -70,9 +70,7 @@ import { ScreenSourceType } from '@pano.video/panortc-electron-sdk';
 import { get, find } from 'lodash-es';
 import { mapGetters, mapMutations } from 'vuex';
 
-const { desktopCapturer } = window.require('electron');
-
-let getScreenPreviewImgTimeout;
+const electron = window.require('electron');
 
 export default {
   data() {
@@ -101,6 +99,7 @@ export default {
         screenOpen: false
       });
       this.$emit('update:visible', false);
+      electron.remote.app.closeShareCtrlWindow();
     },
     onShareSelected(ssid) {
       this.selectdScreenSid = ssid;
@@ -121,13 +120,31 @@ export default {
               ScreenSourceType.Application,
               selectdScreenSid
             );
+          this.updateUser({
+            userId: this.userMe.userId,
+            screenShareType: 'application'
+          });
         } else {
+          // 这行代码可以禁用窗口过滤，提示桌面共享性能，建议远程控制时开启
+          // rtcEngine.screenSourceMgr().enableFilterWindows(false);
           window.rtcEngine
             .screenSourceMgr()
             .selectSharedDisplay(selectdScreenSid);
+          this.updateUser({
+            userId: this.userMe.userId,
+            screenShareType: 'screen'
+          });
         }
         window.rtcEngine.screenSourceMgr().commitConfiguration();
         window.rtcEngine.startScreen();
+        electron.remote.app.showShareCtrlWindow();
+        electron.remote.app.sendToShareWindow({
+          command: 'syncSettings',
+          payload: {
+            videoMuted: this.userMe.videoMuted,
+            audioMuted: this.userMe.audioMuted
+          }
+        });
       } else {
         this.updateUser({
           userId: this.userMe.userId,
@@ -171,7 +188,7 @@ export default {
       ) {
         this.selectdScreenSid = '';
       }
-      desktopCapturer
+      electron.desktopCapturer
         .getSources({
           types: ['window', 'screen'],
           thumbnailSize: { width: 300, height: 300 }
@@ -188,15 +205,10 @@ export default {
     }
   },
   mounted() {
-    getScreenPreviewImgTimeout = setInterval(
-      () => this.getScreenPreviewImg(),
-      1000
-    );
     this.getScreenPreviewImg();
+    electron.remote.app.createShareCtrlWindow();
   },
-  beforeDestroy() {
-    clearInterval(getScreenPreviewImgTimeout);
-  }
+  beforeDestroy() {}
 };
 </script>
 
