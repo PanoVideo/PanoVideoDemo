@@ -17,7 +17,7 @@ module.exports = {
       // 模板来源
       template: 'public/share.html',
       // 在 dist/index.html 的输出
-      filename: 'share.html',
+      filename: 'share.html'
     }
   },
   chainWebpack: config => {
