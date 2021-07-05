@@ -8,19 +8,19 @@
       </div>
       <el-form class="tableListForm" :model="form" v-loading="loading">
         <el-form-item label="AppId" key="appid" required>
-          <el-input v-model="form.appId" />
+          <el-input clearable v-model="form.appId" />
         </el-form-item>
         <el-form-item label="Token" key="token" required>
-          <el-input v-model="form.token" />
+          <el-input clearable v-model="form.token" />
         </el-form-item>
         <el-form-item label="房间号" key="channelId" required>
-          <el-input v-model="form.channelId" />
+          <el-input clearable v-model="form.channelId" />
         </el-form-item>
         <el-form-item label="用户名" key="userName">
-          <el-input v-model="form.userName" />
+          <el-input clearable v-model="form.userName" />
         </el-form-item>
         <el-form-item label="用户Id" key="userId" required>
-          <el-input v-model="form.userId" />
+          <el-input clearable v-model="form.userId" />
         </el-form-item>
         <el-row>
           <el-col :span="9">
@@ -120,8 +120,11 @@ export default {
         this.$message.warning('请填写必要的参数再加入会议');
         return;
       }
-      localStorage.setItem(Constants.localCacheKeyUserName, userName);
+      localStorage.setItem(Constants.localCacheKeyAppId, appId);
+      localStorage.setItem(Constants.localCacheKeyToken, token);
       localStorage.setItem(Constants.localCacheKeyChannelId, channelId);
+      localStorage.setItem(Constants.localCacheKeyUserName, userName);
+      localStorage.setItem(Constants.localCacheKeyUserId, userId);
       this.loading = true;
       this.updateChannelId(channelId);
       this.updateUserMe({
@@ -211,6 +214,13 @@ export default {
       PanoRtc.RtcEngine.Events.joinChannelConfirm,
       this.onJoinChannelConfirm
     );
+  },
+  mounted() {
+    this.form.appId = localStorage.getItem(Constants.localCacheKeyAppId);
+    this.form.token = localStorage.getItem(Constants.localCacheKeyToken);
+    this.form.channelId = localStorage.getItem(Constants.localCacheKeyChannelId);
+    this.form.userName = localStorage.getItem(Constants.localCacheKeyUserName);
+    this.form.userId = localStorage.getItem(Constants.localCacheKeyUserId);
   }
 };
 </script>
