@@ -19,8 +19,13 @@
         <el-form-item label="用户名" key="userName">
           <el-input clearable v-model="form.userName" />
         </el-form-item>
-        <el-form-item label="用户Id" key="userId" required>
-          <el-input clearable v-model="form.userId" />
+        <el-form-item label="用户ID" key="userId" required>
+          <el-input
+            clearable
+            v-model="form.userId"
+            placeholder="用户ID仅限数字"
+            oninput="value=value.replace(/[^\d]/g,'')"
+          />
         </el-form-item>
         <el-row>
           <el-col :span="9">
@@ -132,7 +137,7 @@ export default {
         userId
       });
       console.log('joinChannel...');
-      window.rtcEngine.joinChannel(
+      const qResult = window.rtcEngine.joinChannel(
         {
           appId,
           token,
@@ -146,19 +151,14 @@ export default {
           joinChannelType: PanoRtc.Constants.JoinChannelType.mediaAndWhiteboard
         }
       );
+      if (qResult.code != 'OK') {
+        this.loading = false;
+        console.error('call joinChannel API error:', qResult);
+        this.$message.error(
+          'call joinChannel API error, please check console message.'
+        );
+      }
       this.resetMeetingStore();
-      // this.initWhiteboard();
-      // window.rtcWhiteboard.joinChannel(
-      //   {
-      //     appId,
-      //     token,
-      //     channelId,
-      //     name: userName,
-      //     userId
-      //   },
-      //   () => {},
-      //   () => {}
-      // );
     },
     /**
      * 入会成功回调

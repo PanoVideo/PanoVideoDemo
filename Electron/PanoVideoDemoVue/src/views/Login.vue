@@ -16,8 +16,13 @@
       <el-form-item label="用户名" key="userName">
         <el-input clearable v-model="form.userName" />
       </el-form-item>
-      <el-form-item label="用户Id" key="userId" required>
-        <el-input clearable v-model="form.userId" />
+      <el-form-item label="用户ID" key="userId" required>
+        <el-input
+          clearable
+          v-model="form.userId"
+          placeholder="用户ID仅限数字"
+          oninput="value=value.replace(/[^\d]/g,'')"
+        />
       </el-form-item>
       <el-row>
         <el-col :span="9">
@@ -116,12 +121,18 @@ export default {
         audioAecType: AudioAecType.Default,
         audioScenario: 0
       });
-      window.rtcEngine.joinChannel(token, channelId, userId, {
+      const qResult = window.rtcEngine.joinChannel(token, channelId, userId, {
         channelMode: ChannelMode.Mode_Meeting,
         serviceFlags: kChannelServiceMedia,
         subscribeAudioAll: true, // subscribe user audio automatically
         userName
       });
+      if (qResult != QResult.OK) {
+        this.loading = false;
+        const errMsg = `call rtcEngine.joinChannel API error, qResult: ${qResult}`;
+        console.error(errMsg);
+        this.$message.error(errMsg);
+      }
       window.rtcWhiteboard.joinChannel(
         {
           appId,
@@ -131,7 +142,12 @@ export default {
           userId
         },
         () => {},
-        () => {}
+        statusCode => {
+          this.loading = false;
+          const errMsg = `whiteboard join error, statusCode: ${statusCode}`;
+          console.error(errMsg);
+          this.$message.error(errMsg);
+        }
       );
       this.resetMeetingStore();
     },
