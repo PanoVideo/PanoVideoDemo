@@ -10,6 +10,21 @@
 #import "PanoCallClient.h"
 #import "UserInfo.h"
 
+#import "PanoServiceManager.h"
+#import "PanoPoolService.h"
+#import "PanoPoolView.h"
+#import "PanoAudioService.h"
+#import "PanoVideoService.h"
+#import "PanoVideoView.h"
+#import "PanoUserService.h"
+#import "PanoWhiteboardPrivateHeader.h"
+#import "PanoUserListViewController.h"
+#import "Reachability.h"
+#import "MBProgressHUD+Extension.h"
+#import "PanoAnnotationTool.h"
+#import "PanoBroadcastButton.h"
+#import "PanoDesktopService.h"
+
 typedef NS_ENUM(NSInteger, AsyncAlertType) {
     kAsyncAlertNone = 0,
     kAsyncAlertFetchFail,
@@ -25,7 +40,7 @@ static NSTimeInterval kDelayDismissAlertTime = 3.0;
 // KVO observer keys
 static NSString *kResolutionObserverKey = @"resolution";
 
-@interface CallViewController () <PanoRtcEngineDelegate, PanoRtcWhiteboardDelegate, WhiteboardViewDelegate>
+@interface CallViewController () <PanoRtcEngineDelegate, PanoRtcWhiteboardDelegate, WhiteboardViewDelegate, PanoPoolViewDelegate, PanoAnnotationToolDelegate>
 
 @property (strong, nonatomic) IBOutlet UIView * topToolbarView;
 @property (strong, nonatomic) IBOutlet UIButton * speakerButton;
@@ -37,6 +52,7 @@ static NSString *kResolutionObserverKey = @"resolution";
 @property (strong, nonatomic) IBOutlet UIButton * videoButton;
 @property (strong, nonatomic) IBOutlet UIButton * whiteboardButton;
 @property (strong, nonatomic) IBOutlet UIButton * settingButton;
+@property (weak, nonatomic) IBOutlet UIButton *userListButton;
 
 @property (strong, nonatomic) IBOutlet UIView * floatView;
 @property (strong, nonatomic) IBOutlet UserView * userTopView;
@@ -53,6 +69,8 @@ static NSString *kResolutionObserverKey = @"resolution";
 @property (strong, nonatomic) IBOutlet UIPageControl * layoutControl;
 
 @property (strong, nonatomic) IBOutlet UIActivityIndicatorView * joinIndicator;
+@property (weak, nonatomic) IBOutlet UIButton *exitButton;
+@property (weak, nonatomic) IBOutlet UIButton *switchCameraBtn;
 
 @property (strong, nonatomic) UserInfo * localUserInfo;
 @property (strong, nonatomic) UserManager * remoteUserManager;
@@ -76,6 +94,15 @@ static NSString *kResolutionObserverKey = @"resolution";
 
 @property (assign, nonatomic) UInt64 backMainUserId;
 
+@property (strong, nonatomic) PanoPoolView *poolView;
+@property (strong, nonatomic) Reachability *reachability;
+@property (strong, nonatomic) PanoAnnotationTool* annotationTool;
+@property (assign, nonatomic) CGPoint initialPoint;
+@property (strong, nonatomic) PanoBroadcastButton *broadcastBtn;
+@property (weak, nonatomic) IBOutlet UIButton *backButton;
+@property (weak, nonatomic) PanoConfig *config;
+
+@property (assign, nonatomic) BOOL shownMuteTip;
 @end
 
 @implementation CallViewController
@@ -83,6 +110,7 @@ static NSString *kResolutionObserverKey = @"resolution";
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
+    _config = [PanoCallClient sharedInstance].config;
     [self setLocalizable];
     [self initToolbars];
     [self initLayout];
@@ -93,6 +121,16 @@ static NSString *kResolutionObserverKey = @"resolution";
     [self initAsyncAlert];
     [self addObservers];
     [self joinCall];
+    _reachability = [Reachability reachabilityWithHostname:@"pano.video.call"];
+    [_reachability startNotifier];
+    __weak typeof(self) weakSelf = self;
+    [_reachability setReachabilityBlock:^(Reachability *reachability, SCNetworkConnectionFlags flags) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (reachability.currentReachabilityStatus == ReachableViaWWAN) {
+                [MBProgressHUD showMessage:NSLocalizedString(@"您正在使用数据流量...", nil) addedToView:weakSelf.view duration:1];
+            }
+        });
+    }];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -119,6 +157,9 @@ static NSString *kResolutionObserverKey = @"resolution";
 }
 
 - (IBAction)switchCamera:(id)sender {
+    [(PanoVideoService *)[PanoServiceManager serviceWithType:PanoVideoServiceType] switchCamera];
+    [self.poolView updateVideoRenderConfig:nil];
+    return;
     [PanoCallClient.sharedInstance.engineKit switchCamera];
     if (self.localUserInfo.videoEnable) {
         [self reEnableVideo];
@@ -133,6 +174,110 @@ static NSString *kResolutionObserverKey = @"resolution";
     [self enableVideo:!self.localUserInfo.videoEnable];
 }
 
+- (IBAction)showMoreAction:(UIButton *)sender {
+    UIAlertController * alert = [UIAlertController alertControllerWithTitle:nil message:nil
+                                                             preferredStyle:UIAlertControllerStyleActionSheet];
+    UIAlertAction * cancel = [UIAlertAction actionWithTitle:NSLocalizedString(@"取消", nil)
+                                                  style:UIAlertActionStyleCancel
+                                                handler:nil];
+    [alert addAction:cancel];
+    UIAlertAction *setting = [UIAlertAction actionWithTitle:NSLocalizedString(@"设置", nil)
+                                                  style:UIAlertActionStyleDefault
+                                                    handler:^(UIAlertAction * _Nonnull action) {
+        [self openSettingPage];
+    }];
+    [alert addAction:setting];
+    UIAlertAction *annotation = [UIAlertAction actionWithTitle:NSLocalizedString(@"视频标注", nil)
+                                                  style:UIAlertActionStyleDefault
+                                                       handler:^(UIAlertAction * _Nonnull action) {
+        [self startAnnotation];
+    }];
+    [alert addAction:annotation];
+    BOOL isSharing = [[PanoServiceManager serviceWithType:PanoDesktopServiceType] isSharingScreen];
+    NSString *title = isSharing ? NSLocalizedString(@"停止共享屏幕", nil) : NSLocalizedString(@"共享屏幕", nil);
+    UIAlertAction *sharescreen = [UIAlertAction actionWithTitle:title
+                                                  style:UIAlertActionStyleDefault
+                                                       handler:^(UIAlertAction * _Nonnull action) {
+        [self toggleShareScreen];
+    }];
+    if (@available(iOS 11.0, *)) {
+        [alert addAction:sharescreen];
+    }
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+        alert.popoverPresentationController.sourceView = sender;
+        alert.popoverPresentationController.sourceRect = sender.bounds;
+    }
+    [self presentViewController:alert animated:YES completion:nil];
+}
+
+- (IBAction)backButtonAction:(id)sender {
+    [self stopAnnotation];
+}
+
+- (void)startAnnotation {
+    PanoUserService *userService = [PanoServiceManager serviceWithType:PanoUserServiceType];
+    if (_poolView.activeAnnotation == nil &&
+        userService.me.videoStaus != PanoUserVideo_Unmute) {
+        [self showToast:NSLocalizedString(@"请打开您的视频", nil)];
+        return;
+    }
+    BOOL hasPresentedVC = self.presentationController != nil;
+    [self closeWhiteboard];
+    if (self.presentedViewController) {
+        [self.presentedViewController dismissViewControllerAnimated:true completion:nil];
+    }
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)((hasPresentedVC ? 0.5 : 0.0) * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self p_startAnnotation];
+    });
+}
+
+- (void)p_startAnnotation {
+    [self enableGestures:false];
+    [_annotationTool show];
+    [self hideToolbars:true];
+    [_backButton setHidden:false];
+    [_backButton.superview bringSubviewToFront:_backButton];
+    [_poolView startAnnotation];
+    [_poolView setAnnotationToolType:kPanoWBToolPath];
+    [self updateAnnotationConfig];
+}
+
+- (void)stopAnnotation {
+    [_annotationTool hide];
+    [self hideToolbars:false];
+    [_poolView stopAnnotation];
+    [_backButton setHidden:true];
+    [_annotationTool.penView dismiss];
+    [self enableGestures:true];
+}
+
+- (void)openSettingPage {
+    UIViewController *settingVc = [[UIStoryboard storyboardWithName:@"Main" bundle:nil] instantiateViewControllerWithIdentifier:@"setting"];
+    [self presentViewController:settingVc animated:true completion:nil];
+}
+
+- (void)toggleShareScreen {
+    if ([[PanoServiceManager serviceWithType:PanoDesktopServiceType] isSharingScreen]) {
+        [self stopScreen];
+    } else {
+        [self startScreen];
+    }
+}
+
+- (void)startScreen {
+    if (@available(iOS 12.0, *)) {
+        [_broadcastBtn showBroadcastView];
+    } else if (@available(iOS 11.0, *)) {
+        NSString *msg = NSLocalizedString(@"请打开控制中心，长按屏幕录制, 选择开始直播", nil);
+        [MBProgressHUD showMessage:msg addedToView:self.view duration:2.0];
+    }
+    PanoDesktopService *desktopService = [PanoServiceManager serviceWithType:PanoDesktopServiceType];
+    [desktopService startShareWithHandler:^(BOOL success) {}];
+}
+
+- (void)stopScreen {
+    [PanoCallClient.sharedInstance.engineKit stopScreen];
+}
 #pragma mark - Navigation
 
 - (BOOL)shouldPerformSegueWithIdentifier:(NSString *)identifier sender:(nullable id)sender {
@@ -151,11 +296,18 @@ static NSString *kResolutionObserverKey = @"resolution";
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(nullable id)sender {
     if ([segue.identifier compare:@"Whiteboard"] == NSOrderedSame) {
-        [PanoCallClient.sharedInstance.engineKit.whiteboardEngine setDelegate:nil];
+//        [PanoCallClient.sharedInstance.engineKit.whiteboardEngine setDelegate:nil];
         self.whiteboardViewController = (WhiteboardViewController *)segue.destinationViewController;
         self.whiteboardViewController.whiteboardViewDelegate = self;
         UIImage * image = [UIImage imageNamed:@"btn.whiteboard.open"];
         [self.whiteboardButton setImage:image forState:UIControlStateNormal];
+    }
+}
+
+- (void)applyBecomePresenter {
+    PanoWhiteboardService *wbService = [PanoServiceManager serviceWithType:PanoWhiteboardServiceType];
+    if (![wbService hasPresenter]) {
+        [wbService applyBecomePresenter];
     }
 }
 
@@ -181,6 +333,9 @@ static NSString *kResolutionObserverKey = @"resolution";
     [self displayMessage:[NSString stringWithFormat:@"Leave channel indication with %ld", (long)result]];
     dispatch_async(dispatch_get_main_queue(), ^{
         [PanoCallClient.sharedInstance.engineKit.whiteboardEngine setDelegate:nil];
+        PanoWhiteboardService *wbService = [PanoServiceManager serviceWithType:PanoWhiteboardServiceType];
+        [wbService removeDelegate:self];
+        
         [self closeWhiteboard];
         [self enableWhiteboard:NO];
         [self hideCountDown];
@@ -191,6 +346,7 @@ static NSString *kResolutionObserverKey = @"resolution";
         } else {
             self.asyncAlert = kAsyncAlertExit;
         }
+        [PanoServiceManager uninit];
     });
 }
 
@@ -208,7 +364,7 @@ static NSString *kResolutionObserverKey = @"resolution";
 - (void)onUserJoinIndication:(UInt64)userId withName:(NSString * _Nullable)userName {
     [self displayMessage:[NSString stringWithFormat:@"The user %lu (%@) join channel", (unsigned long)userId, userName]];
     dispatch_async(dispatch_get_main_queue(), ^{
-        [self addRemoteUser:userId withName:userName];
+        //[self addRemoteUser:userId withName:userName];
     });
 }
 
@@ -216,7 +372,7 @@ static NSString *kResolutionObserverKey = @"resolution";
                    withReason:(PanoUserLeaveReason)reason {
     [self displayMessage:[NSString stringWithFormat:@"The user %lu leave room with %ld", (unsigned long)userId, (long)reason]];
     dispatch_async(dispatch_get_main_queue(), ^{
-        [self removeRemoteUser:userId];
+        //[self removeRemoteUser:userId];
     });
 }
 
@@ -351,7 +507,10 @@ static NSString *kResolutionObserverKey = @"resolution";
     [self displayMessage:[NSString stringWithFormat:@"Whiteboard available"]];
     dispatch_async(dispatch_get_main_queue(), ^{
         [self enableWhiteboard:YES];
-        [PanoCallClient.sharedInstance.engineKit.whiteboardEngine setDelegate:self];
+//        [PanoCallClient.sharedInstance.engineKit.whiteboardEngine setDelegate:self];
+        PanoWhiteboardService<id<PanoRtcWhiteboardDelegate>> *wbService = [PanoServiceManager serviceWithType:PanoWhiteboardServiceType];
+        [PanoCallClient.sharedInstance.engineKit.whiteboardEngine setDelegate:wbService];
+        [wbService addDelegate:self];
     });
 }
 
@@ -368,6 +527,7 @@ static NSString *kResolutionObserverKey = @"resolution";
     [self displayMessage:[NSString stringWithFormat:@"Whiteboard start"]];
     dispatch_async(dispatch_get_main_queue(), ^{
         [self openWhiteboard];
+        [self stopAnnotation];
     });
 }
 
@@ -375,8 +535,18 @@ static NSString *kResolutionObserverKey = @"resolution";
     [self displayMessage:[NSString stringWithFormat:@"Whiteboard stop"]];
     dispatch_async(dispatch_get_main_queue(), ^{
         [self closeWhiteboard];
-        [PanoCallClient.sharedInstance.engineKit.whiteboardEngine setDelegate:self];
+//        [PanoCallClient.sharedInstance.engineKit.whiteboardEngine setDelegate:self];
     });
+}
+
+- (void)onNetworkQuality:(PanoQualityRating)quality withUser:(UInt64)userId {
+    //NSLog(@"onNetworkQuality->%llu %ld",userId, quality);
+    for (PanoBaseMediaView *mediaView in self.poolView.medias) {
+        if (mediaView.instance.userId == userId) {
+            [mediaView update:@{PanoNetworkStatus : @(quality)}];
+            break;
+        }
+    }
 }
 
 #pragma mark - PanoRtcWhiteboardDelegate
@@ -397,16 +567,100 @@ static NSString *kResolutionObserverKey = @"resolution";
 
 #pragma mark - WhiteboardViewDelegate
 
-- (void)whiteboardViewDidOpen {
-    [self switchToWhiteboard];
+- (void)onVisionShareStarted:(UInt64)userId {
+    PanoRtcWhiteboard *wb = PanoCallClient.sharedInstance.engineKit.whiteboardEngine;
+    PanoUserInfo *info = [[PanoServiceManager serviceWithType:PanoUserServiceType] findUserWithId:userId];
+    NSString *msg = [NSString stringWithFormat:NSLocalizedString(@"'%@'开启了视角跟随", nil), info.userName] ;
+    [self showToast:msg];
+    [wb startFollowVision];
 }
 
+- (void)onVisionShareStopped:(UInt64)userId {
+    PanoUserInfo *info = [[PanoServiceManager serviceWithType:PanoUserServiceType] findUserWithId:userId];
+    NSString *msg = [NSString stringWithFormat:NSLocalizedString(@"'%@'关闭了视觉跟随", nil), info.userName] ;
+    [self showToast:msg];
+    PanoRtcWhiteboard *wb = PanoCallClient.sharedInstance.engineKit.whiteboardEngine;
+    [wb stopFollowVision];
+}
+
+- (void)whiteboardViewDidOpen {
+    // [self switchToWhiteboard];
+    [_poolView stopRender];
+    PanoVideoView *videoView = [[PanoVideoView alloc] init];
+    videoView.hidden = true;
+    [self.whiteboardViewController.view addSubview:videoView];
+    [self.whiteboardViewController.view bringSubviewToFront:videoView];
+    [self performSelector:@selector(applyBecomePresenter) withObject:nil afterDelay:3];
+}
+
+-(void)handlePan:(UIPanGestureRecognizer*)gestureRecognizer{
+    UIView *view = gestureRecognizer.view;
+    CGPoint p = [gestureRecognizer translationInView:self.view];
+    switch (gestureRecognizer.state) {
+        case UIGestureRecognizerStatePossible:
+        case UIGestureRecognizerStateBegan:
+            _initialPoint = view.center;
+            break;
+        case UIGestureRecognizerStateChanged:
+            view.center = CGPointMake(_initialPoint.x + p.x, _initialPoint.y + p.y);
+            break;
+        case UIGestureRecognizerStateCancelled:
+        case UIGestureRecognizerStateFailed:
+        case UIGestureRecognizerStateEnded:
+            [UIView animateWithDuration:0.25 animations:^{
+                [self remakeRightCenter:view];
+            }];
+            break;
+    }
+}
+
+- (void)remakeRightCenter:(UIView *)view{
+    if (!view) {
+        return;
+    }
+    CGPoint pointCurrent = view.center;
+    CGFloat pX = 0;
+    CGFloat pY = 0;
+    CGFloat offset = 120;
+    CGSize littleVideoSize = CGSizeMake(117.5, 157.5);
+    CGFloat top =(isIphoneX() ? 44 : 20) + 50;
+    CGFloat bottom = (isIphoneX() ? 25 : 7.5) + 50;
+    UIEdgeInsets edgeInsets = UIEdgeInsetsMake(top, 7.5, bottom, 7.5);
+    if (pointCurrent.x <= littleVideoSize.width/2 + offset) {
+        pX =  littleVideoSize.width/2 + edgeInsets.left;
+    }else if(pointCurrent.x >= (CGRectGetWidth([UIScreen mainScreen].bounds) - littleVideoSize.width/2 - offset)){
+        pX =(CGRectGetWidth([UIScreen mainScreen].bounds) - littleVideoSize.width/2) - edgeInsets.right;
+    }else{
+        pX = pointCurrent.x;
+    }
+    if (pointCurrent.y <=  littleVideoSize.height/2 + offset + edgeInsets.top) {
+        pY =  littleVideoSize.height/2 + edgeInsets.top;
+    }else if (pointCurrent.y >= (CGRectGetHeight([UIScreen mainScreen].bounds) - littleVideoSize.height/2 - offset -edgeInsets.bottom) ) {
+        pY = (CGRectGetHeight([UIScreen mainScreen].bounds) - littleVideoSize.height/2)-edgeInsets.bottom;
+    }else{
+        pY = pointCurrent.y;
+    }
+    view.center = CGPointMake(pX, pY);
+}
+
+
 - (void)whiteboardViewWillClose {
-    [self switchFromWhiteboard];
+    [_poolView startRender];
+    self.whiteboardOpened = NO;
+    
+    //[self switchFromWhiteboard];
 }
 
 - (void)whiteboardViewDidClose {
-    [PanoCallClient.sharedInstance.engineKit.whiteboardEngine setDelegate:self];
+//    [PanoCallClient.sharedInstance.engineKit.whiteboardEngine setDelegate:self];
+}
+
+- (void)showToast:(NSString*)msg {
+    UIView *view = self.view;
+    if (self.presentedViewController) {
+        view = self.presentedViewController.view;
+    }
+    [MBProgressHUD showMessage:msg addedToView:view duration:2.0];
 }
 
 #pragma mark - Alert
@@ -441,6 +695,8 @@ static NSString *kResolutionObserverKey = @"resolution";
 }
 
 - (void)presentExitConfirm {
+#define HideCloseChanel 1
+#if HideCloseChanel
     UIAlertController * alert = [UIAlertController alertControllerWithTitle:@""
                                                                     message:NSLocalizedString(@"exitConfirm", nil)
                                                              preferredStyle:UIAlertControllerStyleAlert];
@@ -455,6 +711,35 @@ static NSString *kResolutionObserverKey = @"resolution";
     [alert addAction:cancel];
     [alert addAction:ok];
     [self presentViewController:alert animated:YES completion:nil];
+#else
+    UIAlertController * alert = [UIAlertController alertControllerWithTitle:nil
+                                                                    message:NSLocalizedString(@"exitConfirm", nil)
+                                                             preferredStyle:UIAlertControllerStyleActionSheet];
+    UIAlertAction * ok = [UIAlertAction actionWithTitle:NSLocalizedString(@"Leave Meeting", nil)
+                                                  style:UIAlertActionStyleDefault
+                                                handler:^(UIAlertAction * _Nonnull action) {
+        [self leaveCall];
+    }];
+    
+    UIAlertAction *endMeeting = [UIAlertAction actionWithTitle:NSLocalizedString(@"End Meeting", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [PanoCallClient.sharedInstance closeChannelWithHandler:^(NSError * _Nonnull error) {
+            NSLog(@"error->%@", error);
+        }];
+        [self leaveCall];
+    }];
+    
+    UIAlertAction * cancel = [UIAlertAction actionWithTitle:NSLocalizedString(@"cancel", nil)
+                                                      style:UIAlertActionStyleCancel
+                                                    handler:nil];
+    [alert addAction:cancel];
+    [alert addAction:ok];
+    [alert addAction:endMeeting];
+    if (isiPad()) {
+        alert.popoverPresentationController.sourceView = self.exitButton;
+        alert.popoverPresentationController.sourceRect = self.exitButton.bounds;
+    }
+    [self presentViewController:alert animated:YES completion:nil];
+#endif
 }
 
 #pragma mark - Private
@@ -470,6 +755,21 @@ static NSString *kResolutionObserverKey = @"resolution";
 }
 
 - (void)initLayout {
+    if (@available(iOS 12.0, *)) {
+        _broadcastBtn = [[PanoBroadcastButton alloc] init];
+        _broadcastBtn.hidden = true;
+        [self.view addSubview:_broadcastBtn];
+    }
+    
+    _poolView = [[PanoPoolView alloc] init];
+    _poolView.delegate = self;
+
+    [self.view insertSubview:_poolView belowSubview:self.layoutControl];
+    
+    [_poolView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.edges.mas_equalTo(self.view);
+    }];
+    
     [self resetLayout];
     [self setViewRoundedCorners:self.userTopView withRadius:5.0];
     [self setViewRoundedCorners:self.userLeftView withRadius:5.0];
@@ -487,7 +787,8 @@ static NSString *kResolutionObserverKey = @"resolution";
     self.user4View.hidden = YES;
     
     self.layoutControl.currentPage = 0;
-    self.floatView.hidden = NO;
+//    self.floatView.hidden = NO;
+    self.floatView.hidden = YES;
     self.wallView.hidden = YES;
     [self enableSwitchLayout:NO];
 }
@@ -526,6 +827,7 @@ static NSString *kResolutionObserverKey = @"resolution";
 }
 
 - (void)enableSwitchLayout:(BOOL)enable {
+    return;
     self.layoutControl.hidden = !enable;
     if (enable) {
         [self.view addGestureRecognizer:self.leftSwipeGesture];
@@ -556,10 +858,18 @@ static NSString *kResolutionObserverKey = @"resolution";
     [self setButtonImageAndTitleEdgeInsets:self.videoButton];
     [self setButtonImageAndTitleEdgeInsets:self.whiteboardButton];
     [self setButtonImageAndTitleEdgeInsets:self.settingButton];
+    [self setButtonImageAndTitleEdgeInsets:self.userListButton];
     
     [self enableSpeaker:PanoCallClient.sharedInstance.autoSpeaker];
     [self resetToolbars];
     [self hideToolbars:NO];
+    [self initAnnotationTool];
+}
+
+- (void)initAnnotationTool {
+    _annotationTool = [[PanoAnnotationTool alloc] initWithView:self.view toolOption: PanoAnnotationToolAnnotation];
+    _annotationTool.delegate = self;
+    _annotationTool.fontSizeRange = PanoMakeRange(10, 96);
 }
 
 - (void)resetToolbars {
@@ -568,6 +878,9 @@ static NSString *kResolutionObserverKey = @"resolution";
 }
 
 - (void)switchToolbarsHidden:(UIGestureRecognizer *)sender {
+    if ([_annotationTool isVisible]) {
+        return;
+    }
     [self hideToolbars:!self.bottomToolbarView.hidden];
 }
 
@@ -607,14 +920,22 @@ static NSString *kResolutionObserverKey = @"resolution";
     UIImage * image = [UIImage imageNamed:@"btn.whiteboard.open"];
     [self.whiteboardButton setImage:image forState:UIControlStateNormal];
     if (self.viewAppeared) {
-        [self performSegueWithIdentifier:@"Whiteboard" sender:nil];
+        [self showWhiteboardPage];
     } else {
         self.asyncAlert = kAsyncAlertOpenWhiteboard;
     }
 }
 
+- (void)showWhiteboardPage {
+    PanoPoolService *poolService = [PanoServiceManager serviceWithType:PanoPoolServiceType];
+    if (poolService.isSharing) {
+        return;
+    }
+    [self performSegueWithIdentifier:@"Whiteboard" sender:nil];
+}
+
 - (void)updateWhiteboard {
-    if (self.whiteboardViewController == nil) {
+    if (!_whiteboardOpened) {
         UIImage * image = [UIImage imageNamed:@"btn.whiteboard.new"];
         [self.whiteboardButton setImage:image forState:UIControlStateNormal];
     }
@@ -629,7 +950,7 @@ static NSString *kResolutionObserverKey = @"resolution";
 }
 
 - (void)updateWhiteboardRole:(PanoWBRoleType)newRole {
-    PanoCallClient.sharedInstance.wbRole = newRole;
+    _config.wbRole = newRole;
 }
 
 - (void)showCountDown:(UInt32)remain {
@@ -682,7 +1003,7 @@ static NSString *kResolutionObserverKey = @"resolution";
                 break;
             case kAsyncAlertOpenWhiteboard:
                 if (self.whiteboardOpened) {
-                    [self performSegueWithIdentifier:@"Whiteboard" sender:nil];
+                    [self showWhiteboardPage];
                 }
                 break;
             default:
@@ -699,7 +1020,6 @@ static NSString *kResolutionObserverKey = @"resolution";
     PanoCallClient.sharedInstance.channelDelegate = self;
     [PanoCallClient.sharedInstance recordUsage];
     // fetch token and join channel
-    [self.joinIndicator startAnimating];
     PanoRtcChannelConfig * channelConfig = [[PanoRtcChannelConfig alloc] init];
     channelConfig.mode = kPanoChannelMeeting;
     channelConfig.subscribeAudioAll = YES;
@@ -717,7 +1037,10 @@ static NSString *kResolutionObserverKey = @"resolution";
         } else {
             self.asyncAlert = kAsyncAlertJoinFail;
         }
+    } else {
+        [[PanoServiceManager serviceWithType:PanoUserServiceType] onUserJoinIndication:PanoCallClient.sharedInstance.userId withName:PanoCallClient.sharedInstance.userName];
     }
+    [self.joinIndicator startAnimating];
 }
 
 - (void)leaveCall {
@@ -727,13 +1050,15 @@ static NSString *kResolutionObserverKey = @"resolution";
     if (PanoCallClient.sharedInstance.debugMode) {
         [PanoCallClient.sharedInstance stopAudioDump];
     }
-    
+    [self hideCountDown];
+    [_poolView stopRender];
     [PanoCallClient.sharedInstance.engineKit leaveChannel];
     PanoCallClient.sharedInstance.channelDelegate = nil;
-    
+    [PanoCallClient.sharedInstance.engineKit.whiteboardEngine setDelegate:nil];
     [self removeObservers];
     [self dismissToRootViewController];
     UIApplication.sharedApplication.idleTimerDisabled = NO;
+    [PanoServiceManager uninit];
 }
 
 - (void)enableSpeaker:(BOOL)enable {
@@ -744,6 +1069,9 @@ static NSString *kResolutionObserverKey = @"resolution";
 }
 
 - (void)enableAudio:(BOOL)enable {
+    [[PanoServiceManager serviceWithType:PanoAudioServiceType] switchAudioEnable:enable];
+    return;
+    
     self.localUserInfo.audioEnable = enable;
     if (enable) {
         [PanoCallClient.sharedInstance.engineKit startAudio];
@@ -752,13 +1080,34 @@ static NSString *kResolutionObserverKey = @"resolution";
     }
 }
 
-- (void)muteAudio:(BOOL)mute {
-    self.localUserInfo.audioMute = mute;
-    UIImage * image = [UIImage imageNamed:(mute ? @"btn.audio.mute" : @"btn.audio.unmute")];
+- (void)updateAudioButtonStatus:(BOOL)activing {
+    BOOL mute = self.localUserInfo.audioMute;
+    NSString *imageName = (mute ? @"btn.audio.mute" : @"btn.audio.unmute");
+    UIImage * image = [UIImage imageNamed:imageName];
+    if (!mute && activing) {
+        NSInteger i = 0;
+        NSMutableArray *images = [NSMutableArray array];
+        while (i < 10) {
+           NSString *name = [NSString stringWithFormat:@"btn.audio.unmute.active%ld", (long)i];
+           [images addObject:[UIImage imageNamed:name]];
+           i++;
+        }
+        image =[UIImage animatedImageWithImages:images duration:1];
+    }
     [self.audioButton setImage:image forState:UIControlStateNormal];
     NSString * title = NSLocalizedString(mute ? @"unmute" : @"mute", nil);
     [self.audioButton setTitle:title forState:UIControlStateNormal];
     [self setButtonImageAndTitleEdgeInsets:self.audioButton];
+}
+
+- (void)muteAudio:(BOOL)mute {
+    !mute && (_shownMuteTip = false);
+    self.localUserInfo.audioMute = mute;
+    [self updateAudioButtonStatus:false];
+    PanoAudioService *audioService = [PanoServiceManager serviceWithType:PanoAudioServiceType];
+    [audioService muteAudio:mute];
+    return;
+    
     if (mute) {
         [PanoCallClient.sharedInstance.engineKit muteAudio];
     } else {
@@ -773,6 +1122,14 @@ static NSString *kResolutionObserverKey = @"resolution";
     NSString * title = NSLocalizedString(enable ? @"closeVideo" : @"openVideo", nil);
     [self.videoButton setTitle:title forState:UIControlStateNormal];
     [self setButtonImageAndTitleEdgeInsets:self.videoButton];
+    
+    [[PanoServiceManager serviceWithType:PanoVideoServiceType] switchVideoEnable:enable];
+    if (enable) {
+        [self showTipOfAdjustVideoResolution];
+    }
+    self.switchCameraBtn.hidden = !enable;
+    return;
+    
     if (enable) {
         PanoRtcRenderConfig * renderConfig = [[PanoRtcRenderConfig alloc] init];
         renderConfig.profileType = PanoCallClient.sharedInstance.resolution;
@@ -784,7 +1141,39 @@ static NSString *kResolutionObserverKey = @"resolution";
     }
 }
 
+- (void)showTipOfAdjustVideoResolution {
+    PanoVideoProfileType profile = PanoCallClient.sharedInstance.videoProfile;
+    if (profile >= PanoCallClient.sharedInstance.resolution &&
+        profile != kPanoProfileNone) {
+        return;
+    }
+    NSString *msg = @"";
+    NSString *otherMsg = nil;
+    switch (PanoCallClient.sharedInstance.videoProfile) {
+        case kPanoProfileNone:
+            msg = NSLocalizedString(@"您的手机性能不足，关闭了您的视频", nil);
+            break;
+        case kPanoProfileLowest:
+            otherMsg = @"90p";
+            break;
+        case kPanoProfileLow:
+            otherMsg = @"180p";
+            break;
+        case kPanoProfileStandard:
+            otherMsg = @"360p";
+            break;
+        case kPanoProfileHD720P:
+            otherMsg = @"720p";
+            break;
+        default:
+            break;
+    }
+    msg = otherMsg ? [NSString stringWithFormat:NSLocalizedString(@"您的手机性能不足，调整你的视频分辨率为%@", nil), otherMsg] : msg;
+    [self showToast:msg];
+}
+
 - (void)reEnableVideo {
+    return;
     PanoRtcRenderConfig * renderConfig = [[PanoRtcRenderConfig alloc] init];
     renderConfig.profileType = PanoCallClient.sharedInstance.resolution;
     renderConfig.scalingMode = kPanoScalingCropFill;
@@ -806,6 +1195,7 @@ static NSString *kResolutionObserverKey = @"resolution";
 }
 
 - (void)subscribeVideo:(UserInfo *)user {
+    return;
     PanoRtcRenderConfig * renderConfig = [[PanoRtcRenderConfig alloc] init];
     renderConfig.profileType = [self profileWithView:user.userView];
     renderConfig.scalingMode = kPanoScalingCropFill;
@@ -813,11 +1203,13 @@ static NSString *kResolutionObserverKey = @"resolution";
 }
 
 - (void)unsubsribeVideo:(UserInfo *)user {
+    return;
     [PanoCallClient.sharedInstance.engineKit unsubscribeVideo:user.userId];
 }
 
 - (void)switchLayout:(UISwipeGestureRecognizer *)sender {
     [self hideToolbars:YES];
+    return;
     // Current remote user count is not less than 2.
     if (sender.direction == UISwipeGestureRecognizerDirectionLeft) {
         if (self.layoutControl.currentPage == 0) {
@@ -1306,6 +1698,7 @@ static NSString *kResolutionObserverKey = @"resolution";
 - (void)addObservers {
     // add KVO observers
     [PanoCallClient.sharedInstance addObserver:self forKeyPath:kResolutionObserverKey options:NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld context:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(statusBarOrientationDidChange) name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
 }
 
 - (void)removeObservers {
@@ -1324,9 +1717,121 @@ static NSString *kResolutionObserverKey = @"resolution";
         if (newValue.integerValue != oldValue.integerValue) {
             if (self.localUserInfo.videoEnable) {
                 [self reEnableVideo];
+                [self.poolView updateVideoRenderConfig:nil];
+                [self showTipOfAdjustVideoResolution];
             }
         }
     }
 }
 
+- (void)statusBarOrientationDidChange {
+    [self updateContentViewSize];
+    [_annotationTool.penView dismiss];
+}
+
+- (void)updateContentViewSize {
+    UIInterfaceOrientation orientation = [UIApplication sharedApplication].statusBarOrientation;
+    PanoViewPageLayoutType type = _poolView.layoutType;
+    if (type == PanoViewPageLayout_4_Avg && !UIInterfaceOrientationIsLandscape(orientation)) {
+        [self.poolView.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+            make.left.right.mas_equalTo(self.view);
+            make.top.mas_equalTo(self.topToolbarView.mas_bottom).mas_offset(15);
+            make.bottom.mas_equalTo(self.bottomToolbarView.mas_top).mas_offset(-15);
+        }];
+        
+    } else {
+        if (type == PanoViewPageLayout_4_Avg) {
+            [self hideToolbars:true];
+        }
+        [self.poolView.contentView mas_remakeConstraints:^(MASConstraintMaker *make) {
+            make.edges.mas_equalTo(self.view);
+        }];
+    }
+}
+
+#pragma mark -- PanoPoolViewDelegate
+- (void)onPageTypeChanged:(PanoViewPageLayoutType)type {
+    [self updateContentViewSize];
+//    if ([[PanoServiceManager serviceWithType:PanoPoolServiceType] isSharing] && _whiteboardOpened) {
+//        [self.whiteboardViewController dismiss];
+//    }
+}
+
+- (void)onPageIndexChanged:(NSUInteger)index numbersOfIndexs:(NSUInteger)totalIndexs {
+    self.layoutControl.hidden = totalIndexs <= 1;
+    self.layoutControl.currentPage = index;
+    self.layoutControl.numberOfPages = totalIndexs;
+}
+
+- (IBAction)openUserListPage:(id)sender {
+    PanoUserListViewController *list = [[PanoUserListViewController alloc] init];
+    UINavigationController *navi = [[UINavigationController alloc] initWithRootViewController:list];
+    navi.modalPresentationStyle = UIModalPresentationFullScreen;
+    [self presentViewController:navi animated:true completion:^{
+    }];
+}
+
+#pragma mark -- PanoAnnotationDelegate
+- (void)onAnnotationStop:(PanoAnnotationItem *)item {
+    [self enableGestures:true];
+    [self stopAnnotation];
+    [self showMsgWithItem:item show:false];
+    
+}
+
+- (void)onAnnotationStart:(PanoAnnotationItem *)item {
+    [self startAnnotation];
+    [self showMsgWithItem:item show:true];
+}
+
+- (void)enableGestures:(BOOL)enable {
+    [self.view.gestureRecognizers enumerateObjectsUsingBlock:^(__kindof UIGestureRecognizer * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        obj.enabled = enable;
+    }];
+}
+
+- (void)showMsgWithItem:(PanoAnnotationItem *)item show:(BOOL)show {
+    PanoUserService *userService = [PanoServiceManager serviceWithType:PanoUserServiceType];
+    NSString *username = [userService findUserWithId:item.userId].userName;
+    if (!username || PanoCallClient.sharedInstance.userId == item.userId) {
+        return;
+    }
+    NSString *temp = show ? NSLocalizedString(@"开启了标注", nil) : NSLocalizedString(@"关闭了标注", nil);
+    NSString *msg = [NSString stringWithFormat:@"%@%@",username,temp];
+    [MBProgressHUD showMessage:msg addedToView:self.view duration:2];
+}
+
+#pragma mark -- PanoAnnotationToolDelegate
+
+- (void)annotationToolDidChooseType:(PanoWBToolType)type options:(NSDictionary<PanoAnnotationToolKey,id> *)options {
+    if (options[PanoToolKeyColor] != NULL) {
+        _config.annoColor = options[PanoToolKeyColor];
+    }
+    if (options[PanoToolKeyLineWidth] != NULL) {
+        _config.annoLineWidth = [options[PanoToolKeyLineWidth] unsignedIntValue];
+    }
+    if (options[PanoToolKeyFill] != NULL) {
+        //_config.fillType = [options[PanoToolKeyFill] boolValue] ? kPanoWBFillColor : kPanoWBFillNone;
+    }
+    if (options[PanoToolKeyFontSize] != NULL) {
+        _config.annoFontSize = [options[PanoToolKeyFontSize] unsignedIntValue];
+    }
+    [self updateAnnotationConfig];
+    if (type != kPanoWBToolNone) {
+        [self.poolView setAnnotationToolType:type];
+    }
+}
+
+- (void)updateAnnotationConfig {
+    PanoPoolService *poolService = [PanoServiceManager serviceWithType:PanoPoolServiceType];
+    PanoRtcAnnotation *annotation = self.poolView.activeAnnotation;
+    [annotation setColor:[poolService.annotationService convertWBColor:_config.annoColor]];
+    [annotation setLineWidth:_config.annoLineWidth];
+    [annotation setFontSize:_config.annoFontSize];
+}
+
+- (void)dealloc {
+    NSLog(@"dealloc");
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
 @end

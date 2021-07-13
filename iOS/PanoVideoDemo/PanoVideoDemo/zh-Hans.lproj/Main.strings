@@ -1,9 +1,11 @@
 
 /* Class = "UISegmentedControl"; 2N6-Qc-IG2.segmentTitles[0] = "360P"; ObjectID = "2N6-Qc-IG2"; */
-"2N6-Qc-IG2.segmentTitles[0]" = "360P";
+"2N6-Qc-IG2.segmentTitles[0]" = "180P";
 
 /* Class = "UISegmentedControl"; 2N6-Qc-IG2.segmentTitles[1] = "720P"; ObjectID = "2N6-Qc-IG2"; */
-"2N6-Qc-IG2.segmentTitles[1]" = "720P";
+"2N6-Qc-IG2.segmentTitles[1]" = "360P";
+"2N6-Qc-IG2.segmentTitles[2]" = "720P";
+"2N6-Qc-IG2.segmentTitles[3]" = "1080P";
 
 /* Class = "UILabel"; text = "高级美颜"; ObjectID = "2WS-WV-BjM"; */
 "2WS-WV-BjM.text" = "高级美颜";
@@ -30,7 +32,7 @@
 "9yv-6j-5q9.normalTitle" = "立即加入";
 
 /* Class = "UILabel"; text = "离开通话时需要确认"; ObjectID = "A1z-dJ-y1D"; */
-"A1z-dJ-y1D.text" = "离开通话时需要确认";
+"UcT-80-vVo.text" = "离开通话时需要确认";
 
 /* Class = "UILabel"; text = "100%"; ObjectID = "B0B-9k-fLd"; */
 "B0B-9k-fLd.text" = "100%";
@@ -66,7 +68,7 @@
 "Evv-vI-a8E.segmentTitles[3]" = "通用";
 
 /* Class = "UILabel"; text = "40分钟"; ObjectID = "Hj5-t5-kam"; */
-"Hj5-t5-kam.text" = "40分钟";
+"Hj5-t5-kam.text" = "90分钟";
 
 /* Class = "UILabel"; text = "房间号"; ObjectID = "Hjv-0Z-NnT"; */
 "Hjv-0Z-NnT.text" = "房间号";
@@ -141,10 +143,10 @@
 "j73-zn-KOS.text" = "房间号";
 
 /* Class = "UILabel"; text = "4人"; ObjectID = "jAa-8L-i1B"; */
-"jAa-8L-i1B.text" = "4人";
+"jAa-8L-i1B.text" = "25人";
 
 /* Class = "UIButton"; normalTitle = "设置"; ObjectID = "jst-Zf-oCl"; */
-"jst-Zf-oCl.normalTitle" = "设置";
+"jst-Zf-oCl.normalTitle" = "更多";
 
 /* Class = "UILabel"; text = "Pano 01"; ObjectID = "k2w-PH-1Hi"; */
 "k2w-PH-1Hi.text" = "Pano 01";

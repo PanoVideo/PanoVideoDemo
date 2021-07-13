@@ -1,7 +1,6 @@
 //
 //  FeedbackViewController.m
 //  PanoVideoDemo
-//
 //  Copyright © 2020 Pano. All rights reserved.
 //
 
@@ -235,6 +234,13 @@ static NSTimeInterval kDelayDismissAlertTime = 3.0;
 - (void)setButtonRoundedCorners:(UIButton *)button withRadius:(CGFloat)radius {
     button.layer.cornerRadius = radius;
     button.layer.masksToBounds = YES;
+}
+
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
+        return UIInterfaceOrientationMaskPortrait;
+    }
+    return UIInterfaceOrientationMaskAllButUpsideDown;
 }
 
 @end

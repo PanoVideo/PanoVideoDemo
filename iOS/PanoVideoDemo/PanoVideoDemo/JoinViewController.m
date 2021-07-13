@@ -7,6 +7,12 @@
 
 #import "JoinViewController.h"
 #import "PanoCallClient.h"
+#import "PanoClientService.h"
+#import "PanoServiceManager.h"
+#import "NSURL+Extension.h"
+#import "JoinViewController.h"
+#import "PanoCallClient.h"
+#import "MBProgressHUD+Extension.h"
 
 static NSTimeInterval kDelayDismissAlertTime = 3.0;
 static NSString *inputUserId = @"";
@@ -16,7 +22,8 @@ static NSString *inputUserId = @"";
 @property (strong, nonatomic) IBOutlet UITextField * roomId;
 @property (strong, nonatomic) IBOutlet UITextField * userName;
 @property (strong, nonatomic) IBOutlet UIButton * joinButton;
-
+@property (strong, nonatomic) IBOutlet UISwitch * autoMute;
+@property (strong, nonatomic) IBOutlet UISwitch * autoVideo;
 @end
 
 @implementation JoinViewController
@@ -30,11 +37,23 @@ static NSString *inputUserId = @"";
     [self setUserName];
     [self setFirstResponder];
     [self setButtonRoundedCorners:self.joinButton withRadius:5.0];
-    self.navigation.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(showPanoInfoAlert)];
+    self.autoMute.on = PanoCallClient.sharedInstance.autoMute;
+    self.autoVideo.on = PanoCallClient.sharedInstance.autoVideo;
+    self.navigation.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(showPanoInfoAlert)];
 }
 
-- (IBAction)clickBack:(id)sender {
-    [self dismissViewControllerAnimated:YES completion:nil];
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    [PanoClientService checkVersion];
+}
+
+
+- (IBAction)switchAutoMute:(id)sender {
+    PanoCallClient.sharedInstance.autoMute = self.autoMute.on;
+}
+
+- (IBAction)switchAutoVideo:(id)sender {
+    PanoCallClient.sharedInstance.autoVideo = self.autoVideo.on;
 }
 
 - (IBAction)clickJoin:(id)sender {
@@ -111,6 +130,30 @@ static NSString *inputUserId = @"";
     [self.view endEditing:YES];
 }
 
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
+    if (textField == self.roomId) {
+        if ((textField.text.length >= 20) && ![string isEqualToString:@""]) {
+            return NO;
+        }
+        if ([self isInputCharAvailable:string]) {
+            return true;
+        }
+    } else if (textField == self.userName) {
+        if ((textField.text.length >= 20) && ![string isEqualToString:@""]) {
+            return NO;
+        }
+    }
+    return true;
+}
+
+- (BOOL)isInputCharAvailable:(NSString *)str {
+    NSString *pattern = @"^[0-9a-zA-Z]*$";
+    NSPredicate *pred = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", pattern];
+    BOOL isMatch = [pred evaluateWithObject:str];
+    return isMatch;
+}
+
+
 #pragma mark - Alert
 
 - (void)presentAlert:(NSString *)message {
@@ -128,13 +171,13 @@ static NSString *inputUserId = @"";
 #pragma mark - Private
 
 - (void)setLocalizable {
-    if (PanoCallClient.sharedInstance.host) {
-        self.navigation.title = NSLocalizedString(@"startCall", nil);
-        [self.joinButton setTitle:NSLocalizedString(@"start", nil) forState:UIControlStateNormal];
-    } else {
+//    if (PanoCallClient.sharedInstance.host) {
+//        self.navigation.title = NSLocalizedString(@"startCall", nil);
+//        [self.joinButton setTitle:NSLocalizedString(@"start", nil) forState:UIControlStateNormal];
+//    } else {
         self.navigation.title = NSLocalizedString(@"joinCall", nil);
         [self.joinButton setTitle:NSLocalizedString(@"join", nil) forState:UIControlStateNormal];
-    }
+//    }
 }
 
 - (void)openCallView {
@@ -166,7 +209,8 @@ static NSString *inputUserId = @"";
 }
 
 - (void)setRoomId {
-    self.roomId.text = PanoCallClient.sharedInstance.host ? [self getRandomRoomId] : @"";
+    self.roomId.keyboardType = UIKeyboardTypeASCIICapable;
+    self.roomId.text = PanoCallClient.sharedInstance.roomId ?: [self getRandomRoomId];
 }
 
 - (void)setUserName {
@@ -190,4 +234,10 @@ static NSString *inputUserId = @"";
     button.layer.masksToBounds = YES;
 }
 
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
+        return UIInterfaceOrientationMaskPortrait;
+    }
+    return UIInterfaceOrientationMaskAllButUpsideDown;
+}
 @end

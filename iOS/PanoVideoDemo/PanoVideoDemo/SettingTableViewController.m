@@ -51,11 +51,7 @@
 }
 
 - (IBAction)switchResolution:(id)sender {
-    if (self.resolution.selectedSegmentIndex == 0) {
-        PanoCallClient.sharedInstance.resolution = kPanoProfileStandard;
-    } else {
-        PanoCallClient.sharedInstance.resolution = kPanoProfileHD720P;
-    }
+    PanoCallClient.sharedInstance.resolution = (PanoVideoProfileType)(self.resolution.selectedSegmentIndex+1);
 }
 
 - (IBAction)switchAutoSpeaker:(id)sender {
@@ -153,10 +149,9 @@
     
     self.autoMute.on = PanoCallClient.sharedInstance.autoMute;
     self.autoVideo.on = PanoCallClient.sharedInstance.autoVideo;
-    if (PanoCallClient.sharedInstance.resolution == kPanoProfileStandard) {
-        self.resolution.selectedSegmentIndex = 0;
-    } else {
-        self.resolution.selectedSegmentIndex = 1;
+    NSUInteger index = PanoCallClient.sharedInstance.resolution - 1;
+    if (index >= 0 && index <= 4) {
+        self.resolution.selectedSegmentIndex = index;
     }
     self.autoSpeaker.on = PanoCallClient.sharedInstance.autoSpeaker;
     self.leaveConfirm.on = PanoCallClient.sharedInstance.leaveConfirm;
@@ -166,4 +161,9 @@
     self.version.text = PanoCallClient.productVersion;
 }
 
+- (IBAction)showEnvrionmentAlert:(id)sender { }
+
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    return UIInterfaceOrientationMaskAllButUpsideDown;
+}
 @end

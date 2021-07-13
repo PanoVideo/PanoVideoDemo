@@ -10,6 +10,8 @@
 
 "upgradeTitle"  = "Version Upgrade";
 "upgradeAlert"  = "Found a new version, do you want to upgrade?";
+"upgradeTitleForce"  = "Mandatory upgrade";
+"upgradeAlertForce"  = "A new version is found and a mandatory upgrade is required";
 "upgrade"       = "Upgrade Now";
 "notUpgrade"    = "Not Upgrade";
 
@@ -71,3 +73,51 @@
 
 "remainder"     = "Remaining %u characters";
 "feedbackAlert" = "The problem has been sent, thank your feedback";
+
+"%@’s screen" = "%@’s screen";
+"Prev Page" = "Prev Page";
+"Next Page" = "Next Page";
+"Add Page" = "Add Page";
+"Delete Page" = "Delete Page";
+"Apply Show" = "Apply Show";
+"Default Doc" = "Default Doc";
+"Doc" = "Doc";
+"Current whiteboard" = "Current: ";
+"Current Presenter" = "Presenter: ";
+
+"Pin Video Tip" = "Double tap screen to cancel pin video";
+"Exit Pin Video Tip" = "Exit pin video";
+"直播推流" = "Live";
+"分享" = "Share";
+"输入自定义推流地址" = "Enter a URL";
+"使用PanoCDN (推流时长: 10分钟)" = "Use PanoCDN (Duration:10 min)";
+"开始推流" = "Start";
+"停止推流" = "Stop";
+"推流失败" = "Failed";
+"推流成功，点击右上角按钮分享..." = "Successfully, click the button in the upper right corner to share...";
+"请加入房间" = "Please join the room";
+"请输入推流地址" = "Enter a URL";
+"请开启推流" = "Please turn on push streaming";
+"用户列表" = "Users";
+"您已经在会中..." = "You are already in the meeting...";
+"您正在使用数据流量..." = "You are using cellular data...";
+"      复制      " = "      Copy      ";
+"设置" = "Setting";
+"取消" = "Cancel";
+"视频标注" = "Annotate";
+"请打开您的视频" = "Please open your video";
+"画笔" = "Pen";
+"箭头" = "Arrow";
+"橡皮擦" = "Eraser";
+"返回" = "Back";
+"开启了标注" = "‘s annotations have been turned on";
+"关闭了标注" = "‘s annotations have been closed";
+"您的手机性能不足，关闭了您的视频" = "Your phone’s performance is insufficient and your video is turned off";
+"您的手机性能不足，调整你的视频分辨率为%@" = "Your phone performance is insufficient, adjust your video resolution to %@";
+"请打开控制中心，长按屏幕录制, 选择开始直播" = "Please open the Control Center, long press the screen to record, and start broadcast.";
+"您正在共享屏幕..." = "You are sharing a screen...";
+"停止共享屏幕" = "Stop Share Screen";
+"共享屏幕" = "Share Screen";
+"'%@'开启了视角跟随" = "'%@' has started vision share";
+"'%@'关闭了视觉跟随" = "'%@' has stopped vision share";
+"您已静音，请开启麦克风后发言" = "You are muted, please turn on the microphone and speak";

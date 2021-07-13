@@ -7,15 +7,16 @@
 
 #import "PanoCallClient.h"
 #import "VideoFilterDelegate.h"
+#import "PanoServiceManager.h"
+#import "PanoNetworkManager.h"
+#import "PanoUserService.h"
+#import "UIColor+Extension.h"
 
 //https://developer.pano.video/getting-started/firstapp/#1-注册账号
 //https://developer.pano.video/getting-started/firstapp/#14-%E7%94%9F%E6%88%90%E4%B8%B4%E6%97%B6token
-
-#error("Enter the kDemoAppId and kDemoTempToken. Visit the above link for help.")
-NSString * kDemoAppId = @"请输入AppID";
-NSString * kDemoTempToken = @"请输入Token";
+NSString * kDemoAppId = <#T##请输入AppID，参考Pano开发者网站: String##String#>;
+NSString * kDemoTempToken = <#T##请输入Token，参考Pano开发者网站: String##String#>;
 NSString * kDemoPanoServer = @"api.pano.video";
-
 
 // Http Request
 static NSString * kHttpHeader = @"http";
@@ -25,6 +26,7 @@ static NSString * kUrlUsageRecordApi = @"sirius/pvc";
 // Preference Keys
 static NSString * kUserUniqueIDKey = @"UUID";
 static NSString * kUserNameKey = @"UserName";
+static NSString * kRoomIdKey = @"RoomId";
 static NSString * kMobileNumberKey = @"MobileNumber";
 static NSString * kAutoMuteKey = @"AutoMute";
 static NSString * kAutoVideoKey = @"AutoVideo";
@@ -44,7 +46,7 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
 @interface PanoCallClient () <PanoRtcEngineDelegate>
 
 @property (strong, nonatomic) VideoFilterDelegate * videoFilter;
-
+@property (assign, nonatomic) PanoVideoProfileType maxResolution;
 @end
 
 @implementation PanoCallClient
@@ -61,7 +63,7 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
 - (instancetype)init {
     self = [super init];
     if (nil != self) {
-        _host = NO;
+        _host = YES;
         _roomId = nil;
         _userName = nil;
         _userId = 0;
@@ -77,20 +79,14 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
         _cheekThinningIntensity = 0.0;
         _eyeEnlargingIntensity = 0.0;
         _debugMode = NO;
-        
-        _wbRole = kPanoWBRoleAttendee;
-        _wbToolType = kPanoWBToolPath;
-        _wbLineWidth = 5;
-        _wbColor = [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:1.0];
-        _wbFontStyle = kPanoWBFontNormal;
-        _wbFontSize = 20;
-        
         _uuid = nil;
         [self checkUUID];
         
+        _config = [[PanoConfig alloc] init];
         [self loadPreferences];
         [self createEngineKit];
         _channelDelegate = nil;
+        [self startMonitoring];
     }
 #if defined(DEBUG)
     NSLog(@"[PanoCallClient init], self = %@", self);
@@ -106,10 +102,10 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
     [self savePreferences];
 }
 
-- (void)setHost:(BOOL)host {
-    if (_host != host) {
-        _host = host;
-        _wbRole = host ? kPanoWBRoleAdmin : kPanoWBRoleAttendee;
+- (void)setRoomId:(NSString *)roomId {
+    if (![_roomId isEqualToString:roomId]) {
+        _roomId = roomId;
+        [self savePreference:roomId forKey:kRoomIdKey];
     }
 }
 
@@ -227,6 +223,8 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
     return [_engineKit stopAudioDump];
 }
 
+#pragma mark - Http Request
+
 - (BOOL)recordUsage {
     NSString * requestStr = [NSString stringWithFormat:@"%@://%@/%@", kHttpsHeader, kDemoPanoServer, kUrlUsageRecordApi];
     NSURL *requestURL = [NSURL URLWithString:requestStr];
@@ -270,6 +268,7 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
 
 - (void)onChannelJoinConfirm:(PanoResult)result {
     [_channelDelegate onChannelJoinConfirm:result];
+    [self queryDeviceRating];
 }
 
 - (void)onChannelLeaveIndication:(PanoResult)result {
@@ -285,37 +284,46 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
 }
 
 - (void)onUserJoinIndication:(UInt64)userId withName:(NSString * _Nullable)userName {
+    [[PanoServiceManager serviceWithType:PanoUserServiceType] onUserJoinIndication:userId withName:userName];
     [_channelDelegate onUserJoinIndication:userId withName:userName];
 }
 
 - (void)onUserLeaveIndication:(UInt64)userId
                    withReason:(PanoUserLeaveReason)reason {
+    [[PanoServiceManager serviceWithType:PanoVideoServiceType] onUserLeaveIndication:userId withReason:reason];
+    [[PanoServiceManager serviceWithType:PanoUserServiceType] onUserLeaveIndication:userId withReason:reason];
     [_channelDelegate onUserLeaveIndication:userId withReason:reason];
 }
 
 - (void)onUserAudioStart:(UInt64)userId {
+    [[PanoServiceManager serviceWithType:PanoUserServiceType] onUserAudioStart:userId];
     [_channelDelegate onUserAudioStart:userId];
 }
 
 - (void)onUserAudioStop:(UInt64)userId {
+    [[PanoServiceManager serviceWithType:PanoUserServiceType] onUserAudioStop:userId];
     [_channelDelegate onUserAudioStop:userId];
 }
 
 - (void)onUserVideoStart:(UInt64)userId
           withMaxProfile:(PanoVideoProfileType)maxProfile {
+    [[PanoServiceManager serviceWithType:PanoUserServiceType] onUserVideoStart:userId withMaxProfile:maxProfile];
     [_channelDelegate onUserVideoStart:userId withMaxProfile:maxProfile];
 }
 
 - (void)onUserVideoStop:(UInt64)userId {
+    [[PanoServiceManager serviceWithType:PanoUserServiceType] onUserVideoStop:userId];
     [_channelDelegate onUserVideoStop:userId];
 }
 
 - (void)onUserScreenStart:(UInt64)userId {
     [_channelDelegate onUserScreenStart:userId];
+    [[PanoServiceManager serviceWithType:PanoUserServiceType] onUserScreenStart:userId];
 }
 
 - (void)onUserScreenStop:(UInt64)userId {
     [_channelDelegate onUserScreenStop:userId];
+    [[PanoServiceManager serviceWithType:PanoUserServiceType] onUserScreenStop:userId];
 }
 
 - (void)onUserAudioSubscribe:(UInt64)userId
@@ -325,36 +333,44 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
 
 - (void)onUserVideoSubscribe:(UInt64)userId
                   withResult:(PanoSubscribeResult)result {
+    [[PanoServiceManager serviceWithType:PanoVideoServiceType] onUserVideoSubscribe:userId withResult:result];
     [_channelDelegate onUserVideoSubscribe:userId withResult:result];
 }
 
 - (void)onUserScreenSubscribe:(UInt64)userId
                   withResult:(PanoSubscribeResult)result {
     [_channelDelegate onUserScreenSubscribe:userId withResult:result];
+    [[PanoServiceManager serviceWithType:PanoDesktopServiceType] onUserScreenSubscribe:userId withResult:result];
 }
 
 - (void)onUserAudioMute:(UInt64)userId {
+    [[PanoServiceManager serviceWithType:PanoUserServiceType]  onUserAudioMute:userId];
     [_channelDelegate onUserAudioMute:userId];
 }
 
 - (void)onUserAudioUnmute:(UInt64)userId {
+    [[PanoServiceManager serviceWithType:PanoUserServiceType]  onUserAudioUnmute:userId];
     [_channelDelegate onUserAudioUnmute:userId];
 }
 
 - (void)onUserVideoMute:(UInt64)userId {
+    [[PanoServiceManager serviceWithType:PanoUserServiceType]  onUserVideoMute:userId];
     [_channelDelegate onUserVideoMute:userId];
 }
 
 - (void)onUserVideoUnmute:(UInt64)userId {
+    [[PanoServiceManager serviceWithType:PanoUserServiceType]  onUserVideoUnmute:userId];
     [_channelDelegate onUserVideoUnmute:userId];
 }
 
 - (void)onUserScreenMute:(UInt64)userId {
     [_channelDelegate onUserScreenMute:userId];
+    [[PanoServiceManager serviceWithType:PanoUserServiceType] onUserScreenMute:userId];
 }
 
 - (void)onUserScreenUnmute:(UInt64)userId {
     [_channelDelegate onUserScreenUnmute:userId];
+    [[PanoServiceManager serviceWithType:PanoUserServiceType] onUserScreenUnmute:userId];
 }
 
 - (void)onFirstAudioDataReceived:(UInt64)userId {
@@ -421,7 +437,47 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
     [_channelDelegate onWhiteboardStop];
 }
 
+- (void)onNetworkQuality:(PanoQualityRating)quality withUser:(UInt64)userId {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.channelDelegate onNetworkQuality:quality withUser:userId];
+    });
+}
+
 #pragma mark - Private
+- (void)queryDeviceRating {
+    PanoDeviceRating deviceRating = [_engineKit queryDeviceRating];
+    PanoVideoProfileType maxResolution = _resolution;
+    switch (deviceRating) {
+        case kPanoQualityVeryBad:
+            maxResolution = kPanoProfileNone;
+            break;
+        case kPanoQualityBad:
+            maxResolution = kPanoProfileLow;
+            break;
+        case kPanoQualityPoor:
+            maxResolution = kPanoProfileStandard;
+            break;
+        case kPanoQualityGood:
+            maxResolution = kPanoProfileHD720P;
+            break;
+        case kPanoQualityExcellent:
+            maxResolution = kPanoProfileHD720P;
+            break;
+        default:
+            break;
+    }
+    _maxResolution = maxResolution;
+}
+
+- (PanoVideoProfileType)videoProfile {
+    if (_maxResolution == kPanoProfileNone) {
+        return kPanoProfileNone;
+    }
+    if (_maxResolution < _resolution) {
+        return _maxResolution;
+    }
+    return _resolution;
+}
 
 - (void)createEngineKit {
     [_engineKit destroy];
@@ -432,12 +488,21 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
     engineConfig.rtcServer = kDemoPanoServer;
     _engineKit = [PanoRtcEngineKit engineWithConfig:engineConfig delegate:self];
     engineConfig = nil;
+    [PanoRtcEngineKit setLogLevel:kPanoLogInfo];
     
     // Update Options
     [self updateFaceBeautifyOption];
+    
+    // RTM
+    _rtmService = [[PanoRTMService alloc] init];
+    [self.engineKit.messageService setDelegate:(id<PanoRtcMessageDelegate>)_rtmService];
+    [_rtmService addDelegate:self];
 }
 
 - (void)destroyEngineKit {
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];
+    [_rtmService removeDelegate:self];
+    [_engineKit.messageService setDelegate:nil];
     [_engineKit destroy];
     _engineKit = nil;
 }
@@ -446,6 +511,10 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
     NSString * userName = [[NSUserDefaults standardUserDefaults] stringForKey:kUserNameKey];
     if (userName) {
         _userName = userName;
+    }
+    NSString * roomId = [[NSUserDefaults standardUserDefaults] stringForKey:kRoomIdKey];
+    if (roomId) {
+        _roomId = roomId;
     }
     NSString * mobileNumber = [[NSUserDefaults standardUserDefaults] stringForKey:kMobileNumberKey];
     if (mobileNumber) {
@@ -575,6 +644,11 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
     return [url stringByAddingPercentEncodingWithAllowedCharacters:NSCharacterSet.URLUserAllowedCharacterSet];
 }
 
+- (void)startMonitoring {
+    self.reachability = [Reachability reachabilityWithHostname:@"www.google.com"];
+    [self.reachability startNotifier];
+}
+
 + (void)updatePanoConfigWithAppId:(NSString *)appId
                          rtcServer:(NSString *)server
                              token:(NSString *)token
@@ -583,6 +657,63 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
     kDemoPanoServer = server;
     kDemoTempToken = token;
     [[PanoCallClient sharedInstance] createEngineKit];
+}
+
+@end
+
+@interface PanoCallClient (RTM) <PanoRTMDelegate>
+
+@end
+
+@implementation PanoCallClient (RTM)
+
+- (void)onMessageReceived:(NSDictionary *)message fromUser:(UInt64)userId {
+    NSLog(@"message-> %@ %lld %lld",message, userId, [PanoCallClient sharedInstance].userId);
+    if ([message[@"type"] isEqualToString:@"command"]) {
+        NSString *command = message[@"command"];
+        if ([command isEqualToString:@"startDump"]) {
+            [self startAudioDump];
+            NSString *msg = message[@"description"];
+            [self performSelector:@selector(uploadLogs:) withObject:msg afterDelay:60];
+        }
+    }else if ([message[@"type"] isEqualToString:@"UpdateUser"] &&
+               [PanoCallClient sharedInstance].userId != userId ) {
+        PanoUserService *userService = [PanoServiceManager serviceWithType:PanoUserServiceType];
+        if (![userService findUserWithId:userId].os) {
+            [_rtmService sendMessageToUser:userId msg:[self myUserInfo]];
+        }
+        [userService onUserUpdated:userId message:message];
+    }
+}
+
+- (NSDictionary *)myUserInfo {
+    NSDictionary *info = @{@"type": @"UpdateUser", @"palyload": @{ @"os": @"iOS"}};
+    return info;
+}
+- (void)onRtmServiceAvailable {
+    /*
+     * Sync User Info
+     * {
+         "type": "UpdateUser",
+         "palyload": {
+            "os": "iOS" // iOS/Android/macOS/Windows/Web
+          }
+        }
+     */
+    [_rtmService broadcastMessage:[self myUserInfo] sendBack:false];
+    //[_rtmService.messageService setProperty:@"123" value:[@"123" dataUsingEncoding:NSUTF8StringEncoding]];
+}
+
+- (void)uploadLogs:(NSString *)msg {
+    [self stopAudioDump];
+    PanoFeedbackInfo * info = [PanoFeedbackInfo new];
+    info.type = kPanoFeedbackAudio;
+    info.productName = PanoCallClient.productName;
+    info.detailDescription = msg;
+    info.extraInfo = PanoCallClient.sharedInstance.uuid;
+    info.uploadLogs = true;
+    PanoResult res = [PanoCallClient.sharedInstance.engineKit sendFeedback:info];
+    NSLog(@"uploadLogs res-> %ld",(long)res);
 }
 
 @end

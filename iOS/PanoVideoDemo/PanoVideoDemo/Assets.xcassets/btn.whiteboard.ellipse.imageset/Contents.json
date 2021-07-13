@@ -1,11 +1,11 @@
 {
   "images" : [
     {
-      "filename" : "btn.whiteboard.ellipse.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
+      "filename" : "btn.whiteboard.ellipse@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },

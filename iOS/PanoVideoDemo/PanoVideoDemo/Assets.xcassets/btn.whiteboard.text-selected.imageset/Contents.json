@@ -1,11 +1,11 @@
 {
   "images" : [
     {
-      "filename" : "btn.whiteboard.text-selected.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
+      "filename" : "btn.whiteboard.text-selected@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },

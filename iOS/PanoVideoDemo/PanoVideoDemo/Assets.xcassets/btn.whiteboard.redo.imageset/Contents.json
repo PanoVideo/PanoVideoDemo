@@ -1,11 +1,11 @@
 {
   "images" : [
     {
-      "filename" : "btn.whiteboard.redo.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
+      "filename" : "btn.whiteboard.redo@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },

@@ -1,9 +1,11 @@
 
 /* Class = "UISegmentedControl"; 2N6-Qc-IG2.segmentTitles[0] = "360P"; ObjectID = "2N6-Qc-IG2"; */
-"2N6-Qc-IG2.segmentTitles[0]" = "360P";
+"2N6-Qc-IG2.segmentTitles[0]" = "180P";
 
 /* Class = "UISegmentedControl"; 2N6-Qc-IG2.segmentTitles[1] = "720P"; ObjectID = "2N6-Qc-IG2"; */
-"2N6-Qc-IG2.segmentTitles[1]" = "720P";
+"2N6-Qc-IG2.segmentTitles[1]" = "360P";
+"2N6-Qc-IG2.segmentTitles[2]" = "720P";
+"2N6-Qc-IG2.segmentTitles[3]" = "1080P";
 
 /* Class = "UILabel"; text = "高级美颜"; ObjectID = "2WS-WV-BjM"; */
 "2WS-WV-BjM.text" = "Advanced Beautify";
@@ -30,7 +32,7 @@
 "9yv-6j-5q9.normalTitle" = "Join";
 
 /* Class = "UILabel"; text = "离开通话时需要确认"; ObjectID = "A1z-dJ-y1D"; */
-"A1z-dJ-y1D.text" = "Confirm When Leaving Call";
+"EkS-AX-HII.text" = "Confirm When Leaving Call";
 
 /* Class = "UILabel"; text = "100%"; ObjectID = "B0B-9k-fLd"; */
 "B0B-9k-fLd.text" = "100%";
@@ -66,7 +68,7 @@
 "Evv-vI-a8E.segmentTitles[3]" = "General";
 
 /* Class = "UILabel"; text = "40分钟"; ObjectID = "Hj5-t5-kam"; */
-"Hj5-t5-kam.text" = "40 Minutes";
+"Hj5-t5-kam.text" = "90 Minutes";
 
 /* Class = "UILabel"; text = "房间号"; ObjectID = "Hjv-0Z-NnT"; */
 "Hjv-0Z-NnT.text" = "Room ID";
@@ -141,10 +143,10 @@
 "j73-zn-KOS.text" = "Room";
 
 /* Class = "UILabel"; text = "4人"; ObjectID = "jAa-8L-i1B"; */
-"jAa-8L-i1B.text" = "4 Members";
+"jAa-8L-i1B.text" = "25 Members";
 
 /* Class = "UIButton"; normalTitle = "设置"; ObjectID = "jst-Zf-oCl"; */
-"jst-Zf-oCl.normalTitle" = "Setting";
+"jst-Zf-oCl.normalTitle" = "More";
 
 /* Class = "UILabel"; text = "Pano 01"; ObjectID = "k2w-PH-1Hi"; */
 "k2w-PH-1Hi.text" = "Pano 01";
@@ -196,3 +198,23 @@
 
 /* Class = "UILabel"; text = "进入通话时打开摄像头"; ObjectID = "zxd-ha-yQH"; */
 "zxd-ha-yQH.text" = "Open Video When Joining Call";
+
+"wix-Qr-ei4.text" = "Start Live Broadcast";
+
+"XNv-ua-1gt.text" = "Statistics";
+
+"lAc-ic-utF.normalTitle" = "Users";
+
+"doB-Yo-rhP.text" = "Audio Log Upload";
+
+"4i2-JI-bUq.text" = "Problem Description";
+
+"NrP-Vq-sat.normalTitle" = "Send";
+
+
+"hBf-66-qKd.text" = "Room ID";
+"qZ8-Vl-YZt.text" = "Name";
+"hzh-ro-RXo.text" = "Mute When Joining Call";
+"N7J-UT-Tm8.text" = "Open Video When Joining Call";
+"G5c-BS-4Sp.text" = "Beautify Intensity";
+"Igd-Kp-x8w.normalTitle" = "Set";

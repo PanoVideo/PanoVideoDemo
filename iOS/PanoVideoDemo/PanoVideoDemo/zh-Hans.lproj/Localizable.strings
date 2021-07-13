@@ -10,6 +10,8 @@
 
 "upgradeTitle"  = "版本升级";
 "upgradeAlert"  = "发现有新版本，是否升级？";
+"upgradeTitleForce"  = "强制升级";
+"upgradeAlertForce"  = "发现有新版本，需要强制升级";
 "upgrade"       = "马上升级";
 "notUpgrade"    = "暂不升级";
 
@@ -42,6 +44,9 @@
 "whiteboardOff"     = "白板未开启";
 "exitAlert"     = "你已离开通话，请点击确认回到首页";
 "exitConfirm"   = "确定要离开通话吗？";
+"exitConfirmTip"   = "确定要离开通话吗？";
+"Leave Meeting" = "离开会议";
+"End Meeting"   = "结束整个会议";
 "fetchFail"     = "获取通话令牌失败";
 "joinFail"      = "加入通话失败";
 
@@ -71,3 +76,36 @@
 
 "remainder"     = "剩余%u字";
 "feedbackAlert" = "故障已上报，谢谢你的反馈";
+
+
+"%@’s screen" = "%@的屏幕";
+"Prev Page" = "前一页";
+"Next Page" = "后一页";
+"Add Page" = "增加页";
+"Delete Page" = "删除当前页";
+"Apply Show" = "申请演示";
+"Default Doc" = "默认白板";
+"Doc" = "文档";
+"Current whiteboard" = "当前白板: ";
+"Current Presenter" = "当前演示人: ";
+
+"Pin Video Tip" = "双击取消固定视频";
+"Exit Pin Video Tip" = "退出固定视频";
+
+"Statistics" = "统计";
+"Overall" = "全体";
+"Audio" = "音频";
+"Video" = "视频";
+"Screen" = "屏幕共享";
+"Brandwidth" = "带宽";
+"Network Type" = "网络类型";
+"Item Name" = "项目名";
+"Bitrate" = "流量 发送/接收";
+"Lost Ratio" = "丢包率";
+"Round-trip Time" = "延迟";
+"Resolution" = "分辨率";
+"Frame Rate" = "帧率";
+"Send" = "发送";
+"Memory" = "内存";
+"Receive" = "接收";
+"复制成功" = "Copy successfully";

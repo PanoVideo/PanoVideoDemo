@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 #import "UserView.h"
+#import "PanoWbTopView.h"
 
 @protocol WhiteboardViewDelegate <NSObject>
 @optional
@@ -24,7 +25,11 @@
 @property (strong, nonatomic) IBOutlet UserView * user3View;
 @property (strong, nonatomic) IBOutlet UserView * user4View;
 
+@property (strong, nonatomic, readonly) PanoWbTopView *topBarView;
+
 @property (weak, nonatomic) id<WhiteboardViewDelegate> whiteboardViewDelegate;
+
+- (void)dismiss;
 
 @end
 

@@ -7,6 +7,9 @@
 
 #import <Foundation/Foundation.h>
 #import "PanoRtc/PanoRtcEngineKit.h"
+#import "Reachability.h"
+#import "PanoRTMService.h"
+#import "PanoConfig.h"
 
 extern NSString * _Nullable kDemoAppId;
 extern NSString * _Nullable kDemoPanoServer;
@@ -26,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (assign, nonatomic) BOOL autoMute;
 @property (assign, nonatomic) BOOL autoVideo;
 @property (assign, nonatomic) PanoVideoProfileType resolution;
+@property (assign, nonatomic, readonly) PanoVideoProfileType videoProfile;
 @property (assign, nonatomic) BOOL autoSpeaker;
 @property (assign, nonatomic) BOOL leaveConfirm;
 @property (assign, nonatomic) BOOL faceBeautify;
@@ -35,15 +39,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (assign, nonatomic) Float32 eyeEnlargingIntensity;
 @property (assign, nonatomic) BOOL debugMode;
 
-@property (assign, nonatomic) PanoWBRoleType wbRole;
-@property (assign, nonatomic) PanoWBToolType wbToolType;
-@property (assign, nonatomic) UInt32 wbLineWidth;
-@property (strong, nonatomic) UIColor * wbColor;
-@property (assign, nonatomic) PanoWBFontStyle wbFontStyle;
-@property (assign, nonatomic) UInt32 wbFontSize;
-
+@property (strong, nonatomic) PanoConfig *config;
 @property (strong, nonatomic, readonly) PanoRtcEngineKit * engineKit;
 @property (strong, nonatomic) id<PanoRtcEngineDelegate> _Nullable channelDelegate;
+@property (strong, nonatomic) Reachability *reachability;
+@property (strong, nonatomic, readonly) PanoRTMService *rtmService;
 
 + (instancetype)sharedInstance;
 - (instancetype)init NS_UNAVAILABLE;
@@ -53,12 +53,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)recordUsage;
 
+
 + (NSString *)productName;
 + (NSString *)productVersion;
 
 + (void)updatePanoConfigWithAppId:(NSString *)appId
                          rtcServer:(NSString *)server
                              token:(NSString *)token;
+
 @end
 
 NS_ASSUME_NONNULL_END

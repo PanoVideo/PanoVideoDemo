@@ -7,38 +7,36 @@
 
 #import "WhiteboardViewController.h"
 #import "PanoCallClient.h"
-#import "StylesView.h"
+#import "PanoWbTopView.h"
+#import "PanoWhiteboardPrivateHeader.h"
+#import "PanoServiceManager.h"
+#import "PanoArrayDataSource.h"
+#import "PanoMenuCell.h"
+#import "PanoAnnotationTool.h"
+#import "UIImage+IconFont.h"
 
-@interface WhiteboardViewController () <PanoRtcWhiteboardDelegate>
+@interface WhiteboardViewController () <PanoRtcWhiteboardDelegate, PanoWhiteboardDelegate,PanoAnnotationToolDelegate>
 
-@property (strong, nonatomic) IBOutlet UIButton * selectButton;
-@property (strong, nonatomic) IBOutlet UIButton * pathButton;
-@property (strong, nonatomic) IBOutlet UIButton * shapesButton;
-@property (strong, nonatomic) IBOutlet UIButton * textButton;
-@property (strong, nonatomic) IBOutlet UIButton * stylesButton;
-@property (strong, nonatomic) IBOutlet UIButton * eraserButton;
-@property (strong, nonatomic) IBOutlet UIView * shapesView;
-@property (strong, nonatomic) IBOutlet UIButton * lineButton;
-@property (strong, nonatomic) IBOutlet UIButton * ellipseButton;
-@property (strong, nonatomic) IBOutlet UIButton * rectButton;
-@property (strong, nonatomic) IBOutlet StylesView * stylesView;
 @property (strong, nonatomic) IBOutlet UIView * drawView;
-@property (strong, nonatomic) IBOutlet UILabel * pageNumber;
-@property (strong, nonatomic) IBOutlet UILabel * zoomScale;
-
 @property (weak, nonatomic) PanoRtcWhiteboard * whiteboardEngine;
 @property (assign, nonatomic) PanoWBPageNumber curPage;
 @property (assign, nonatomic) UInt32 totalPages;
-
+@property (strong, nonatomic) PanoWbTopView *topBarView;
+@property (strong, nonatomic) PanoArrayDataSource *moreItems;
+@property (strong, nonatomic) PanoAnnotationTool* annotationTool;
 @end
 
 @implementation WhiteboardViewController
 
+- (PanoConfig *)config {
+    return PanoCallClient.sharedInstance.config;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
-    [self initVideoView];
+    [self initTopBarView];
     self.whiteboardEngine = PanoCallClient.sharedInstance.engineKit.whiteboardEngine;
+    [self initAnnotationTool];
     [self initWhiteboard];
     [self openWhiteboard];
     if ([self.whiteboardViewDelegate respondsToSelector:@selector(whiteboardViewDidOpen)]) {
@@ -46,60 +44,107 @@
     }
 }
 
-- (IBAction)clickBack:(id)sender {
+- (void)initAnnotationTool {
+    _annotationTool = [[PanoAnnotationTool alloc] initWithView:self.view toolOption:PanoAnnotationToolWhiteBoard];
+    _annotationTool.delegate = self;
+    _annotationTool.fontSizeRange = PanoMakeRange(1, 21);
+    [_annotationTool show];
+}
+
+- (void)initTopBarView {
+    _topBarView = [[PanoWbTopView alloc] init];
+    [self.view addSubview:_topBarView];
+    [self.view bringSubviewToFront:_topBarView];
+    [_topBarView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.mas_equalTo(self.view).insets(UIEdgeInsetsMake(statusBarHeight() + DefaultFixSpace, 0, 0, 0));
+        make.centerX.mas_equalTo(self.view);
+    }];
+    [_topBarView.prevBtn addTarget:self action:@selector(clickPrevPageButton:) forControlEvents:UIControlEventTouchUpInside];
+    [_topBarView.nextBtn addTarget:self action:@selector(clickNextPageButton:) forControlEvents:UIControlEventTouchUpInside];
+    [_topBarView.addBtn addTarget:self action:@selector(clickAddPageButton:) forControlEvents:UIControlEventTouchUpInside];
+    [_topBarView.deleteBtn addTarget:self action:@selector(clickRemovePageButton:) forControlEvents:UIControlEventTouchUpInside];
+    [_topBarView.moreButton addTarget:self action:@selector(toggleMoreAction:) forControlEvents:UIControlEventTouchUpInside];
+}
+
+- (void)toggleMoreAction:(UIButton *)sender {
+    if (!self.topBarView.isShowing) {
+        [self showMenuView:true];
+    } else {
+        [self.topBarView hideMenuView];
+    }
+}
+
+- (void)showMenuView:(BOOL)animated {
+    [self.annotationTool.penView dismiss];
+    __weak typeof(self) weakSelf = self;
+    PanoWhiteboardService *wbService = [PanoServiceManager serviceWithType:PanoWhiteboardServiceType];
+    NSArray *items = nil;
+    if ([wbService isPresenter]) {
+        NSMutableArray *files = [NSMutableArray array];
+        NSString *curFileName = [wbService getCurrentFileName];
+        UIColor *color = [UIColor pano_colorWithHexString:@"#666666"];
+        CGFloat size = 24;
+        [[wbService fileNames] enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            UIImage *image = [curFileName isEqualToString:obj] ? IconFontImage(size, @"\U0000e78f", appHighlightedColor()) : nil;
+            PanoItem *fileItem = [[PanoItem alloc] initWithImage:image title:obj configBlock:^{
+                [wbService switchToDoc:obj];
+            }];
+            [files addObject:fileItem];
+        }];
+        PanoItem *prePageItem = [[PanoItem alloc] initWithImage:IconFontImage(size, @"\U0000e785", color) title:NSLocalizedString(@"Prev Page", nil) configBlock:^{
+            [weakSelf clickPrevPageButton:nil];
+        }];
+        PanoItem *nextPageItem = [[PanoItem alloc] initWithImage:IconFontImage(size, @"\U0000e784", color) title:NSLocalizedString(@"Next Page", nil) configBlock:^{
+            [weakSelf clickNextPageButton:nil];
+        }];
+        PanoItem *addPageItem = [[PanoItem alloc] initWithImage:IconFontImage(size, @"\U0000e789", color) title:NSLocalizedString(@"Add Page", nil) configBlock:^{
+            [weakSelf clickAddPageButton:nil];
+        }];
+        PanoItem *removePageItem = [[PanoItem alloc] initWithImage:IconFontImage(size, @"\U0000e786", color) title:NSLocalizedString(@"Delete Page", nil) configBlock:^{
+            [weakSelf clickRemovePageButton:nil];
+        }];
+        items = @[@[prePageItem, nextPageItem, addPageItem, removePageItem], [files copy]];
+    } else {
+        PanoItem *applyItem = [[PanoItem alloc] initWithImage:[UIImage imageNamed:@"btn.whiteboard.apply"] title:NSLocalizedString(@"Apply Show", nil) configBlock:^{
+            [wbService applyBecomePresenter];
+        }];
+        items = @[@[applyItem]];
+    }
+    _moreItems = [[PanoArrayDataSource alloc] initWithItems:items cellIdentifier:@"cellID" configureCellBlock:^(PanoMenuCell*  _Nonnull cell, PanoItem*  _Nonnull object) {
+        cell.descLabel.text = object.title;
+        cell.icon.image = object.image;
+        cell.contentView.backgroundColor = [UIColor whiteColor];
+    }];
+    [_topBarView.topMoreView.tableView registerClass:[PanoMenuCell class] forCellReuseIdentifier:@"cellID"];
+    _topBarView.topMoreView.fileName = [wbService getCurrentFileName];
+    _topBarView.topMoreView.presnterName = [wbService presenter].userName;
+    _topBarView.topMoreView.tableView.dataSource = _moreItems;
+    [self.topBarView showMenuViewInView:self.view animated:animated selectedBlock:^(UITableView * _Nonnull tableView, NSIndexPath * _Nonnull indexPath) {
+        [weakSelf.topBarView hideMenuView];
+        PanoArrayDataSource *dataSource = tableView.dataSource;
+        id<PanoItemDelegate> item = [[dataSource.items objectAtIndex:indexPath.section] objectAtIndex:indexPath.row];
+        if (item.clickBlock) {
+            item.clickBlock();
+        };
+    }];
+}
+
+- (void)dismiss {
+    [self clickBack:nil];
+}
+
+- (void)dismissViewControllerAnimated:(BOOL)flag completion:(void (^)(void))completion {
     if ([self.whiteboardViewDelegate respondsToSelector:@selector(whiteboardViewWillClose)]) {
         [self.whiteboardViewDelegate whiteboardViewWillClose];
     }
+    [super dismissViewControllerAnimated:flag completion:completion];
+}
+
+- (IBAction)clickBack:(id)sender {
     [self closeWhiteboard];
     [self dismissViewControllerAnimated:YES completion:nil];
     if ([self.whiteboardViewDelegate respondsToSelector:@selector(whiteboardViewDidClose)]) {
         [self.whiteboardViewDelegate whiteboardViewDidClose];
-    }
-}
-
-- (IBAction)clickSelectButton:(id)sender {
-    if (!self.selectButton.selected) {
-        [self resetAllButtons];
-        [self updateSelectButton:YES];
-        [self updateWhiteboardTool:kPanoWBToolSelect];
-    }
-}
-
-- (IBAction)clickPathButton:(id)sender {
-    if (!self.pathButton.selected) {
-        [self resetAllButtons];
-        [self updatePathButton:YES];
-        [self updateWhiteboardTool:kPanoWBToolPath];
-    }
-}
-
-- (IBAction)clickShapesButton:(id)sender {
-    [self updateShapesButton:!self.shapesButton.selected];
-    if (self.shapesButton.selected) {
-        [self updateStylesButton:NO];
-    }
-}
-
-- (IBAction)clickTextButton:(id)sender {
-    if (!self.textButton.selected) {
-        [self resetAllButtons];
-        [self updateTextButton:YES];
-        [self updateWhiteboardTool:kPanoWBToolText];
-    }
-}
-
-- (IBAction)clickStylesButton:(id)sender {
-    [self updateStylesButton:!self.stylesButton.selected];
-    if (self.stylesButton.selected) {
-        [self updateShapesButton:NO];
-    }
-}
-
-- (IBAction)clickEraserButton:(id)sender {
-    if (!self.eraserButton.selected) {
-        [self resetAllButtons];
-        [self updateEraserButton:YES];
-        [self updateWhiteboardTool:kPanoWBToolEraser];
     }
 }
 
@@ -111,53 +156,19 @@
     [self.whiteboardEngine redo];
 }
 
-- (IBAction)clickLineButton:(id)sender {
-    if (!self.lineButton.selected) {
-        [self resetAllButtons];
-        [self updateLineButton:YES];
-        [self updateShapesButton:NO];
-        [self updateWhiteboardTool:kPanoWBToolLine];
-    }
-}
-
-- (IBAction)clickEllipseButton:(id)sender {
-    if (!self.ellipseButton.selected) {
-        [self resetAllButtons];
-        [self updateEllipseButton:YES];
-        [self updateShapesButton:NO];
-        [self updateWhiteboardTool:kPanoWBToolEllipse];
-    }
-}
-
-- (IBAction)clickRectButton:(id)sender {
-    if (!self.rectButton.selected) {
-        [self resetAllButtons];
-        [self updateRectButton:YES];
-        [self updateShapesButton:NO];
-        [self updateWhiteboardTool:kPanoWBToolRect];
-    }
-}
-
-- (IBAction)clickColorButton:(UIButton *)button {
-    [self.stylesView selectColorButton:(ColorButton *)button];
-    [self updateStylesButton:NO];
-    PanoCallClient.sharedInstance.wbColor = button.backgroundColor;
-    [self.whiteboardEngine setForegroundColor:[self convertWBColor:button.backgroundColor]];
-}
-
-- (IBAction)clickPrevPageButton:(id)sender {
+- (void)clickPrevPageButton:(id)sender {
     [self.whiteboardEngine prevPage];
 }
 
-- (IBAction)clickNextPageButton:(id)sender {
+- (void)clickNextPageButton:(id)sender {
     [self.whiteboardEngine nextPage];
 }
 
-- (IBAction)clickAddPageButton:(id)sender {
+- (void)clickAddPageButton:(id)sender {
     [self.whiteboardEngine addPage:YES];
 }
 
-- (IBAction)clickRemovePageButton:(id)sender {
+- (void)clickRemovePageButton:(id)sender {
     [self.whiteboardEngine removePage:self.curPage];
 }
 
@@ -178,162 +189,46 @@
 
 - (void)onRoleTypeChanged:(PanoWBRoleType)newRole {
     dispatch_async(dispatch_get_main_queue(), ^{
-        PanoCallClient.sharedInstance.wbRole = newRole;
+        PanoCallClient.sharedInstance.config.wbRole = newRole;
     });
 }
 
 
 #pragma mark - Private
-
-- (void)initVideoView {
-    self.user1View.hidden = YES;
-    self.user2View.hidden = YES;
-    self.user3View.hidden = YES;
-    self.user4View.hidden = YES;
-}
-
 - (void)initWhiteboard {
-    [self.whiteboardEngine setRoleType:PanoCallClient.sharedInstance.wbRole];
-    [self.whiteboardEngine setToolType:PanoCallClient.sharedInstance.wbToolType];
-    [self.whiteboardEngine setLineWidth:PanoCallClient.sharedInstance.wbLineWidth];
-    [self.whiteboardEngine setForegroundColor:[self convertWBColor:PanoCallClient.sharedInstance.wbColor]];
-    [self.whiteboardEngine setFontStyle:PanoCallClient.sharedInstance.wbFontStyle];
-    [self.whiteboardEngine setFontSize:PanoCallClient.sharedInstance.wbFontSize];
-    
-    [self initSelectedButton];
-    [self initStylesButton];
+    [self.whiteboardEngine setRoleType:self.config.wbRole];
+    [self.whiteboardEngine setToolType:self.config.wbToolType];
+    [self updateAnnotationConfig];
+    // TODO
     [self updatePageNumber:[self.whiteboardEngine getCurrentPageNumber] totalPages:[self.whiteboardEngine getTotalNumberOfPages]];
     [self updateZoomScale:[self.whiteboardEngine getCurrentScaleFactor]];
 }
 
 - (void)openWhiteboard {
-    [self.whiteboardEngine setDelegate:self];
+    PanoWhiteboardService *wbService = [PanoServiceManager serviceWithType:PanoWhiteboardServiceType];
+    [wbService addDelegate:self];
     [self.whiteboardEngine open:self.drawView];
 }
 
 - (void)closeWhiteboard {
     [self.whiteboardEngine close];
-    [self.whiteboardEngine setDelegate:nil];
-}
-
-- (void)resetAllButtons {
-    [self updateSelectButton:NO];
-    [self updatePathButton:NO];
-    [self updateLineButton:NO];
-    [self updateEllipseButton:NO];
-    [self updateRectButton:NO];
-    [self updateTextButton:NO];
-    [self updateEraserButton:NO];
-    [self updateShapesButton:NO];
-    [self updateStylesButton:NO];
-}
-
-- (void)initSelectedButton {
-    [self resetAllButtons];
-    switch (PanoCallClient.sharedInstance.wbToolType) {
-        case kPanoWBToolSelect:
-            [self updateSelectButton:YES];
-            break;
-        case kPanoWBToolPath:
-            [self updatePathButton:YES];
-            break;
-        case kPanoWBToolLine:
-            [self updateLineButton:YES];
-            [self updateShapesButton:NO];
-            break;
-        case kPanoWBToolRect:
-            [self updateRectButton:YES];
-            [self updateShapesButton:NO];
-            break;
-        case kPanoWBToolEllipse:
-            [self updateEllipseButton:YES];
-            [self updateShapesButton:NO];
-            break;
-        case kPanoWBToolText:
-            [self updateTextButton:YES];
-            break;
-        case kPanoWBToolEraser:
-            [self updateEraserButton:YES];
-            break;
-        default:
-            break;
-    }
-}
-
-- (void)initStylesButton {
-    [self.stylesView selectColor:PanoCallClient.sharedInstance.wbColor];
-}
-
-- (void)updateSelectButton:(BOOL)selected {
-    self.selectButton.selected = selected;
-    UIImage * image = [UIImage imageNamed:(!selected ? @"btn.whiteboard.select" : @"btn.whiteboard.select-selected")];
-    [self.selectButton setImage:image forState:UIControlStateNormal];
-}
-
-- (void)updatePathButton:(BOOL)selected {
-    self.pathButton.selected = selected;
-    UIImage * image = [UIImage imageNamed:(!selected ? @"btn.whiteboard.path" : @"btn.whiteboard.path-selected")];
-    [self.pathButton setImage:image forState:UIControlStateNormal];
-}
-
-- (void)updateShapesButton:(BOOL)selected {
-    self.shapesButton.selected = selected;
-    BOOL imageSelected = selected || self.lineButton.selected || self.ellipseButton.selected || self.rectButton.selected;
-    UIImage * image = [UIImage imageNamed:(!imageSelected ? @"btn.whiteboard.shapes" : @"btn.whiteboard.shapes-selected")];
-    [self.shapesButton setImage:image forState:UIControlStateNormal];
-    self.shapesView.hidden = !selected;
-}
-
-- (void)updateTextButton:(BOOL)selected {
-    self.textButton.selected = selected;
-    UIImage * image = [UIImage imageNamed:(!selected ? @"btn.whiteboard.text" : @"btn.whiteboard.text-selected")];
-    [self.textButton setImage:image forState:UIControlStateNormal];
-}
-
-- (void)updateStylesButton:(BOOL)selected {
-    self.stylesButton.selected = selected;
-    UIImage * image = [UIImage imageNamed:(!selected ? @"btn.whiteboard.styles" : @"btn.whiteboard.styles-selected")];
-    [self.stylesButton setImage:image forState:UIControlStateNormal];
-    self.stylesView.hidden = !selected;
-}
-
-- (void)updateEraserButton:(BOOL)selected {
-    self.eraserButton.selected = selected;
-    UIImage * image = [UIImage imageNamed:(!selected ? @"btn.whiteboard.eraser" : @"btn.whiteboard.eraser-selected")];
-    [self.eraserButton setImage:image forState:UIControlStateNormal];
-}
-
-- (void)updateLineButton:(BOOL)selected {
-    self.lineButton.selected = selected;
-    UIImage * image = [UIImage imageNamed:(!selected ? @"btn.whiteboard.line" : @"btn.whiteboard.line-selected")];
-    [self.lineButton setImage:image forState:UIControlStateNormal];
-}
-
-- (void)updateEllipseButton:(BOOL)selected {
-    self.ellipseButton.selected = selected;
-    UIImage * image = [UIImage imageNamed:(!selected ? @"btn.whiteboard.ellipse" : @"btn.whiteboard.ellipse-selected")];
-    [self.ellipseButton setImage:image forState:UIControlStateNormal];
-}
-
-- (void)updateRectButton:(BOOL)selected {
-    self.rectButton.selected = selected;
-    UIImage * image = [UIImage imageNamed:(!selected ? @"btn.whiteboard.rect" : @"btn.whiteboard.rect-selected")];
-    [self.rectButton setImage:image forState:UIControlStateNormal];
+    PanoWhiteboardService *wbService = [PanoServiceManager serviceWithType:PanoWhiteboardServiceType];
+    [wbService removeDelegate:self];
 }
 
 - (void)updatePageNumber:(PanoWBPageNumber)curPage totalPages:(UInt32)totalPages {
     self.curPage = curPage;
     self.totalPages = totalPages;
-    self.pageNumber.text = [NSString stringWithFormat:@"%u/%u", (unsigned int)curPage, (unsigned int)totalPages];
+    self.topBarView.pageNumber.text = [NSString stringWithFormat:@"%u/%u", (unsigned int)curPage, (unsigned int)totalPages];
 }
 
 - (void)updateZoomScale:(Float32)scale {
-    self.zoomScale.text = [NSString stringWithFormat:@"%d%%", (int)(scale * 100)];
+    self.topBarView.zoomScale.text = [NSString stringWithFormat:@"%d%%", (int)(scale * 100)];
 }
 
 - (void)updateWhiteboardTool:(PanoWBToolType)toolType {
-    if (PanoCallClient.sharedInstance.wbToolType != toolType) {
-        PanoCallClient.sharedInstance.wbToolType = toolType;
+    if (PanoCallClient.sharedInstance.config.wbToolType != toolType) {
+        PanoCallClient.sharedInstance.config.wbToolType = toolType;
         [self.whiteboardEngine setToolType:toolType];
     }
 }
@@ -352,6 +247,56 @@
     wbColor.blue = blue;
     wbColor.alpha = alpha;
     return wbColor;
+}
+
+#pragma mark -- PanoWhiteboardDelegate
+
+- (void)reloadTopBarView {
+    if (self.topBarView.isShowing) {
+        [self showMenuView:true];
+    }
+}
+
+- (void)onPresenterDidChanged:(PanoUserInfo *)persenter {
+    [self reloadTopBarView];
+}
+
+- (void)onDocFilesDidChanged {
+    PanoWhiteboardService *wbService = [PanoServiceManager serviceWithType:PanoWhiteboardServiceType];
+    NSMutableArray<NSString *> *files = [wbService fileNames];
+    NSMutableArray<NSString *> *files2 = [wbService enumerateFiles];
+    NSLog(@"%@ %@",files, files2);
+    [self reloadTopBarView];
+}
+
+#pragma mark -- PanoAnnotationToolDelegate
+- (void)annotationToolDidChooseType:(PanoWBToolType)type options:(NSDictionary<PanoAnnotationToolKey,id> *)options {
+    if (options[PanoToolKeyColor] != NULL) {
+        self.config.wbColor = options[PanoToolKeyColor];
+    }
+    if (options[PanoToolKeyLineWidth] != NULL) {
+        self.config.wbLineWidth = [options[PanoToolKeyLineWidth] unsignedIntValue];
+    }
+    if (options[PanoToolKeyFill] != NULL) {
+        self.config.fillType = [options[PanoToolKeyFill] boolValue] ? kPanoWBFillColor : kPanoWBFillNone;
+    }
+    if (options[PanoToolKeyFontSize] != NULL) {
+        self.config.wbFontSize = [options[PanoToolKeyFontSize] unsignedIntValue];
+    }
+    NSLog(@"wbLineWidth: %u",(unsigned int)PanoCallClient.sharedInstance.config.wbLineWidth);
+    [self updateAnnotationConfig];
+    [self.whiteboardEngine setToolType:type];
+}
+
+- (void)updateAnnotationConfig {
+    PanoWBColor *wbColor = [self convertWBColor:self.config.wbColor];
+    [self.whiteboardEngine setForegroundColor:wbColor];
+    [self.whiteboardEngine setFillType:self.config.fillType];
+    [self.whiteboardEngine setLineWidth:self.config.wbLineWidth];
+    [self.whiteboardEngine setFontSize:self.config.wbFontSize];
+    if (self.config.fillType == kPanoWBFillColor) {
+        [self.whiteboardEngine setFillColor:wbColor];
+    }
 }
 
 @end
