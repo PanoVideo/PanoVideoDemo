@@ -18,37 +18,75 @@
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
 
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
     <application
         android:name=".PanoApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
+        android:testOnly="false"
         android:theme="@style/AppTheme">
+
+        <!-- Provider Start -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/filepath" />
+        </provider>
+        <!-- Provider End -->
+
+        <!-- Service Start -->
+        <service
+            android:name=".service.ScreenCaptureService"
+            android:enabled="true"
+            android:foregroundServiceType="mediaProjection" />
+        <!-- Service End -->
+
+        <!-- BroadcastReceiver Start-->
+        <!-- BroadcastReceiver End -->
+
+        <!-- Activity Start -->
         <activity
-            android:name=".SettingsActivity"
+            android:name=".activity.SettingsActivity"
             android:label="@string/title_activity_settings" />
         <activity
-            android:name=".CallActivity"
+            android:name=".activity.CallActivity"
             android:label="@string/title_activity_call"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             tools:ignore="LockedOrientationActivity" />
         <activity
-            android:name=".RoomActivity"
-            android:label="@string/title_activity_room"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:name="video.pano.rtc.impl.screen.PanoScreenCaptureAssistantActivity"
+            android:theme="@style/ScreenCaptureActivityTheme" />
         <activity
-            android:name=".MainActivity"
-            android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:name=".activity.SplashActivity"
+            android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".activity.MainActivity"
+            android:label="@string/title_join_call"
+            android:theme="@style/AppTheme.NoActionBar" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <!-- Activity End -->
     </application>
 
 </manifest>

@@ -4,22 +4,22 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#333333"
     android:layout_gravity="center"
+    android:background="#333333"
     android:id="@+id/cl_top_control_panel"
     tools:ignore="ContentDescription"
-    tools:context=".TopControlPanelFragment">
+    tools:context=".fragment.TopControlPanelFragment">
 
     <ImageView
         android:id="@+id/btn_call_speaker"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="15dp"
+        android:layout_marginTop="18dp"
+        android:layout_marginBottom="18dp"
         android:layout_weight="1"
         android:scaleType="centerCrop"
-        android:src="@drawable/btn_call_speaker_normal"
+        android:src="@drawable/svg_icon_speaker"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -29,35 +29,60 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
+        android:layout_marginTop="18dp"
+        android:layout_marginBottom="18dp"
         android:layout_weight="1"
         android:scaleType="centerCrop"
-        android:src="@drawable/btn_call_switch_camera"
+        android:src="@drawable/svg_icon_switch_camera"
         app:layout_constraintStart_toEndOf="@+id/btn_call_speaker"
-        app:layout_constraintTop_toTopOf="@+id/btn_call_speaker" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
     <TextView
         android:id="@+id/tv_call_room_id"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
-        android:layout_marginEnd="52dp"
+        android:layout_marginEnd="25dp"
         android:gravity="center"
         android:textColor="@color/colorWhite"
-        android:textSize="18sp"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="@+id/btn_call_speaker"
+        app:layout_constraintEnd_toStartOf="@+id/tv_call_room_time"
+        app:layout_constraintStart_toEndOf="@+id/btn_call_switch_camera"
+        app:layout_constraintTop_toTopOf="@+id/btn_call_speaker"
+        />
+
+    <TextView
+        android:id="@+id/tv_call_room_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="10dp"
+        android:gravity="center"
+        android:minWidth="22dp"
+        android:textColor="@color/colorWhite"
+        android:textSize="10sp"
         app:layout_constraintBottom_toBottomOf="@+id/btn_call_speaker"
         app:layout_constraintEnd_toStartOf="@+id/btn_call_exit"
-        app:layout_constraintStart_toEndOf="@+id/btn_call_switch_camera"
-        app:layout_constraintTop_toTopOf="@+id/btn_call_speaker" />
+        app:layout_constraintStart_toEndOf="@+id/tv_call_room_id"
+        app:layout_constraintTop_toTopOf="@+id/btn_call_speaker"
+        />
+
 
     <ImageView
         android:id="@+id/btn_call_exit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="10dp"
+        android:layout_marginTop="18dp"
+        android:layout_marginBottom="18dp"
         android:layout_weight="1"
         android:scaleType="centerCrop"
-        android:src="@drawable/btn_call_exit"
+        android:src="@drawable/svg_icon_exit"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/btn_call_speaker" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

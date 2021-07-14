@@ -5,68 +5,76 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.pano.rtc.api.Constants;
+import com.pano.rtc.api.PanoAnnotationManager;
 import com.pano.rtc.api.RtcEngine;
+import com.pano.rtc.api.RtcEngineCallback;
 import com.pano.rtc.api.RtcEngineConfig;
 import com.pano.rtc.api.RtcWhiteboard;
 
 import java.util.Locale;
 import java.util.UUID;
 
+import video.pano.panocall.callback.PanoAnnotationCallback;
+import video.pano.panocall.callback.PanoEngineCallback;
+import video.pano.panocall.callback.PanoWhiteboardCallback;
+import video.pano.panocall.utils.DeviceRatingTest;
+import video.pano.panocall.utils.Utils;
+
+import static video.pano.panocall.info.Config.APPID;
+import static video.pano.panocall.info.Config.PANO_SERVER;
+import static video.pano.panocall.info.Constant.KEY_APP_UUID;
+import static video.pano.panocall.info.Constant.KEY_SCREEN_CAPTURE_FPS;
+
 
 public class PanoApplication extends Application {
-    public static final String TAG = "PanoApplication";
-    public static String APPID = Input Your AppId;
-    public static String PANO_SERVER = "api.pano.video";
-    public static long kMaxAudioDumpSize = 200*1024*1024; // 200 MB
-    public static String APP_TOKEN = Input Your Token;
-    public static String USER_ID;
+    public static final String TAG = "PVC";
 
     private RtcEngine mRtcEngine;
+    private RtcWhiteboard mRtcWhiteboard ;
     private PanoEngineCallback mRtcCallback = new PanoEngineCallback();
     private PanoWhiteboardCallback mWhiteboardCallback = new PanoWhiteboardCallback();
+    private PanoAnnotationCallback mAnnotationCallback = new PanoAnnotationCallback(this);
 
     protected Constants.AudioAecType mAudioAecType = Constants.AudioAecType.Default;
     protected boolean mHwAcceleration = false;
 
-    boolean mIsRoomJoined = false;
-    boolean mIsLocalVideoStarted = false; // 此变量用于通知美颜页本地视频是否开启
-    boolean mIsFrontCamera = true; // 此变量用于通知美颜页当前是否是前置摄像头
-    String mFeedbackRoomId;
-    long mFeedbackUserId;
-    String mFeedbackUserName;
+    public boolean mIsLocalVideoStarted = false; // 此变量用于通知美颜页本地视频是否开启
+    public boolean mIsFrontCamera = true; // 此变量用于通知美颜页当前是否是前置摄像头
+    public String mFeedbackRoomId;
+    public long mFeedbackUserId;
+    public String mFeedbackUserName;
     private String mAppUuid;
 
     MutableLiveData<Constants.VideoProfileType> mLocalVideoProfile = new MutableLiveData<>();
+    private String mScreenOptMode;
 
 
     @Override
     public void onCreate() {
         super.onCreate();
+        Utils.init(this);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        mAppUuid = prefs.getString(RoomActivity.KEY_APP_UUID, "");
-        if (mAppUuid.isEmpty()) {
+        mScreenOptMode = prefs.getString(KEY_SCREEN_CAPTURE_FPS, "0");
+        mAppUuid = prefs.getString(KEY_APP_UUID, "");
+        if (!TextUtils.isEmpty(mAppUuid)) {
             UUID uuid = UUID.randomUUID();
             mAppUuid = uuid.toString().replace("-", "");
             SharedPreferences.Editor editor = prefs.edit();
-            editor.putString(RoomActivity.KEY_APP_UUID, mAppUuid);
+            editor.putString(KEY_APP_UUID, mAppUuid);
             editor.apply();
         }
-        /*
-        int lang = Integer.parseInt(prefs.getString(KEY_LANGUAGE, "0"));
-        if (lang != 0) {
-            updateLanguage(lang);
-        }*/
         createPanoEngine();
     }
 
-    private void createPanoEngine() {
+    private void createPanoEngine(){
         // 设置PANO媒体引擎的配置参数
         RtcEngineConfig engineConfig = new RtcEngineConfig();
         engineConfig.appId = APPID;
@@ -77,21 +85,21 @@ public class PanoApplication extends Application {
         engineConfig.videoCodecHwAcceleration = mHwAcceleration;
         try {
             mRtcEngine = RtcEngine.create(engineConfig);
-            RtcWhiteboard whiteboard = mRtcEngine.getWhiteboard();
-            whiteboard.setCallback(mWhiteboardCallback);
+            mRtcWhiteboard = mRtcEngine.getWhiteboard();
+            mRtcWhiteboard.setCallback(mWhiteboardCallback);
+            mRtcEngine.getAnnotationMgr().setCallback(mAnnotationCallback);
+            mRtcEngine.setOption(Constants.PanoOptionType.ScreenOptimization,
+                    !"0".equals(mScreenOptMode));
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public RtcEngine getPanoEngine() { return mRtcEngine; }
-
-    public void refreshPanoEngine() {
-        RtcEngine.destroy();
-        createPanoEngine();
+    public RtcWhiteboard getPanoWhiteboard(){
+        return mRtcWhiteboard ;
     }
 
-    public PanoEngineCallback getPanoCallback() { return mRtcCallback; }
     public String getAppUuid() { return mAppUuid; }
     public void updateLanguage(int lang) {
         Resources resources = getResources();
@@ -114,20 +122,26 @@ public class PanoApplication extends Application {
         if (!mIsLocalVideoStarted) {
             return;
         }
-        Constants.VideoProfileType prof = Constants.VideoProfileType.Standard;
-        if (profile == 2) {
-            prof = Constants.VideoProfileType.HD720P;
-        }
-        mLocalVideoProfile.postValue(prof);
+        mLocalVideoProfile.postValue(DeviceRatingTest.getIns()
+                .getProfileType(profile));
     }
     public LiveData<Constants.VideoProfileType> getLocalVideoProfile() {
         return mLocalVideoProfile;
     }
 
-    public void registerEventHandler(PanoEventHandler handler) { mRtcCallback.addHandler(handler); }
-    public void removeEventHandler(PanoEventHandler handler) { mRtcCallback.removeHandler(handler); }
-    public void registerWhiteboardHandler(PanoWhiteboardHandler handler) { mWhiteboardCallback.addHandler(handler); }
-    public void removeWhiteboardHandler(PanoWhiteboardHandler handler) { mWhiteboardCallback.removeHandler(handler); }
+    public void registerEventHandler(RtcEngineCallback handler) { mRtcCallback.addListener(handler); }
+    public void removeEventHandler(RtcEngineCallback handler) { mRtcCallback.removeListener(handler); }
+
+    public void registerWhiteboardHandler(RtcWhiteboard.Callback handler) { mWhiteboardCallback.addListener(handler); }
+    public void removeWhiteboardHandler(RtcWhiteboard.Callback handler) { mWhiteboardCallback.removeListener(handler); }
+
+    public void registerAnnotationCallback(PanoAnnotationManager.Callback handler){ mAnnotationCallback.addListener(handler); }
+    public void removeAnnotationCallback(PanoAnnotationManager.Callback handler){ mAnnotationCallback.removeListener(handler); }
+
+    public void refreshPanoEngine() {
+        RtcEngine.destroy();
+        createPanoEngine();
+    }
 
     @Override
     public void onTerminate() {

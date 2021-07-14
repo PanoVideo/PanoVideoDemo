@@ -3,7 +3,7 @@
     <dimen name="button_text_size">20sp</dimen>
     <dimen name="button_small_text_size">12sp</dimen>
     <dimen name="small_view_width">90dp</dimen>
-    <dimen name="small_view_height">160dp</dimen>
+    <dimen name="small_view_height">140dp</dimen>
     <dimen name="medium_view_width">180dp</dimen>
     <dimen name="medium_view_height">320dp</dimen>
     <dimen name="top_control_button_width">24dp</dimen>

@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_annotation_popup_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/popup_view_annotation_bg"
+        android:paddingTop="16dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/iv_pencil_bg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="25dp"
+            android:src="@mipmap/popup_view_annotation_pencil_bg"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_stroke_intensity"
+            android:layout_width="20dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:textColor="@color/control_popup_view_text_color"
+            android:textSize="12sp"
+            app:layout_constraintLeft_toRightOf="@+id/iv_pencil_bg"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+
+        <SeekBar
+            android:id="@+id/seekBar_annotation_stroke_intensity"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="25dp"
+            android:layout_marginRight="6dp"
+            android:maxHeight="2dp"
+            android:minHeight="2dp"
+            android:max="20"
+            style="@style/AnnotationSeekbarStyle"
+            app:layout_constraintLeft_toRightOf="@+id/tv_stroke_intensity"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+
+        <View
+            android:id="@+id/view_divider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="12dp"
+            android:background="@color/control_popup_view_divider_bg_color"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/seekBar_annotation_stroke_intensity" />
+
+        <RadioGroup
+            android:id="@+id/radio_color_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/view_divider"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingBottom="10dp"
+            android:layout_marginTop="18dp"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/rb_color_black"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:background="@drawable/btn_color_black_selector"
+                android:button="@null"
+                android:gravity="center"
+                android:layout_weight="1"
+                />
+
+            <RadioButton
+                android:id="@+id/rb_color_red"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_color_red_selector"
+                android:button="@null"
+                android:gravity="center"
+                />
+
+            <RadioButton
+                android:id="@+id/rb_color_orange"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_color_orange_selector"
+                android:button="@null"
+                android:gravity="center"
+                />
+
+            <RadioButton
+                android:id="@+id/rb_color_yellow"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_color_yellow_selector"
+                android:button="@null"
+                android:gravity="center"
+                />
+
+            <RadioButton
+                android:id="@+id/rb_color_green"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_color_green_selector"
+                android:button="@null"
+                android:gravity="center"
+                />
+
+            <RadioButton
+                android:id="@+id/rb_color_turquoise"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_color_turquoise_selector"
+                android:button="@null"
+                android:gravity="center"
+                android:tag="#7CB305"
+                />
+
+            <RadioButton
+                android:id="@+id/rb_color_azure"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_color_blue_selector"
+                android:button="@null"
+                android:gravity="center"
+                />
+
+            <RadioButton
+                android:id="@+id/rb_color_blue"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_color_navy_selector"
+                android:button="@null"
+                android:gravity="center"
+                />
+
+            <RadioButton
+                android:id="@+id/rb_color_purple"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_weight="1"
+                android:background="@drawable/btn_color_purple_selector"
+                android:button="@null"
+                android:gravity="center"
+                />
+        </RadioGroup>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <RadioGroup
+        android:id="@+id/radio_group"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="5dp"
+        android:paddingBottom="18dp"
+        android:paddingTop="15dp"
+        android:background="@color/colorWhite"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@null"
+            android:button="@null"
+            android:drawableTop="@mipmap/btn_annotation_back"
+            android:drawablePadding="5dp"
+            android:gravity="center"
+            android:text="@string/annotation_back"
+            android:textColor="#333333" />
+
+        <RadioButton
+            android:id="@+id/pencil"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@null"
+            android:button="@null"
+            android:drawableTop="@drawable/btn_annotation_pencil"
+            android:drawablePadding="5dp"
+            android:gravity="center"
+            android:text="@string/annotation_pencil"
+            android:textColor="@color/control_text_color" />
+
+        <RadioButton
+            android:id="@+id/arrow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@null"
+            android:button="@null"
+            android:drawableTop="@drawable/btn_annotation_arrow"
+            android:drawablePadding="5dp"
+            android:gravity="center"
+            android:text="@string/annotation_arrow"
+            android:textColor="@color/control_text_color" />
+
+        <RadioButton
+            android:id="@+id/ashcan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@null"
+            android:button="@null"
+            android:drawableTop="@drawable/btn_annotation_ashcan"
+            android:drawablePadding="5dp"
+            android:gravity="center"
+            android:text="@string/annotation_ashcan"
+            android:textColor="@color/control_text_color" />
+
+    </RadioGroup>
+
+</LinearLayout>
+

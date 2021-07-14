@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".FeedbackFragment">
+    tools:context=".fragment.FeedbackFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_feedback_type"
@@ -176,7 +176,7 @@
         android:layout_marginBottom="50dp"
         android:layout_marginEnd="10dp"
         android:text="@string/title_button_ok"
-        android:background="@drawable/radio_border"
+        android:background="@drawable/radio_border_blue_8dp"
         android:textColor="@color/colorWhite"
         android:textSize="@dimen/button_text_size"
         app:layout_constraintEnd_toEndOf="parent"

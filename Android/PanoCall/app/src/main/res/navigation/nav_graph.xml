@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/FloatFragment"
-        android:name="video.pano.panocall.FloatFragment"
+        android:name="video.pano.panocall.fragment.FloatFragment"
         android:label="@string/float_fragment_label"
         tools:layout="@layout/fragment_float">
 
@@ -21,7 +21,7 @@
 
     <fragment
         android:id="@+id/GridFragment"
-        android:name="video.pano.panocall.GridFragment"
+        android:name="video.pano.panocall.fragment.GridFragment"
         android:label="@string/grid_fragment_label"
         tools:layout="@layout/fragment_grid">
 
@@ -35,9 +35,9 @@
 
     <fragment
         android:id="@+id/WhiteboardFragment"
-        android:name="video.pano.panocall.WhiteboardFragment"
+        android:name="video.pano.panocall.fragment.WhiteboardFragment"
         android:label="@string/whiteboard_fragment_label"
-        tools:layout="@layout/fragment_whiteboard" >
+        tools:layout="@layout/whiteboard_old" >
 
         <action
             android:id="@+id/action_WhiteboardFragment_to_FloatFragment"

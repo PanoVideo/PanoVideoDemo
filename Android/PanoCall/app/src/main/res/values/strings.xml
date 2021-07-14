@@ -1,8 +1,7 @@
 <resources>
-    <string name="app_name">PanoVideoDemo</string>
+    <string name="app_name">PanoVideoCall</string>
     <string name="action_settings">Settings</string>
 
-    <string name="title_start_call">Start Call</string>
     <string name="title_join_call">Join Call</string>
 
     <string name="title_activity_call">CallActivity</string>
@@ -10,6 +9,9 @@
     <string name="float_fragment_label">Float Fragment</string>
     <string name="grid_fragment_label">Grid Fragment</string>
     <string name="whiteboard_fragment_label">Whiteboard Fragment</string>
+    
+    <string name="whiteboard_started_vision_share">%1$s has started vision share</string>
+    <string name="whiteboard_stopped_vision_share">%1$s has stopped vision share</string>
 
     <string name="title_activity_room">RoomActivity</string>
     <string name="title_room_id">Room number</string>
@@ -27,10 +29,13 @@
     <string name="title_call_video_closed">Open video</string>
     <string name="title_call_wb_normal">Whiteboard</string>
     <string name="title_call_wb_closed">Whiteboard</string>
+    <string name="title_call_share">Share</string>
+    <string name="title_call_more">More</string>
     <string name="title_call_settings">Settings</string>
 
     <string name="title_pano_page">https://pano.video</string>
     <string name="title_activity_settings">Settings</string>
+    <string name="title_button_close_whiteboard">close whiteboard</string>
 
     <!-- Preference Titles -->
     <string name="title_call_duration">Call duration</string>
@@ -39,6 +44,8 @@
     <string name="title_auto_start_speaker">Use speaker when entering call</string>
     <string name="title_auto_start_camera">Turn on camera when entering call</string>
     <string name="title_leave_confirm">Confirm when leaving call</string>
+    <string name="title_enable_device_rating">Automatically adjust the resolution according to the performance of the phone</string>
+    <string name="title_screen_capture_fps">Screen capture frame rate</string>
     <string name="title_video_sending_resolution">My resolution</string>
     <string name="title_face_beauty">Beauty settings</string>
     <string name="title_help">Help</string>
@@ -51,12 +58,14 @@
 
     <string name="url_pano">https://pano.video/</string>
 
-    <string name="call_duration">40 mins</string>
-    <string name="call_max_attendees">4</string>
+    <string name="call_duration">90 mins</string>
+    <string name="call_max_attendees">25</string>
     <string name="app_version_string">0.9.3 (4096)</string>
 
     <string name="switch_summary_on">Enabled</string>
     <string name="switch_summary_off">Disabled</string>
+    <string name="switch_screen_capture_fps_high">High</string>
+    <string name="switch_screen_capture_fps_low">Low</string>
 
     <!-- Feedback -->
     <string name="title_audio">Audio</string>
@@ -67,23 +76,61 @@
     <string name="title_feedback_desc">Description</string>
     <string name="title_feedback_upload_log">Upload Logs</string>
     <string name="title_feedback_contact">Contact Details(optional)</string>
+    <string name="title_update_dialog_ok">Update</string>
+    <string name="title_update_dialog_cancel">Later</string>
+
     <string name="hint_feedback_desc">Up to 300 characters</string>
     <string name="hint_feedback_contact">Email or phone</string>
+
     <string name="msg_feedback_desc_empty">Description cannot be empty</string>
     <string name="msg_feedback_report_done">Report submitted，Thanks for your feedback</string>
-    <string name="msg_network_error">Network error</string>
     <string name="msg_call_exit_alert">Leave the call?</string>
     <string name="msg_call_left_alert">You have left the call, please click OK to return to the home page</string>
     <string name="msg_call_exit">Exit call</string>
     <string name="msg_call_ended">Call is end</string>
     <string name="msg_whiteboard_unavailable">Whiteboard service is unavailable</string>
-
     <string name="msg_permission_update">Please allow the permission requests</string>
     <string name="msg_permission_call">Please allow the permission requests</string>
+    <string name="msg_open_debug_mode">Enable debug mode will generate more logs (up to 200M). Please disable debug mode in time after debugging. Are you sure to enable debug mode?</string>
+    <string name="msg_cellular_data">You are using cellular data....</string>
+    <string name="msg_no_data">Your current network is unavailable....</string>
+    <string name="msg_device_rating">Your phone performance is insufficient, adjust your video resolution to %1$s</string>
+    <string name="msg_open_your_video">Please open your video</string>
+    <string name="msg_mute_prompt">You are muted, please turn on the microphone and speak</string>
+    <string name="msg_pin_video_tips">Double tap screen to cancel pin video</string>
+    <string name="msg_exit_pin_video_tips">Exit pin video</string>
+
+    <!-- White board -->
+    <string name="title_wb_select">select</string>
+    <string name="title_wb_pencil">Pen</string>
+    <string name="title_wb_text">text</string>
+    <string name="title_wb_graphics">graphics</string>
+    <string name="title_wb_delete">delete</string>
+    <string name="title_wb_next">Next Page</string>
+    <string name="title_wb_prev">Prev Page</string>
+    <string name="title_wb_add">Add Page</string>
+    <string name="title_wb_remove">Delete Page</string>
+    <string name="title_wb_current_name">Current: </string>
+    <string name="title_wb_current_presenter">Presenter: </string>
+    <string name="title_wb_apply_show">Apply Show</string>
+    <string name="title_wb_default_wb">Default Doc</string>
+    <string name="title_wb_default_doc">Doc %1$d</string>
 
     <!-- Face Beauty -->
     <string name="title_face_beauty_enable">Open beauty</string>
     <string name="title_face_beauty_intensity">Beauty intensity</string>
+
+
+    <!-- app download -->
+    <string name="apk_download_title">Download</string>
+    <string name="apk_download_description">Downloading PanoVideoCall</string>
+
+    <string name="annotation_back">Back</string>
+    <string name="annotation_pencil">Pencil</string>
+    <string name="annotation_arrow">Arrow</string>
+    <string name="annotation_ashcan">Delete</string>
+    <string name="annotation_user_start">%1$s has started annotation!</string>
+    <string name="annotation_user_stop">%1$s has stopped annotation!</string>
 
     <!-- Room Advanced Settings-->
     <string name="action_advanced_settings">Advanced Setting</string>
@@ -92,5 +139,4 @@
     <string name="room_advanced_settings_app_server">Please input PanoServer</string>
     <string name="room_advanced_settings_token">Please input Token</string>
     <string name="room_advanced_settings_user_id">Please input UserId</string>
-
 </resources>

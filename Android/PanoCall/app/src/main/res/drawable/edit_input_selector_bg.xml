@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--当控件被选中时触发相应的样式-->
+    <item android:state_focused="true" android:drawable="@drawable/edit_input_focus_bg"/>
+    <!--当控件没有被选中时触发相应的样式-->
+    <item android:state_focused="false" android:drawable="@drawable/edit_input_normal_bg"/>
+    <item android:drawable="@drawable/edit_input_normal_bg" />
+</selector>

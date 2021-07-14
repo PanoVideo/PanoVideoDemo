@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ClearableEditText">
+        <attr name="clearIconDrawable" format="color|reference" />
+        <attr name="clearBgDrawable" format="color|reference" />
+        <attr name="clearIconDrawWhenFocused" format="boolean" />
+    </declare-styleable>
+</resources>

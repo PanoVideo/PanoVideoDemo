@@ -56,13 +56,28 @@
             app:summaryOn="@string/switch_summary_on"
             app:summaryOff="@string/switch_summary_off" />
 
+        <SwitchPreference
+            app:defaultValue="true"
+            app:key="key_device_rating"
+            app:title="@string/title_enable_device_rating"
+            app:summaryOn="@string/switch_summary_on"
+            app:summaryOff="@string/switch_summary_off" />
+
+        <ListPreference
+            app:defaultValue="0"
+            app:entries="@array/screen_capture_fps_entries"
+            app:entryValues="@array/screen_capture_fps_values"
+            app:key="key_screen_capture_fps"
+            app:title="@string/title_screen_capture_fps"
+            app:useSimpleSummaryProvider="true" />
+
     </PreferenceCategory>
 
     <PreferenceCategory app:title="">
 
         <!-- app:icon="@drawable/messages" -->
         <Preference
-            app:fragment="video.pano.panocall.FaceBeautyFragment"
+            app:fragment="video.pano.panocall.fragment.FaceBeautyFragment"
             app:key="key_face_beauty"
             app:title="@string/title_face_beauty" />
 
@@ -70,17 +85,17 @@
 
     <PreferenceCategory app:title="">
         <Preference
-            app:fragment="video.pano.panocall.FeedbackFragment"
+            app:fragment="video.pano.panocall.fragment.FeedbackFragment"
             app:key="key_send_feedback"
             app:title="@string/title_send_feedback" />
 
         <Preference
-            app:fragment="video.pano.panocall.WebPageFragment"
+            app:fragment="video.pano.panocall.fragment.WebPageFragment"
             app:key="key_help"
             app:title="@string/title_help" />
 
         <Preference
-            app:fragment="video.pano.panocall.WebPageFragment"
+            app:fragment="video.pano.panocall.fragment.WebPageFragment"
             app:key="key_about_us"
             app:title="@string/title_about_us"/>
 
