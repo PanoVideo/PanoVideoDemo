@@ -6,8 +6,6 @@
   "description": "Pano video call application base on pano electron sdk and web whiteboard sdk",
   "scripts": {
     "dev": "npm run electron:serve",
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "pkg:mac": "cross-env PLATFORM=mac npm run electron:build",
     "pkg:win": "cross-env PLATFORM=win npm run electron:build",
@@ -18,7 +16,7 @@
   },
   "main": "background.js",
   "dependencies": {
-    "@pano.video/panortc-electron-sdk": "^1.0.8",
+    "@pano.video/panortc-electron-sdk": "^1.1.0",
     "@pano.video/robotjs": "^0.0.1-alpha.0",
     "@pano.video/whiteboard": "^2.1.3",
     "element-ui": "^2.14.1",

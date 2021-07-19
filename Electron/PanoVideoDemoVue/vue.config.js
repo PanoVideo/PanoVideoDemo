@@ -55,6 +55,7 @@ module.exports = {
           sign: false
         },
         mac: {
+          target: ['dmg'],
           hardenedRuntime: true,
           gatekeeperAssess: false,
           // identity: '', // 签名证书id

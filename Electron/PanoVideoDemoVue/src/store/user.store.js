@@ -26,6 +26,7 @@ function createUser(userId, userName) {
     subscribed: false,
     videoMuted: true,
     screenOpen: false,
+    videoAnnotationOpen: false, // 视频标注是否打开
     audioMuted: true,
     isSpeaking: false,
     isMostActive: false,

@@ -18,10 +18,12 @@ export const localCacheKeyAutoStart = 'pano.democlient.autostart';
 export const localCacheKeyMuteMicAtStart = 'pano.democlient.mutemicatstart';
 export const localCacheKeyMuteCamAtStart = 'pano.democlient.mutecamatstart';
 export const localCacheKeySelectedCam = 'pano.democlient.selectedCam';
-export const localCacheKeyWbNewShapeIndicator = 'pano.democlient.WbNewShapeIndicator';
+export const localCacheKeyWbNewShapeIndicator =
+  'pano.democlient.WbNewShapeIndicator';
 export const localCacheKeySelectedMic = 'pano.democlient.selectedMic';
 export const localCacheKeySelectedSpeaker = 'pano.democlient.selectedSpeaker';
-export const localCacheKeyVideoProfileType = 'pano.democlient.localCacheKeyVideoProfileType';
+export const localCacheKeyVideoProfileType =
+  'pano.democlient.localCacheKeyVideoProfileType';
 export const localCacheKeyDefaultWb = 'pano.democlient.defaultWb';
 export const MOMENT_FOR_UNSUBSCRIBE = 0;
 /**

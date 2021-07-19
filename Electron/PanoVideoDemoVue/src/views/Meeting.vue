@@ -220,6 +220,12 @@ export default {
           mirror: true
         });
       } else {
+        if (this.userMe.videoAnnotationOpen) {
+          // 关闭视频标注
+          RtsService.getInstance()
+            .getAnnotation(this.userMe.userId, 'video')
+            ?.stop();
+        }
         window.rtcEngine.stopVideo();
       }
       this.updateUser({
@@ -273,6 +279,12 @@ export default {
       window.rtcEngine.leaveChannel();
       this.resetShareWindow();
       window.rtcWhiteboard && window.rtcWhiteboard.leaveChannel();
+      if (this.userMe.videoAnnotationOpen) {
+        // 关闭视频标注
+        RtsService.getInstance()
+          .getAnnotation(this.userMe.userId, 'video')
+          ?.stop();
+      }
       this.resetMeetingStore();
       this.resetUserStore();
       window.onbeforeunload = null;

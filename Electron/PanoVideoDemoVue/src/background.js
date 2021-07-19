@@ -8,6 +8,10 @@ const isDevelopment = process.env.NODE_ENV !== 'production';
 app.setAsDefaultProtocolClient('pano');
 app.allowRendererProcessReuse = false;
 
+async function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 const isMac = process.platform === 'darwin';
 const lock = app.requestSingleInstanceLock();
 
@@ -121,9 +125,10 @@ async function createWindow() {
     createProtocol('app');
     mainWindow.loadURL('app://./index.html');
   }
-  if (isDevelopment) {
-    mainWindow.webContents.openDevTools();
-  }
+  // if (isDevelopment) {
+  //   mainWindow.webContents.openDevTools();
+  // }
+  mainWindow.webContents.openDevTools();
 }
 
 app.createShareCtrlWindow = function createShareCtrlWindow() {

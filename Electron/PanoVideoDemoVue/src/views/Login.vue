@@ -94,7 +94,6 @@ export default {
       'setMeetingStatus',
       'resetMeetingStore'
     ]),
-    initWhiteboard() {},
     /**
      * 加会逻辑
      */
@@ -133,22 +132,6 @@ export default {
         console.error(errMsg);
         this.$message.error(errMsg);
       }
-      window.rtcWhiteboard.joinChannel(
-        {
-          appId,
-          token,
-          channelId,
-          name: userName,
-          userId
-        },
-        () => {},
-        statusCode => {
-          this.loading = false;
-          const errMsg = `whiteboard join error, statusCode: ${statusCode}`;
-          console.error(errMsg);
-          this.$message.error(errMsg);
-        }
-      );
       this.resetMeetingStore();
     },
     /**
@@ -179,6 +162,27 @@ export default {
         this.updateUserMe({ audioMuted: !audioOn, videoMuted: !videoOn });
         this.setMeetingStatus('connected');
         this.$router.replace({ name: 'Meeting' });
+        // 媒体入会成功之后再连接白板，因为用户列表从媒体连接中获取
+        // 而标注事件从白板（rts）中获取，保证在接收到用户开启标注事件时，用户已经存在于用户列表中
+        const { channelId, userName, appId, userId, token } = this.form;
+        window.rtcWhiteboard.joinChannel(
+          {
+            appId,
+            token,
+            channelId,
+            name: userName,
+            userId
+          },
+          () => {
+            console.log('whiteboard join seccess!');
+          },
+          statusCode => {
+            this.loading = false;
+            const errMsg = `whiteboard join error, statusCode: ${statusCode}`;
+            console.error(errMsg);
+            this.$message.error(errMsg);
+          }
+        );
       } else {
         this.$message.error(
           'joinChannel 失败, 失败原因：' + getLeaveChannelReason(result)
@@ -203,7 +207,9 @@ export default {
   mounted() {
     this.form.appId = localStorage.getItem(Constants.localCacheKeyAppId);
     this.form.token = localStorage.getItem(Constants.localCacheKeyToken);
-    this.form.channelId = localStorage.getItem(Constants.localCacheKeyChannelId);
+    this.form.channelId = localStorage.getItem(
+      Constants.localCacheKeyChannelId
+    );
     this.form.userName = localStorage.getItem(Constants.localCacheKeyUserName);
     this.form.userId = localStorage.getItem(Constants.localCacheKeyUserId);
   }

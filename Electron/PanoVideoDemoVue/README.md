@@ -29,4 +29,4 @@ yarn dev
 
 ## 配置 icon
 
-icon 存放在 `apppico` 目录，`.icns` 为 macOS application icon，`.ico` 文件为 widnows application icon
+icon 存放在 `apppico` 目录，`.icns` 为 macOS application icon，`.ico` 文件为 windows application icon

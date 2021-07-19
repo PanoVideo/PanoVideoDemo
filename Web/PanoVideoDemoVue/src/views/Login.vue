@@ -144,8 +144,7 @@ export default {
           channelId,
           channelMode: Constants.ChannelMode.Mode_Meeting,
           userId,
-          userName,
-          joinChannelType: PanoRtc.Constants.JoinChannelType.mediaAndWhiteboard
+          userName
         },
         {
           joinChannelType: PanoRtc.Constants.JoinChannelType.mediaAndWhiteboard

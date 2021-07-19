@@ -5,7 +5,7 @@ import {
   FailoverState,
   VideoScalingMode
 } from '@pano.video/panortc-electron-sdk';
-import { RtcWhiteboard, Constants } from '@pano.video/whiteboard';
+import { RtcWhiteboard, Constants, RtsService } from '@pano.video/whiteboard';
 import { includes, get } from 'lodash-es';
 import { Message } from 'element-ui';
 import store from './store';
@@ -540,5 +540,28 @@ export default function initPanoRtc() {
     if (!store.getters.isWhiteboardOpen) {
       store.commit('setWhiteboardUpdatedState', true);
     }
+  });
+
+  const rtsService = RtsService.getInstance();
+
+  // 视频标注开始
+  rtsService.on(RtsService.Events.videoAnnotationStart, userId => {
+    console.log('videoAnnotationStart', userId);
+    const user = store.getters.getUserById(`${userId}`);
+    if (!user) {
+      return;
+    }
+    store.commit('updateUser', { userId, videoAnnotationOpen: true });
+    if (!store.getters.isRemoteControling) {
+      // 远程控制时不可切换主视图
+      store.commit('setWhiteboardOpenState', false);
+      store.dispatch('trySelectMainView', { user });
+    }
+  });
+
+  // 视频标注结束
+  rtsService.on(RtsService.Events.videoAnnotationStop, userId => {
+    console.log('videoAnnotationStop', userId);
+    store.commit('updateUser', { userId, videoAnnotationOpen: false });
   });
 }

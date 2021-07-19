@@ -7,7 +7,9 @@
           (mainViewUser.isScreenInMainView && !mainViewUser.screenOpen) ||
           (!mainViewUser.isScreenInMainView && mainViewUser.videoMuted)
             ? 'hidden'
-            : 'visible'
+            : 'visible',
+        transform:
+          isUserMe && videoAnnotationOpen ? 'rotateY(180deg)' : 'rotateY(0deg)'
       }"
       ref="domRef"
     />
@@ -20,6 +22,9 @@
       >
         <span class="iconfont icon-lock1" />
         <span>取消锁定</span>
+      </div>
+      <div class="mv__top-btns__btn" @click="toggleAnnotation" v-if="isUserMe">
+        <span>{{ userMe.videoAnnotationOpen ? '关闭' : '打开' }}视频标注</span>
       </div>
       <div
         class="mv__top-btns__btn"
@@ -39,6 +44,7 @@
       </div>
     </div>
 
+    <!-- 远程控制蒙层 -->
     <div
       :style="{
         width: '100%',
@@ -84,20 +90,33 @@
         }"
       />
     </div>
+
+    <!-- 视频标注 -->
+    <div class="annotation" ref="annotationRef" />
+
+    <AnnotationToolbar
+      v-if="videoAnnotationOpen && annotationWhiteboard"
+      :whiteboard="annotationWhiteboard"
+    />
   </div>
 </template>
 
 <script>
 import { mapGetters, mapMutations } from 'vuex';
 import { RtsService, RemoteControl } from '@pano.video/whiteboard';
+import AnnotationToolbar from '@/components/annotation/AnnotationToolbar';
 
 const electron = window.require('electron');
 
 export default {
   data() {
     return {
-      controller: undefined
+      controller: undefined,
+      annotationWhiteboard: undefined
     };
+  },
+  components: {
+    AnnotationToolbar
   },
   computed: {
     ...mapGetters([
@@ -113,11 +132,17 @@ export default {
       return this.mainViewUser.isScreenInMainView
         ? this.mainViewUser.screenDomRef
         : this.mainViewUser.videoDomRef;
+    },
+    videoAnnotationOpen() {
+      return this.mainViewUser.videoAnnotationOpen;
     }
   },
   watch: {
     ['mainViewUser.userId']() {
       this.updateVideoView();
+      this.annotationWhiteboard?.close();
+      this.annotationWhiteboard = undefined;
+      this.checkAnnotation();
     },
     ['mainViewUser.isScreenInMainView']() {
       this.updateVideoView();
@@ -125,12 +150,56 @@ export default {
     ['mainViewUser.videoMuted']() {
       this.updateVideoView();
     },
+    ['mainViewUser.videoAnnotationOpen']() {
+      this.checkAnnotation();
+    },
     isWhiteboardOpen() {
       this.updateVideoView();
     }
   },
   methods: {
     ...mapMutations(['updateUser']),
+    toggleAnnotation() {
+      this.updateUser({
+        userId: this.mainViewUser.userId,
+        videoAnnotationOpen: !this.mainViewUser.videoAnnotationOpen
+      });
+      if (!this.mainViewUser.videoAnnotationOpen) {
+        this.annotationWhiteboard = null;
+      }
+    },
+    checkAnnotation() {
+      if (
+        this.annotationWhiteboard &&
+        this.annotationWhiteboard.tragetUserId !== this.mainViewUser.userId
+      ) {
+        // 如果标注白板对象存在，这种情况是主视图用户切换的情况，需要先关闭之前的标注
+        this.annotationWhiteboard.close();
+        this.annotationWhiteboard = undefined;
+      }
+      if (!this.mainViewUser.videoAnnotationOpen) {
+        this.annotationWhiteboard?.stop();
+        this.annotationWhiteboard = undefined;
+      } else {
+        this.annotationWhiteboard = RtsService.getInstance().getAnnotation(
+          this.mainViewUser.userId,
+          'video'
+        );
+        if (this.mainViewUser.videoDomRef) {
+          const canvasDom = this.mainViewUser.videoDomRef.getElementsByTagName(
+            'canvas'
+          )[0];
+          if (!canvasDom) {
+            return;
+          }
+          this.annotationWhiteboard.setAnnotationViewSize({
+            width: canvasDom.width,
+            height: canvasDom.height
+          });
+        }
+        this.annotationWhiteboard.open(this.$refs.annotationRef);
+      }
+    },
     onUnLock() {
       this.updateUser({ userId: this.mainViewUser.userId, locked: false });
     },
@@ -221,7 +290,6 @@ export default {
       );
     },
     onUserScreenResolutionChanged(userId, width, height) {
-      console.log(`ResolutionChanged,userId,`, userId, width, height);
       if (this.controller?.remoteUserId === userId) {
         this.captureRect = { x: 0, y: 0, width, height };
         this.controller?.setShareRect(this.captureRect);
@@ -230,6 +298,7 @@ export default {
   },
   mounted() {
     this.updateVideoView();
+    this.checkAnnotation();
     window.rtcEngine.on(
       'userScreenResolutionChanged',
       this.onUserScreenResolutionChanged
@@ -240,6 +309,8 @@ export default {
       'userScreenResolutionChanged',
       this.onUserScreenResolutionChanged
     );
+    this.annotationWhiteboard?.close();
+    this.annotationWhiteboard = undefined;
   }
 };
 </script>
@@ -274,5 +345,15 @@ export default {
       font-size: 12px;
     }
   }
+}
+.annotation {
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  margin: auto;
+  display: block;
+  position: absolute;
+  z-index: 11;
 }
 </style>
