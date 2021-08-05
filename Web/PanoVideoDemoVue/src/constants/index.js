@@ -1,9 +1,7 @@
+import { Constants } from '@pano.video/panortc';
+
 export const VideoProfileType = {
-  Lowest: 'Lowest',
-  Low: 'Low',
-  Standard: 'Standard',
-  HD720P: 'HD720P',
-  HD1080P: 'HD1080P'
+  ...Constants.VideoProfileType
 };
 
 export const ChannelMode = {

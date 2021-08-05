@@ -44,7 +44,7 @@
         <span class="iconfont icon-pencil" />
       </div>
 
-      <!-- 空心图形 -->
+      <!-- 图形 -->
       <Popover placement="right" trigger="click">
         <div class="pano-wb-popup">
           <div class="pano-wb-popup__item">
@@ -90,44 +90,6 @@
               <span class="iconfont icon-checkbox-unchecked" />
             </div>
           </div>
-        </div>
-        <div
-          :class="{
-            'pano-withtip': true,
-            'pano-wb-tb__item': true,
-            'pano-wb-tb__item--selected':
-              fillType === 'none' &&
-              (insertType === Constants.ShapeType.Line ||
-                insertType === Constants.ShapeType.Arrow ||
-                insertType === Constants.ShapeType.Rect ||
-                insertType === Constants.ShapeType.Ellipse)
-          }"
-          data-tip="空心图形"
-          slot="reference"
-        >
-          <span class="iconfont icon-hollow" />
-          <div class="pano-wb-tb__item__triangle" />
-        </div>
-      </Popover>
-
-      <!-- 实心图形 -->
-      <Popover placement="right" trigger="click">
-        <div
-          :class="{
-            'pano-withtip': true,
-            'pano-wb-tb__item': true,
-            'pano-wb-tb__item--selected':
-              fillType === 'color' &&
-              (insertType === Constants.ShapeType.Rect ||
-                insertType === Constants.ShapeType.Ellipse)
-          }"
-          data-tip="实心图形"
-          slot="reference"
-        >
-          <span class="iconfont icon-solid" />
-          <div class="pano-wb-tb__item__triangle" />
-        </div>
-        <div class="pano-wb-popup">
           <div class="pano-wb-popup__item">
             <div
               :class="{
@@ -152,6 +114,22 @@
               <span class="iconfont icon-rect-h" />
             </div>
           </div>
+        </div>
+        <div
+          :class="{
+            'pano-withtip': true,
+            'pano-wb-tb__item': true,
+            'pano-wb-tb__item--selected':
+              insertType === Constants.ShapeType.Line ||
+              insertType === Constants.ShapeType.Arrow ||
+              insertType === Constants.ShapeType.Rect ||
+              insertType === Constants.ShapeType.Ellipse
+          }"
+          data-tip="图形"
+          slot="reference"
+        >
+          <span class="iconfont icon-hollow" />
+          <div class="pano-wb-tb__item__triangle" />
         </div>
       </Popover>
 
@@ -435,37 +413,37 @@
               <span class="iconfont icon-delete" />
             </div>
           </div>
-          <div class="pano-wb-popup__item" :style="{ display: 'block' }">
+          <div class="pano-wb-popup__item delete-btn-group">
             <Button
+              class="pano-wb-popup__item__delete-btn"
               size="small"
               type="text"
               :disabled="!isAdmin"
-              :style="{ display: 'block', marginBottom: '5px' }"
               @click="clearAll"
             >
               清除所有内容
             </Button>
             <Button
+              class="pano-wb-popup__item__delete-btn"
               type="text"
               size="small"
               :disabled="!isAdmin"
-              :style="{ display: 'block', marginBottom: '5px' }"
               @click="clearCurrentPage"
             >
               清除当前页
             </Button>
             <Button
+              class="pano-wb-popup__item__delete-btn"
               type="text"
               size="small"
-              style="{ display: 'block', marginBottom: '5px' }"
               @click="clearMyDraws"
             >
               清除我的内容
             </Button>
             <Button
+              class="pano-wb-popup__item__delete-btn"
               type="text"
               size="small"
-              style="{ display: 'block', marginBottom: '5px' }"
               @click="clearMyBg"
             >
               清除我的背景图
@@ -649,6 +627,15 @@
 
     <!-- 右侧admin权限相关 -->
     <div class="wb-admin">
+      <el-tooltip
+        content="将文档或课件一键居中，默认白板恢复初始大小"
+        placement="bottom"
+      >
+        <el-button type="default" size="mini" @click="center">
+          一键居中
+        </el-button>
+      </el-tooltip>
+
       <el-popover
         placement="bottom"
         width="150"
@@ -981,6 +968,9 @@ export default {
     },
     rejectFllowVision() {
       this.visionFollowPopVisible = false;
+    },
+    center() {
+      this.whiteboard.center();
     },
     toggleVisionSharing() {
       if (this.isSharingVision) {
@@ -1318,10 +1308,15 @@ export default {
       this.whiteboard.clearContents(true, Constants.WBClearType.All);
     },
     clearMyDraws() {
-      this.whiteboard.clearContents(false, Constants.WBClearType.DRAWS);
+      this.whiteboard.clearUserContents(
+        this.userMe.userId,
+        false,
+        Constants.WBClearType.DRAWS
+      );
     },
     clearMyBg() {
-      this.whiteboard.clearContents(
+      this.whiteboard.clearUserContents(
+        this.userMe.userId,
         false,
         Constants.WBClearType.BACKGROUND_IMAGE
       );
@@ -1604,8 +1599,8 @@ $fixed-left: 40px;
   &__item {
     font-size: 18px;
     display: inline-flex;
-    width: 30px;
-    height: 30px;
+    width: 26px;
+    height: 26px;
     padding: 2px;
     justify-content: center;
     align-items: center;
@@ -1748,6 +1743,18 @@ $fixed-left: 40px;
         }
       }
     }
+    &__delete-btn {
+      display: block;
+      margin-bottom: 5px;
+      margin-left: 0 !important;
+    }
+  }
+
+  .delete-btn-group {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
 
   &__item ~ &__item {

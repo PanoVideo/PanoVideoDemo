@@ -49,10 +49,29 @@ export default {
   computed: {
     ...mapGetters(['allUsers', 'isWhiteboardOpen', 'userMe'])
   },
+  watch: {
+    ['allUsers.length']() {
+      this.checkIfOverflow();
+    }
+  },
   components: { SmallView },
   methods: {
-    showRight() {},
-    showLeft() {}
+    showRight() {
+      this.$refs.subvideos.scrollLeft =
+        (this.$refs.subvideos.scrollLeft || 0) + 120;
+    },
+    showLeft() {
+      this.$refs.subvideos.scrollLeft =
+        (this.$refs.subvideos.scrollLeft || 0) - 120;
+    },
+    checkIfOverflow() {
+      this.subvideoOverflowContainer =
+        this.$refs.subvideoInner.getBoundingClientRect().width >
+        this.$refs.subvideos.getBoundingClientRect().width;
+    }
+  },
+  mounted() {
+    this.checkIfOverflow();
   }
 };
 </script>
@@ -132,5 +151,41 @@ export default {
 }
 .leftScroll {
   left: 25px;
+}
+
+$mobile-v-h: 80px;
+
+@media all and (max-width: 768px) {
+  .subVideoScrollHider {
+    height: $mobile-v-h;
+  }
+  .subvideos {
+    left: 50px;
+    right: 50px;
+    height: $mobile-v-h + 20px;
+    .panoTinyVideo {
+      height: $mobile-v-h - 20px;
+      width: ($mobile-v-h - 20px) * 16 / 9 - 3px;
+    }
+  }
+
+  .leftScroll,
+  .rightScroll {
+    top: 16px;
+  }
+  .leftScroll {
+    left: 0;
+  }
+  .rightScroll {
+    right: 0;
+  }
+  .smallVideoShadowRight {
+    right: 40px;
+    height: $mobile-v-h - 20px;
+  }
+  .smallVideoShadowLeft {
+    left: 40px;
+    height: $mobile-v-h - 20px;
+  }
 }
 </style>

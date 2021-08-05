@@ -388,4 +388,16 @@ $playerWidth: 100%;
     }
   }
 }
+
+@media all and (max-width: 768px) {
+  .toolBar {
+    height: 42px;
+    border-radius: 5px;
+  }
+  .btnClass {
+    span {
+      display: none;
+    }
+  }
+}
 </style>

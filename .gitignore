@@ -10,6 +10,8 @@ iOS/SDK/*.framework
 *.suo
 *.user
 *.sln.docstates
+package-lock.json
+yarn.lock
 
 # Build results
 [Dd]ebug/
