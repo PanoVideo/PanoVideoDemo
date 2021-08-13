@@ -2,7 +2,8 @@
 
 import { app, protocol, BrowserWindow, screen } from 'electron';
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
-import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
+
+// import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
 app.setAsDefaultProtocolClient('pano');
@@ -158,7 +159,7 @@ app.createShareCtrlWindow = function createShareCtrlWindow() {
   } else {
     shareWindow.setAlwaysOnTop(true, 'screen-saver', 2);
   }
-
+  // shareWindow.webContents.openDevTools();
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     shareWindow.loadURL(

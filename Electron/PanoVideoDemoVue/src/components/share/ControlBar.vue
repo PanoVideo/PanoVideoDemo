@@ -45,6 +45,17 @@
         </span>
       </button>
       <button
+        :class="{
+          'control-btn': true,
+          'control-btn__active': annotationEnabled
+        }"
+        @click="onClickAnnotation"
+        :disabled="isRemoteControling"
+      >
+        <i class="iconfont icon-pencil1" />
+        <span>标注</span>
+      </button>
+      <button
         v-if="isRemoteControling"
         class="control-btn"
         @click="onClickRemoteCtrl"
@@ -80,7 +91,6 @@ export default {
     return {
       audioMuted: false,
       videoMuted: false,
-      annotationEnabled: false,
       isRemoteControling: false,
       hideControlBar: true,
       left: 600,
@@ -88,6 +98,9 @@ export default {
       isDragging: false,
       dragStartPosition: undefined
     };
+  },
+  props: {
+    annotationEnabled: { type: Boolean }
   },
   methods: {
     onMouseLeave() {
@@ -98,7 +111,7 @@ export default {
     onMenuEnterBottom() {
       this.hideControlBar = false;
     },
-    handleMessage(e, data) {
+    handleMessage(_, data) {
       switch (data.command) {
         case 'syncSettings':
           this.audioMuted = data.payload.audioMuted;
@@ -113,7 +126,7 @@ export default {
           }
           break;
         case 'stopAnnotation':
-          this.annotationEnabled = false;
+          this.$emit('update:annotationEnabled', false);
           break;
         case 'hideShareCtrlWindow':
           this.hideShareCtrlWindow();
@@ -133,9 +146,6 @@ export default {
     },
     sendMessageToMainWindow(data) {
       electron.remote.app.sendToMainWindow(data);
-    },
-    sendMessageToAnnotationWindow(data) {
-      electron.remote.app.sendToShareWindow(data);
     },
     hideShareCtrlWindow() {
       electron.remote.app.hideShareCtrlWindow();
@@ -159,18 +169,12 @@ export default {
       this.hideShareCtrlWindow();
     },
     startAnnotation() {
-      this.annotationEnabled = true;
-      this.sendMessageToAnnotationWindow({
-        command: 'openAnnotation'
-      });
+      this.$emit('update:annotationEnabled', true);
     },
     stopAnnotation() {
-      this.annotationEnabled = false;
-      this.sendMessageToAnnotationWindow({
-        command: 'closeAnnotation'
-      });
+      this.$emit('update:annotationEnabled', false);
       this.sendMessageToMainWindow({
-        command: 'closeAnnotation'
+        command: 'stopShareAnnotation'
       });
     },
     onClickRemoteCtrl() {
@@ -178,7 +182,6 @@ export default {
       this.isRemoteControling = false;
     },
     onDrag(e) {
-      console.log('onDrag', e);
       if (!this.isDragging) return;
       const newLeft =
         this.dragStartPosition.left + e.clientX - this.dragStartPosition.x;
@@ -202,10 +205,8 @@ export default {
       } else {
         this.top = newTop;
       }
-      console.log(this.top, this.left);
     },
     onDragStart(e) {
-      console.log('onDragStart');
       // 远程控制时禁止拖拽
       if (this.isRemoteControling) return;
       this.dragStartPosition = {
@@ -219,10 +220,16 @@ export default {
       document.addEventListener('mouseup', this.onDragStop);
     },
     onDragStop() {
-      console.log('onDragStop');
       this.isDragging = false;
       document.removeEventListener('mousemove', this.onDrag);
       document.removeEventListener('mouseup', this.onDragStop);
+    },
+    onClickAnnotation() {
+      if (!this.annotationEnabled) {
+        this.startAnnotation();
+      } else {
+        this.stopAnnotation();
+      }
     }
   },
   mounted() {

@@ -98,15 +98,15 @@
 <script>
 import { mapGetters, mapMutations } from 'vuex';
 import { VideoScalingMode } from '@pano.video/panortc-electron-sdk';
-import { RtsService, RemoteControl } from '@pano.video/whiteboard';
+import { RtsService, RemoteControl, Annotation } from '@pano.video/whiteboard';
 import MainView from '../components/userVideo/MainView';
 import SmallVideoList from '../components/SmallVideoList';
 import PanoWhiteboard from '../components/whiteboard/PanoWhiteboard';
 import MeetingInfo from '../components/MeetingInfo';
 import ShareSelector from '../components/ShareSelector';
 import Setting from '../components/Setting';
-import { applyForWbAdmin } from '../setup-panortc';
-import robotjs from '@pano.video/robotjs';
+import { applyForWbAdmin } from '../utils/panorts';
+// import robotjs from '@pano.video/robotjs';
 
 const electron = window.require('electron');
 
@@ -123,6 +123,8 @@ export default {
       isControlledByOthers: false, // 是否正在被别人远程控制
       sharedScreenOrAppDispay: undefined, // 共享桌面时窗口位置信息
       captureRect: undefined,
+      annotationWb: undefined,
+      sharedScreenPosition: undefined,
       remoteControl: undefined // 远程控制对象
     };
   },
@@ -203,9 +205,9 @@ export default {
     },
     onClickMicMute() {
       if (this.userMe.audioMuted) {
-        window.rtcEngine.startAudio();
+        window.rtcEngine.unmuteAudio();
       } else {
-        window.rtcEngine.stopAudio();
+        window.rtcEngine.muteAudio();
       }
       this.updateUser({
         userId: this.userMe.userId,
@@ -277,8 +279,8 @@ export default {
     leaveChannel(goLogin = true) {
       electron.remote.getCurrentWindow().setFullScreen(false);
       window.rtcEngine.leaveChannel();
+      window.rtcWhiteboard.leaveChannel();
       this.resetShareWindow();
-      window.rtcWhiteboard && window.rtcWhiteboard.leaveChannel();
       if (this.userMe.videoAnnotationOpen) {
         // 关闭视频标注
         RtsService.getInstance()
@@ -351,7 +353,19 @@ export default {
         height: bottom - top,
         shareType: this.userMe.screenShareType
       };
+      this.sharedScreenPosition = {
+        x: left,
+        y: top,
+        width: right - left,
+        height: bottom - top
+      };
       console.log('共享窗口/app 的位置变化: ', payload);
+      if (this.annotationWb) {
+        this.annotationWb.setAnnotationViewSize({
+          width: right - left,
+          height: bottom - top
+        });
+      }
       this.sendmsgToShareWindow({ command: 'setSharePosition', payload });
       // 远程控制部分代码
       this.captureRect = payload;
@@ -423,7 +437,7 @@ export default {
     onRemoteControlConnected(remoteControl) {
       this.removeObservers();
       this.remoteControl = remoteControl;
-      this.remoteControl.setRobot(robotjs);
+      // this.remoteControl.setRobot(robotjs);
       this.remoteControl.setShareRect(this.captureRect);
       this.remoteControl.on(
         RemoteControl.Events.onConnectDisconnected,
@@ -465,6 +479,9 @@ export default {
         case 'toggleCamera':
           this.onClickCamMute();
           break;
+        case 'sendProxyWbData':
+          this.annotationWb?.sendCommand(data.payload);
+          break;
         case 'replyForRemoteControl':
           if (data.payload.confirm) {
             this.remoteControl?.acceptControl(data.payload.userId);
@@ -487,8 +504,43 @@ export default {
           this.remoteControl?.remoteUserId &&
             this.remoteControl?.cancelControl(this.remoteControl.remoteUserId);
           break;
+        case 'startShareAnnotation':
+          this.startShareAnnotation();
+          break;
+        case 'stopShareAnnotation':
+          this.stopShareAnnotation();
+          break;
         default:
           break;
+      }
+    },
+    startShareAnnotation() {
+      if (!this.annotationWb) {
+        this.annotationWb = RtsService.getInstance().getAnnotation(
+          this.userMe.userId,
+          'share'
+        );
+        this.annotationWb.joinSession();
+        this.sharedScreenPosition &&
+          this.annotationWb.setAnnotationViewSize(this.sharedScreenPosition);
+        this.annotationWb.commandProxy = cmd => {
+          this.sendmsgToShareWindow({ command: 'wbCmd', payload: cmd });
+        };
+        this.annotationWb.once(Annotation.Events.sessionReady, () => {
+          this.sendmsgToShareWindow({
+            command: 'init',
+            payload: {
+              nodeId: this.annotationWb.nodeId,
+              userId: this.annotationWb.userId
+            }
+          });
+        });
+      }
+    },
+    stopShareAnnotation() {
+      if (this.annotationWb) {
+        this.annotationWb.stop();
+        this.annotationWb = undefined;
       }
     }
   },

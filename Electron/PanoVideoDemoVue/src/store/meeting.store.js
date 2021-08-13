@@ -17,6 +17,8 @@ function getQueryValue(queryName) {
 
 function getInitialState() {
   return {
+    appId: '',
+    panoToken: '',
     channelId:
       getQueryValue('channelId') ||
       localStorage.getItem(Constants.localCacheKeyChannelId) ||
@@ -44,10 +46,16 @@ function getInitialState() {
 export default {
   state: getInitialState(),
   mutations: {
+    setAppId(state, appId) {
+      state.appId = appId;
+    },
+    setPanoToken(state, panoToken) {
+      state.panoToken = panoToken;
+    },
     setWhiteboardAvailable(state, whiteboardAvailable) {
       state.whiteboardAvailable = whiteboardAvailable;
     },
-    updateChannelId(state, channelId) {
+    setChannelId(state, channelId) {
       state.channelId = channelId;
     },
     setMeetingStatus(state, status) {
@@ -109,6 +117,8 @@ export default {
   },
   actions: {},
   getters: {
+    appId: state => state.appId,
+    panoToken: state => state.panoToken,
     micId: state => state.micId,
     speakerId: state => state.speakerId,
     cameraId: state => state.cameraId,

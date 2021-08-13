@@ -6,6 +6,7 @@
       @focus.native="onMouseEnterCtrl"
       @mouseleave.native="onMouseLeaveCtrl"
       @blur.native="onMouseLeaveCtrl"
+      :annotationEnabled.sync="annotationEnabled"
     />
 
     <!-- 绿框 -->
@@ -52,12 +53,22 @@
         </Button>
       </div>
     </div>
+
+    <ShareAnnotation
+      v-if="annotationEnabled"
+      :shareType="shareType"
+      :annotationPosition="annotationPosition"
+      @updateIgnoreMouseEvents="updateIgnoreMouseEvents"
+      @mouseEnterToolbar="onMouseEnterCtrl"
+      @mouseLeaveToolbar="onMouseLeaveCtrl"
+    />
   </div>
 </template>
 
 <script>
 import { Button } from 'element-ui';
-import ControlBar from './ControlBar';
+import ShareAnnotation from '@/components/share/ShareAnnotation';
+import ControlBar from '@/components/share/ControlBar';
 
 const electron = window.require('electron');
 
@@ -75,12 +86,23 @@ export default {
       // 共享内容的大小
       shareSize: undefined,
       remoteControlUserId: '',
+      annotationEnabled: false,
       ignoreMouseEvents: true // 是否穿透鼠标
     };
   },
   components: {
     Button,
-    ControlBar
+    ControlBar,
+    ShareAnnotation
+  },
+  watch: {
+    annotationEnabled() {
+      if (this.annotationEnabled) {
+        this.ignoreMouseEvents = false;
+      } else {
+        this.ignoreMouseEvents = true;
+      }
+    }
   },
   methods: {
     handleMessage(_, data) {
@@ -163,6 +185,9 @@ export default {
         command: 'replyForRemoteControl',
         payload: { confirm, userId: this.remoteControlUserId }
       });
+    },
+    updateIgnoreMouseEvents(ignoreMouseEvents) {
+      this.ignoreMouseEvents = ignoreMouseEvents;
     },
     onMouseEnterCtrl() {
       electron.remote.getCurrentWindow().setIgnoreMouseEvents(false);

@@ -36,8 +36,7 @@
         :class="{
           'pano-wb-tb__item': true,
           'pano-withtip': true,
-          'pano-wb-tb__item--selected':
-            insertType === Constants.ShapeType.Drag
+          'pano-wb-tb__item--selected': insertType === Constants.ShapeType.Drag
         }"
         @click="setToolType(Constants.ShapeType.Drag)"
         class="pano-wb-tb__item pano-withtip "
@@ -59,7 +58,6 @@
         <span class="iconfont icon-pencil" />
       </div>
 
-      
       <!-- 图形 -->
       <Popover placement="right" trigger="click">
         <div class="pano-wb-popup">
@@ -887,7 +885,7 @@ import PanoRtc from '@pano.video/panortc';
 import { mapGetters } from 'vuex';
 import { get } from 'lodash-es';
 import { Popover, Button } from 'element-ui';
-import { applyForWbAdmin } from '../../setup-panortc';
+import { applyForWbAdmin } from '../../utils/panorts';
 
 const { RtcWhiteboard, Constants } = PanoRtc;
 

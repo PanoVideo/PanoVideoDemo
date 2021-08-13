@@ -85,7 +85,7 @@
 import logopng from '@/assets/img/logo.png';
 import { mapMutations, mapGetters } from 'vuex';
 import * as Constants from '../constants';
-import PanoRtc from '@pano.video/panortc';
+import PanoRtc, { statusCodeToQResult } from '@pano.video/panortc';
 
 export default {
   data() {
@@ -110,12 +110,13 @@ export default {
   },
   methods: {
     ...mapMutations([
-      'updateChannelId',
+      'setAppId',
+      'setPanoToken',
+      'setChannelId',
       'updateUserMe',
       'setMeetingStatus',
       'resetMeetingStore'
     ]),
-    initWhiteboard() {},
     /**
      * 加会逻辑
      */
@@ -131,7 +132,9 @@ export default {
       localStorage.setItem(Constants.localCacheKeyUserName, userName);
       localStorage.setItem(Constants.localCacheKeyUserId, userId);
       this.loading = true;
-      this.updateChannelId(channelId);
+      this.setAppId(appId);
+      this.setPanoToken(token);
+      this.setChannelId(channelId);
       this.updateUserMe({
         userName,
         userId
@@ -147,7 +150,7 @@ export default {
           userName
         },
         {
-          joinChannelType: PanoRtc.Constants.JoinChannelType.mediaAndWhiteboard
+          joinChannelType: PanoRtc.Constants.JoinChannelType.mediaOnly
         }
       );
       if (qResult.code != 'OK') {
@@ -164,28 +167,60 @@ export default {
      */
     onJoinChannelConfirm(data) {
       this.loading = false;
-      const { audioOn, videoOn } = this.form;
       if (data.result === 'success') {
-        if (audioOn) {
-          window.rtcEngine.startAudio();
-        }
-        if (videoOn) {
-          window.rtcEngine.startVideo(this.videoPorfile);
-        }
-        localStorage.setItem(
-          Constants.localCacheKeyMuteMicAtStart,
-          audioOn ? 'no' : 'yes'
+        console.log('rtcEngine 入会成功');
+        // 媒体入会成功之后再连接白板，因为用户列表从媒体连接中获取
+        // 而标注等事件从白板（rts）中获取，保证在接收到用户开启标注事件时，用户已经存在于用户列表中
+        const { channelId, userName, appId, userId, token } = this.form;
+        window.rtcWhiteboard.joinChannel(
+          {
+            appId,
+            token,
+            channelId,
+            name: userName,
+            userId: userId
+          },
+          () => {
+            console.log('panorts whiteboard join seccess!');
+            this.onJoinChannelSuccess();
+          },
+          statusCode => {
+            window.rtcEngine.leaveChannel();
+            console.log('panorts whiteboard join failed', statusCode);
+            this.onJoinChannelFailed(
+              `PanoRts服务连接失败: ${statusCodeToQResult(statusCode)}`
+            );
+          }
         );
-        localStorage.setItem(
-          Constants.localCacheKeyMuteCamAtStart,
-          videoOn ? 'no' : 'yes'
-        );
-        this.updateUserMe({ audioMuted: !audioOn, videoMuted: !videoOn });
-        this.setMeetingStatus('connected');
-        this.$router.replace({ name: 'Meeting' });
       } else {
-        this.$message.error('joinChannel Failed ' + data.message);
+        this.onJoinChannelFailed(`PanoRtc服务连接失败：${data.message}`);
       }
+    },
+    onJoinChannelSuccess() {
+      this.loading = false;
+      const { audioOn, videoOn } = this.form;
+      window.rtcEngine.startAudio();
+      if (!audioOn) {
+        window.rtcEngine.muteMic();
+      }
+      if (videoOn) {
+        window.rtcEngine.startVideo(this.videoPorfile);
+      }
+      localStorage.setItem(
+        Constants.localCacheKeyMuteMicAtStart,
+        audioOn ? 'no' : 'yes'
+      );
+      localStorage.setItem(
+        Constants.localCacheKeyMuteCamAtStart,
+        videoOn ? 'no' : 'yes'
+      );
+      this.updateUserMe({ audioMuted: !audioOn, videoMuted: !videoOn });
+      this.setMeetingStatus('connected');
+      this.$router.replace({ name: 'Meeting' });
+    },
+    onJoinChannelFailed(reason) {
+      this.loading = false;
+      this.$message.error(reason);
     },
     togglePriSettings() {
       this.priSettingsVisible = !this.priSettingsVisible;
@@ -200,14 +235,6 @@ export default {
       this.priSettingsVisible = !this.priSettingsVisible;
     }
   },
-  created() {
-    this.form.audioOn = !this.userMe.audioMuted;
-    this.form.videoOn = !this.userMe.videoMuted;
-    window.rtcEngine.on(
-      PanoRtc.RtcEngine.Events.joinChannelConfirm,
-      this.onJoinChannelConfirm
-    );
-  },
   beforeDestroy() {
     window.rtcEngine.off(
       PanoRtc.RtcEngine.Events.joinChannelConfirm,
@@ -215,9 +242,17 @@ export default {
     );
   },
   mounted() {
+    window.rtcEngine.on(
+      PanoRtc.RtcEngine.Events.joinChannelConfirm,
+      this.onJoinChannelConfirm
+    );
+    this.form.audioOn = !this.userMe.audioMuted;
+    this.form.videoOn = !this.userMe.videoMuted;
     this.form.appId = localStorage.getItem(Constants.localCacheKeyAppId);
     this.form.token = localStorage.getItem(Constants.localCacheKeyToken);
-    this.form.channelId = localStorage.getItem(Constants.localCacheKeyChannelId);
+    this.form.channelId = localStorage.getItem(
+      Constants.localCacheKeyChannelId
+    );
     this.form.userName = localStorage.getItem(Constants.localCacheKeyUserName);
     this.form.userId = localStorage.getItem(Constants.localCacheKeyUserId);
   }

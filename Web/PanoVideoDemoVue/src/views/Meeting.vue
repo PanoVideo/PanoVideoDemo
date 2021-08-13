@@ -89,11 +89,12 @@
 
 <script>
 import { mapGetters, mapMutations } from 'vuex';
+import { RtsService } from '@pano.video/panortc';
 import MainView from '../components/userVideo/MainView';
 import SmallVideoList from '../components/SmallVideoList';
 import PanoWhiteboard from '../components/whiteboard/PanoWhiteboard';
 import MeetingInfo from '../components/MeetingInfo';
-import { applyForWbAdmin } from '../setup-panortc';
+import { applyForWbAdmin } from '../utils/panorts';
 
 export default {
   name: 'Meeting',
@@ -184,9 +185,9 @@ export default {
     },
     onClickMicMute() {
       if (this.userMe.audioMuted) {
-        window.rtcEngine.startAudio();
+        window.rtcEngine.unmuteMic();
       } else {
-        window.rtcEngine.stopAudio();
+        window.rtcEngine.muteMic();
       }
       this.updateUser({
         userId: this.userMe.userId,
@@ -197,6 +198,12 @@ export default {
       if (this.userMe.videoMuted) {
         window.rtcEngine.startVideo(this.videoPorfile);
       } else {
+        if (this.userMe.videoAnnotationOpen) {
+          // 关闭视频标注
+          RtsService.getInstance()
+            .getAnnotation(this.userMe.userId, 'video')
+            ?.stop();
+        }
         window.rtcEngine.stopVideo();
       }
       this.updateUser({
@@ -253,6 +260,12 @@ export default {
     leaveChannel(goLogin = true) {
       window.rtcEngine.leaveChannel();
       window.rtcWhiteboard && window.rtcWhiteboard.leaveChannel();
+      if (this.userMe.videoAnnotationOpen) {
+        // 关闭视频标注
+        RtsService.getInstance()
+          .getAnnotation(this.userMe.userId, 'video')
+          ?.stop();
+      }
       this.resetMeetingStore();
       this.resetUserStore();
       window.onbeforeunload = null;

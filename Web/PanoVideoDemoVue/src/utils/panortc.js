@@ -1,84 +1,16 @@
 import PanoRtc from '@pano.video/panortc';
-import { includes, get } from 'lodash-es';
-import { Message } from 'element-ui';
-import store from './store';
+import { includes } from 'lodash-es';
+import store from '../store';
 import {
   VideoProfileType,
   subscribeVideoQuota,
-  MOMENT_FOR_UNSUBSCRIBE,
-  QResult
-} from './constants';
+  MOMENT_FOR_UNSUBSCRIBE
+} from '../constants';
 
 // 初始化 panortc
-const rtcEngine = new PanoRtc.RtcEngine();
-
 // 全局单例
+const rtcEngine = new PanoRtc.RtcEngine();
 window.rtcEngine = rtcEngine;
-
-/**
- * 申请 admin 角色（演示权限）
- */
-export function applyForWbAdmin() {
-  console.log('applyForWbAdmin');
-  return new Promise((resolve, reject) => {
-    window.rtcWhiteboard.setRoleType(PanoRtc.Constants.WBRoleType.Admin);
-    let reqForAdminTimeout;
-    const onRoleChanged = role => {
-      console.log('onRoleChanged', role);
-      clearTimeout(reqForAdminTimeout);
-      if (role === PanoRtc.Constants.WBRoleType.Admin) {
-        window.rtcWhiteboard.broadcastMessage({
-          wbHostId: store.getters.userMe.userId
-        });
-        resolve();
-      } else {
-        reject();
-      }
-      window.rtcWhiteboard.off(
-        PanoRtc.RtcWhiteboard.Events.userRoleTypeChanged,
-        onRoleChanged
-      );
-    };
-    // 2s 内获取不到权限提示失败
-    reqForAdminTimeout = setTimeout(() => {
-      window.rtcWhiteboard.off(
-        PanoRtc.RtcWhiteboard.Events.userRoleTypeChanged,
-        onRoleChanged
-      );
-      reject();
-      console.error('获取演示权限失败，请重试.');
-    }, 2000);
-    window.rtcWhiteboard.on(
-      PanoRtc.RtcWhiteboard.Events.userRoleTypeChanged,
-      onRoleChanged
-    );
-  });
-}
-
-function getLeaveChannelReason(reason) {
-  switch (reason) {
-    case QResult.AUTH_FAILED:
-      return '认证失败';
-    case QResult.USER_REJECTED:
-      return '用户被拒绝';
-    case QResult.USER_EXPELED:
-      return '已被踢出会议';
-    case QResult.USER_DUPLICATE:
-      return '用户 ID 重复';
-    case QResult.CHANNEL_CLOSED:
-      return '频道被关闭';
-    case QResult.CHANNEL_FULL:
-      return '频道容量已满';
-    case QResult.CHANNEL_LOCKED:
-      return '频道被锁定';
-    case QResult.CHANNEL_MODE:
-      return '频道模式不匹配';
-    case QResult.NETWORK_ERROR:
-      return '出现网络错误';
-    default:
-      return 'Unknown';
-  }
-}
 
 /**
  * 获取用户合适的订阅视频分辨率，主视图用户720p，其他180P
@@ -252,6 +184,9 @@ function insertVideoTagToDom(videoTag, wrapper) {
   }
 }
 
+/**
+ * 初始化pano rtc相关逻辑，pano rtc 包括音、视频和桌面共享功能
+ */
 export default function initPanoRtc() {
   /**
    * 接收到别人的视频回调
@@ -307,7 +242,19 @@ export default function initPanoRtc() {
   rtcEngine.on(PanoRtc.RtcEngine.Events.leaveChannelIndication, result => {
     console.log('channelLeaveIndication', result);
     if (store.getters.meetingStatus !== 'countdownover') {
-      store.commit('setmeetingEndReason', getLeaveChannelReason(result));
+      // const reasons = [
+      //   'Kicked Out',
+      //   'Force Failover',
+      //   'Meeting Ended',
+      //   'Login Elsewhere'
+      // ];
+      const reasons = [
+        '已被踢出会议',
+        '服务端强制重启会议',
+        '会议结束',
+        '已在其他地方登录'
+      ];
+      store.commit('setmeetingEndReason', reasons[result.reasonCode]);
       store.commit('setMeetingStatus', 'ended');
     }
   });
@@ -497,65 +444,13 @@ export default function initPanoRtc() {
   rtcEngine.on(PanoRtc.RtcEngine.Events.localScreenEnded, onLocalScreenEnd);
 
   // 没有默认选择的 camera
-  rtcEngine.getCams(cameras => {
-    if (!store.getters.cameraId) {
-      store.commit('setCamera', get(cameras, '0.deviceId'));
-    }
-    rtcEngine.selectCam(store.getters.cameraId);
-  });
+  // rtcEngine.getCams(cameras => {
+  //   if (!store.getters.cameraId) {
+  //     store.commit('setCamera', get(cameras, '0.deviceId'));
+  //   }
+  //   rtcEngine.selectCam(store.getters.cameraId);
+  // });
+  rtcEngine.selectCam(store.getters.cameraId);
   rtcEngine.selectMic(store.getters.micId);
   rtcEngine.selectSpeaker(store.getters.speakerId);
-  rtcEngine.on(PanoRtc.RtcEngine.Events.whiteboardAvailable, () => {
-    console.log('白板连接成功');
-    const rtcWhiteboard = rtcEngine.getWhiteboard();
-    window.rtcWhiteboard = rtcWhiteboard;
-    store.commit('setWhiteboardAvailable', true);
-
-    rtcWhiteboard.on(PanoRtc.RtcWhiteboard.Events.messageReceived, payload => {
-      console.log('got whiteboard message:', payload);
-      const msg = payload.message;
-      if (msg.wbHostId) {
-        if (
-          msg.wbHostId.toString() !== store.getters.userMe.userId &&
-          store.getters.getUserById(msg.wbHostId.toString())
-        ) {
-          Message.info(
-            `${
-              store.getters.getUserById(msg.wbHostId.toString())?.userName
-            } 正在演示`
-          );
-        }
-        store.commit('setWbHost', msg.wbHostId.toString());
-      }
-    });
-
-    rtcWhiteboard.on(
-      PanoRtc.RtcWhiteboard.Events.readyStateChanged,
-      payload => {
-        console.log('whiteboard ready state changed,', payload);
-        store.commit('setWhiteboardAvailable', payload.ready);
-      }
-    );
-
-    rtcWhiteboard.on(PanoRtc.RtcWhiteboard.Events.userRoleTypeChanged, role => {
-      if (role !== PanoRtc.Constants.WBRoleType.Attendee) {
-        // 仅admin角色可以通过键盘操作课件
-        rtcWhiteboard.enableCoursewareInteraction();
-      } else {
-        rtcWhiteboard.disableCoursewareInteraction();
-      }
-    });
-
-    // 其他用户初次打开白板，本端收到事件直接打开白板
-    rtcWhiteboard.on(PanoRtc.RtcWhiteboard.Events.openStateChanged, () => {
-      store.commit('setWhiteboardOpenState', true);
-    });
-
-    // 如果关闭白板时有新收到的绘制消息提示白板内容有更新
-    rtcWhiteboard.on(PanoRtc.RtcWhiteboard.Events.newShapeReceived, () => {
-      if (!store.getters.isWhiteboardOpen) {
-        store.commit('setWhiteboardUpdatedState', true);
-      }
-    });
-  });
 }

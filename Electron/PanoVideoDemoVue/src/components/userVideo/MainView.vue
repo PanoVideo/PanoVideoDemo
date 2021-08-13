@@ -23,10 +23,14 @@
         <span class="iconfont icon-lock1" />
         <span>取消锁定</span>
       </div>
-      <div class="mv__top-btns__btn" @click="toggleAnnotation" v-if="isUserMe">
+      <div
+        class="mv__top-btns__btn"
+        @click="toggleAnnotation"
+        v-if="isUserMe && !userMe.videoMuted"
+      >
         <span>{{ userMe.videoAnnotationOpen ? '关闭' : '打开' }}视频标注</span>
       </div>
-      <div
+      <!-- <div
         class="mv__top-btns__btn"
         v-if="mainViewUser.screenOpen"
         @click="toggleRemoteControl"
@@ -41,7 +45,7 @@
         <i v-else class="iconfont icon-remote-ctrl-on">
           <span>请求远程控制</span>
         </i>
-      </div>
+      </div> -->
     </div>
 
     <!-- 远程控制蒙层 -->
@@ -95,7 +99,9 @@
     <div class="annotation" ref="annotationRef" />
 
     <AnnotationToolbar
-      v-if="videoAnnotationOpen && annotationWhiteboard"
+      v-if="
+        (videoAnnotationOpen || shareAnnotationOpen) && annotationWhiteboard
+      "
       :whiteboard="annotationWhiteboard"
     />
   </div>
@@ -135,22 +141,27 @@ export default {
     },
     videoAnnotationOpen() {
       return this.mainViewUser.videoAnnotationOpen;
+    },
+    shareAnnotationOpen() {
+      return this.mainViewUser.shareAnnotationOpen;
     }
   },
   watch: {
     ['mainViewUser.userId']() {
       this.updateVideoView();
-      this.annotationWhiteboard?.close();
-      this.annotationWhiteboard = undefined;
       this.checkAnnotation();
     },
     ['mainViewUser.isScreenInMainView']() {
       this.updateVideoView();
+      this.checkAnnotation();
     },
     ['mainViewUser.videoMuted']() {
       this.updateVideoView();
     },
     ['mainViewUser.videoAnnotationOpen']() {
+      this.checkAnnotation();
+    },
+    ['mainViewUser.shareAnnotationOpen']() {
       this.checkAnnotation();
     },
     isWhiteboardOpen() {
@@ -165,7 +176,7 @@ export default {
         videoAnnotationOpen: !this.mainViewUser.videoAnnotationOpen
       });
       if (!this.mainViewUser.videoAnnotationOpen) {
-        this.annotationWhiteboard = null;
+        this.annotationWhiteboard?.close();
       }
     },
     checkAnnotation() {
@@ -177,15 +188,28 @@ export default {
         this.annotationWhiteboard.close();
         this.annotationWhiteboard = undefined;
       }
-      if (!this.mainViewUser.videoAnnotationOpen) {
-        this.annotationWhiteboard?.stop();
-        this.annotationWhiteboard = undefined;
+      if (
+        (this.mainViewUser.isScreenInMainView &&
+          this.mainViewUser.shareAnnotationOpen) ||
+        (!this.mainViewUser.isScreenInMainView &&
+          this.mainViewUser.videoAnnotationOpen)
+      ) {
+        this.openAnnotation();
       } else {
-        this.annotationWhiteboard = RtsService.getInstance().getAnnotation(
-          this.mainViewUser.userId,
-          'video'
-        );
-        if (this.mainViewUser.videoDomRef) {
+        this.closeAnnotation();
+      }
+    },
+    openAnnotation() {
+      this.annotationWhiteboard = RtsService.getInstance().getAnnotation(
+        this.mainViewUser.userId,
+        this.mainViewUser.isScreenInMainView ? 'share' : 'video'
+      );
+      if (!this.annotationWhiteboard.isWhiteboardOpen) {
+        if (
+          !this.mainViewUser.isScreenInMainView &&
+          this.mainViewUser.videoDomRef
+        ) {
+          // 视频标注的情况，需要主动设置自己的分辨率信息
           const canvasDom = this.mainViewUser.videoDomRef.getElementsByTagName(
             'canvas'
           )[0];
@@ -199,6 +223,13 @@ export default {
         }
         this.annotationWhiteboard.open(this.$refs.annotationRef);
       }
+    },
+    closeAnnotation() {
+      this.annotationWhiteboard?.close();
+      if (this.annotationWhiteboard?.tragetUserId === this.userMe.userId) {
+        this.annotationWhiteboard?.stop();
+      }
+      this.annotationWhiteboard = undefined;
     },
     onUnLock() {
       this.updateUser({ userId: this.mainViewUser.userId, locked: false });
@@ -309,8 +340,7 @@ export default {
       'userScreenResolutionChanged',
       this.onUserScreenResolutionChanged
     );
-    this.annotationWhiteboard?.close();
-    this.annotationWhiteboard = undefined;
+    this.closeAnnotation();
   }
 };
 </script>

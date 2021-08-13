@@ -31,6 +31,20 @@
         <span class="iconfont icon-move" />
       </div>
 
+      <!-- 移动画布 -->
+      <div
+        :class="{
+          'pano-wb-tb__item': true,
+          'pano-withtip': true,
+          'pano-wb-tb__item--selected': insertType === Constants.ShapeType.Drag
+        }"
+        @click="setToolType(Constants.ShapeType.Drag)"
+        class="pano-wb-tb__item pano-withtip "
+        data-tip="画布拖拽"
+      >
+        <span class="iconfont icon-hand" />
+      </div>
+
       <!-- 画笔 -->
       <div
         :class="{
@@ -871,7 +885,7 @@ import { RtcWhiteboard, Constants } from '@pano.video/whiteboard';
 import { mapGetters } from 'vuex';
 import { get } from 'lodash-es';
 import { Popover, Button } from 'element-ui';
-import { applyForWbAdmin } from '../../setup-panortc';
+import { applyForWbAdmin } from '../../utils/panorts';
 
 const colors = [
   'RGBA(220, 85, 76, 1.00)',

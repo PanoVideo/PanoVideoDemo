@@ -5,7 +5,7 @@ import {
   subscribeUserScreen,
   trySubscribeUserVideo,
   forceSubscribeUserVideo
-} from '../setup-panortc';
+} from '../utils/panortc';
 
 const MOMENT_FOR_UNSUBSCRIBE = 0;
 
@@ -27,6 +27,7 @@ function createUser(userId, userName) {
     videoMuted: true,
     screenOpen: false,
     videoAnnotationOpen: false, // 视频标注是否打开
+    shareAnnotationOpen: false, // 桌面共享标注是否打开
     audioMuted: true,
     isSpeaking: false,
     isMostActive: false,

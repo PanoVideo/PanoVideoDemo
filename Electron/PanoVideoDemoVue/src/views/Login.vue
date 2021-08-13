@@ -58,7 +58,8 @@
 <script>
 import logopng from '@/assets/img/logo.png';
 import { mapMutations, mapGetters } from 'vuex';
-import { RtcEngineEvents, getLeaveChannelReason } from '@/setup-panortc';
+import { RtcEngineEvents, getLeaveChannelReason } from '@/utils/panortc';
+import { statusCodeToQResult } from '@pano.video/whiteboard';
 import * as Constants from '@/constants';
 import {
   ChannelMode,
@@ -89,7 +90,9 @@ export default {
   },
   methods: {
     ...mapMutations([
-      'updateChannelId',
+      'setAppId',
+      'setPanoToken',
+      'setChannelId',
       'updateUserMe',
       'setMeetingStatus',
       'resetMeetingStore'
@@ -109,7 +112,9 @@ export default {
       localStorage.setItem(Constants.localCacheKeyUserName, userName);
       localStorage.setItem(Constants.localCacheKeyUserId, userId);
       this.loading = true;
-      this.updateChannelId(channelId);
+      this.setAppId(appId);
+      this.setPanoToken(token);
+      this.setChannelId(channelId);
       this.updateUserMe({
         userName,
         userId
@@ -134,34 +139,9 @@ export default {
       }
       this.resetMeetingStore();
     },
-    /**
-     * 入会成功回调
-     */
+    // rtcEngine入会回调
     onJoinChannelConfirm(result) {
-      this.loading = false;
-      const { audioOn, videoOn } = this.form;
       if (result === QResult.OK) {
-        if (audioOn) {
-          window.rtcEngine.startAudio();
-        }
-        if (videoOn) {
-          window.rtcEngine.startVideo(this.userMe.videoDomRef, {
-            profile: this.myVideoProfileType,
-            scaling: VideoScalingMode.Fit,
-            mirror: true
-          });
-        }
-        localStorage.setItem(
-          Constants.localCacheKeyMuteMicAtStart,
-          audioOn ? 'no' : 'yes'
-        );
-        localStorage.setItem(
-          Constants.localCacheKeyMuteCamAtStart,
-          videoOn ? 'no' : 'yes'
-        );
-        this.updateUserMe({ audioMuted: !audioOn, videoMuted: !videoOn });
-        this.setMeetingStatus('connected');
-        this.$router.replace({ name: 'Meeting' });
         // 媒体入会成功之后再连接白板，因为用户列表从媒体连接中获取
         // 而标注事件从白板（rts）中获取，保证在接收到用户开启标注事件时，用户已经存在于用户列表中
         const { channelId, userName, appId, userId, token } = this.form;
@@ -171,23 +151,55 @@ export default {
             token,
             channelId,
             name: userName,
-            userId
+            userId: userId
           },
           () => {
-            console.log('whiteboard join seccess!');
+            console.log('panorts whiteboard join seccess!');
+            this.onJoinChannelSuccess();
           },
           statusCode => {
-            this.loading = false;
-            const errMsg = `whiteboard join error, statusCode: ${statusCode}`;
-            console.error(errMsg);
-            this.$message.error(errMsg);
+            window.rtcEngine.leaveChannel();
+            console.log('panorts whiteboard join failed', statusCode);
+            this.onJoinChannelFailed(
+              `PanoRts服务连接失败: ${statusCodeToQResult(statusCode)}`
+            );
           }
         );
       } else {
-        this.$message.error(
-          'joinChannel 失败, 失败原因：' + getLeaveChannelReason(result)
+        this.onJoinChannelFailed(
+          `PanoRtc服务连接失败：${getLeaveChannelReason(result)}`
         );
       }
+    },
+    onJoinChannelSuccess() {
+      this.loading = false;
+      const { audioOn, videoOn } = this.form;
+      window.rtcEngine.startAudio();
+      if (!audioOn) {
+        window.rtcEngine.muteAudio();
+      }
+      if (videoOn) {
+        window.rtcEngine.startVideo(this.userMe.videoDomRef, {
+          profile: this.myVideoProfileType,
+          scaling: VideoScalingMode.Fit,
+          mirror: true
+        });
+      }
+      localStorage.setItem(
+        Constants.localCacheKeyMuteMicAtStart,
+        audioOn ? 'no' : 'yes'
+      );
+      localStorage.setItem(
+        Constants.localCacheKeyMuteCamAtStart,
+        videoOn ? 'no' : 'yes'
+      );
+      this.updateUserMe({ audioMuted: !audioOn, videoMuted: !videoOn });
+      this.setMeetingStatus('connected');
+      this.$router.replace({ name: 'Meeting' });
+    },
+    onJoinChannelFailed(reason) {
+      this.loading = false;
+      this.$message.error(reason);
     }
   },
   created() {

@@ -1,5 +1,17 @@
 <template>
   <div class="pano-wb-at">
+    <!-- 穿透点击 -->
+    <div
+      :class="{
+        'pano-wb-at__item': true,
+        'pano-wb-at__item--selected': insertType === Constants.ShapeType.Click
+      }"
+      @click="setToolType(Constants.ShapeType.Click)"
+      class="pano-wb-at__item "
+    >
+      <span class="iconfont icon-click" />
+    </div>
+
     <!-- 选择 -->
     <div
       :class="{
@@ -69,40 +81,6 @@
             <span class="iconfont icon-checkbox-unchecked" />
           </div>
         </div>
-      </div>
-      <div
-        :class="{
-          'pano-wb-at__item': true,
-          'pano-wb-at__item--selected':
-            fillType === 'none' &&
-            (insertType === Constants.ShapeType.Line ||
-              insertType === Constants.ShapeType.Arrow ||
-              insertType === Constants.ShapeType.Rect ||
-              insertType === Constants.ShapeType.Ellipse)
-        }"
-        slot="reference"
-      >
-        <span class="iconfont icon-hollow" />
-        <div class="pano-wb-at__item__triangle" />
-      </div>
-    </Popover>
-
-    <!-- 实心图形 -->
-    <Popover placement="top" trigger="click">
-      <div
-        :class="{
-          'pano-wb-at__item': true,
-          'pano-wb-at__item--selected':
-            fillType === 'color' &&
-            (insertType === Constants.ShapeType.Rect ||
-              insertType === Constants.ShapeType.Ellipse)
-        }"
-        slot="reference"
-      >
-        <span class="iconfont icon-solid" />
-        <div class="pano-wb-at__item__triangle" />
-      </div>
-      <div class="pano-wb-popup">
         <div class="pano-wb-popup__item">
           <div
             :class="{
@@ -126,6 +104,20 @@
             <span class="iconfont icon-rect-h" />
           </div>
         </div>
+      </div>
+      <div
+        :class="{
+          'pano-wb-at__item': true,
+          'pano-wb-at__item--selected':
+            insertType === Constants.ShapeType.Line ||
+            insertType === Constants.ShapeType.Arrow ||
+            insertType === Constants.ShapeType.Rect ||
+            insertType === Constants.ShapeType.Ellipse
+        }"
+        slot="reference"
+      >
+        <span class="iconfont icon-hollow" />
+        <div class="pano-wb-at__item__triangle" />
       </div>
     </Popover>
 
@@ -432,6 +424,7 @@ export default {
       this.insertType = type;
       this.fillType = 'none';
       this.whiteboard.fillType = 'none';
+      this.$emit('updateIgnoreMouseEvents', type === Constants.ShapeType.Click);
     },
     setSolidToolType(type) {
       this.whiteboard.setToolType(type);
@@ -626,8 +619,8 @@ $fixed-left: 40px;
           position: absolute;
           left: -1px;
           top: -1px;
-          width: 22px;
-          height: 22px;
+          width: 20px;
+          height: 20px;
           border-radius: 50%;
           background-color: transparent;
           background-clip: content-box;
