@@ -45,6 +45,11 @@ export default {
     shareType: { type: String },
     annotationPosition: { type: Object, required: false }
   },
+  watch: {
+    annotationPosition() {
+      this.setAnnotationViewSize();
+    }
+  },
   components: {
     ShareAnnotationToolbar
   },
@@ -58,6 +63,19 @@ export default {
           this.annotationWb?.init(data.payload.nodeId, data.payload.userId);
           break;
       }
+    },
+    setAnnotationViewSize() {
+      let width = this.annotationPosition.width;
+      let height = this.annotationPosition.height;
+      if (this.shareType === 'application') {
+        // windows 高分屏的屏幕分辨率和 rtcEngine 上报的share位置是一致的，
+        // 但是浏览器的最大宽度是经过 devicePixelRatio 换算的，需要再转换一下
+        const scaleRatio = process.platform === 'darwin' ? 1 : devicePixelRatio;
+        width = width * scaleRatio;
+        height = height * scaleRatio;
+      }
+      this.annotationWb?.setAnnotationViewSize({ width, height });
+      this.annotationWb?.updateCanvasSize();
     },
     sendMessageToMainWindow(data) {
       electron.remote.app.sendToMainWindow(data);
@@ -82,9 +100,7 @@ export default {
       })
     );
     this.annotationWb.open(this.$refs.annotationRef);
-    if (this.shareSize) {
-      this.annotationWb.setAnnotationViewSize(this.shareSize);
-    }
+    this.setAnnotationViewSize();
   },
   beforeDestroy() {
     electron.ipcRenderer.off('msgToShareWindow', this.handleMessage);

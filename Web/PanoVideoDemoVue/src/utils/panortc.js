@@ -269,10 +269,10 @@ export default function initPanoRtc() {
   rtcEngine.on(PanoRtc.RtcEngine.Events.userLeave, data => {
     const user = store.getters.getUserById(data.userId);
     if (user) {
-      store.commit('removeUser', data.userId);
       if (user.showInMainView) {
-        store.dispatch('trySelectMainView');
+        store.dispatch('selectMainViewUser', { exceptUserId: data.userId });
       }
+      store.commit('removeUser', data.userId);
     }
   });
 

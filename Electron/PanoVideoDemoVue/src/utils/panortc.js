@@ -258,10 +258,10 @@ export default function initPanoRtc() {
     console.log(`userLeaveIndication, userId: ${userId}, reason: ${reason}`);
     const user = store.getters.getUserById(userId);
     if (user) {
-      store.commit('removeUser', userId);
       if (user.showInMainView) {
-        store.dispatch('trySelectMainView');
+        store.dispatch('selectMainViewUser', { exceptUserId: userId });
       }
+      store.commit('removeUser', userId);
     }
   });
 

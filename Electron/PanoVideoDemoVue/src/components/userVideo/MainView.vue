@@ -204,6 +204,7 @@ export default {
         this.mainViewUser.userId,
         this.mainViewUser.isScreenInMainView ? 'share' : 'video'
       );
+      window.annotationWhiteboard = this.annotationWhiteboard;
       if (!this.annotationWhiteboard.isWhiteboardOpen) {
         if (
           !this.mainViewUser.isScreenInMainView &&

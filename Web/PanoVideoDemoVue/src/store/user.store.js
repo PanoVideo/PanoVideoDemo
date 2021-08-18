@@ -104,13 +104,10 @@ export default {
     /**
      * 如果已经有mainview则返回，否则选择一个，如果指定
      */
-    trySelectMainView(
-      { getters, dispatch },
-      { user: candidateMainViewUser, isScreen }
-    ) {
-      console.log('trySelectMainView', candidateMainViewUser, isScreen);
+    trySelectMainView({ getters, dispatch }, payload) {
+      const candidateMainViewUser = payload.user;
+      const isScreen = payload.isScreen;
       const mainViewUser = getters.mainViewUser;
-      console.log('trySelectMainView mainViewUser', mainViewUser);
       if (candidateMainViewUser) {
         if (
           mainViewUser &&
@@ -202,9 +199,12 @@ export default {
      * 如果没有大图用户或者大图用户视频没有开启，将 当前激励用户 > 开启视频的用户 > 用户列表里的第一个用户 >自己 设置成大图
      * @param screenUser 新开启桌面共享的用户
      */
-    selectMainViewUser({ state, dispatch, getters }) {
+    selectMainViewUser({ state, dispatch, getters }, payload) {
+      const candidates = state.userList.filter(
+        u => u.userId !== payload.exceptUserId
+      );
       // 如果有新开共享用户，或者有别的开着共享的用户，有先展示他们的大图
-      const userScreen = find(state.userList, { screenOpen: true });
+      const userScreen = find(candidates, { screenOpen: true });
       if (userScreen) {
         dispatch('setAsMainView', {
           user: userScreen,
@@ -216,11 +216,12 @@ export default {
       if (
         !getters.mainViewUser ||
         getters.mainViewUser.videoMuted ||
-        getters.mainViewUser === getters.userMe
+        getters.mainViewUser === getters.userMe ||
+        getters.mainViewUser.userId === payload.exceptUserId
       ) {
         const nextMainViewUser =
-          find(state.userList, { videoMuted: false }) ||
-          state.userList[0] ||
+          find(candidates, { videoMuted: false }) ||
+          candidates[0] ||
           state.userMe;
         dispatch('setAsMainView', { user: nextMainViewUser });
       }
