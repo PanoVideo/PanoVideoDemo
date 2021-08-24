@@ -12,14 +12,14 @@
       </div>
       <el-form>
         <el-form-item label="分辨率" label-position="left">
-          <el-radio-group v-model="selectedVideoProfile">
+          <el-radio-group size="mini" v-model="selectedVideoProfile">
             <el-radio-button label="Standard">360P</el-radio-button>
             <el-radio-button label="HD720P">720P</el-radio-button>
           </el-radio-group>
         </el-form-item>
 
         <el-form-item label="摄像头" label-position="left">
-          <el-select v-model="camera" placeholder="请选择">
+          <el-select size="small" v-model="camera" placeholder="请选择">
             <el-option
               v-for="item in cameras"
               :key="item.deviceId"
@@ -30,7 +30,7 @@
         </el-form-item>
 
         <el-form-item label="麦克风" label-position="left">
-          <el-select v-model="mic" placeholder="请选择">
+          <el-select size="small" v-model="mic" placeholder="请选择">
             <el-option
               v-for="item in mics"
               :key="item.deviceId"
@@ -41,7 +41,7 @@
         </el-form-item>
 
         <el-form-item label="扬声器" label-position="left">
-          <el-select v-model="speaker" placeholder="请选择">
+          <el-select size="small" v-model="speaker" placeholder="请选择">
             <el-option
               v-for="item in speakers"
               :key="item.deviceId"
@@ -52,15 +52,15 @@
         </el-form-item>
 
         <el-form-item label="时长上限" label-position="left">
-          <el-input style="width: 245px" value="90分钟" disabled />
+          <el-input size="small" style="width: 245px" value="90分钟" disabled />
         </el-form-item>
 
         <el-form-item label="人数上限" label-position="left">
-          <el-input style="width: 245px" value="25人" disabled />
+          <el-input size="small" style="width: 245px" value="25人" disabled />
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" size="small" @click="showFeedback"
+          <el-button type="primary" size="mini" @click="showFeedback"
             >反馈与报障</el-button
           >
         </el-form-item>

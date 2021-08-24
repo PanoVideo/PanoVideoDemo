@@ -377,7 +377,7 @@ export default function initPanoRtc() {
     store.getters.allUsers.forEach(user => {
       store.commit('updateUser', {
         userId: user.userId,
-        isSpeaking: includes(data.list, user.userId)
+        isSpeaking: includes(data, user.userId)
       });
     });
   });

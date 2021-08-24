@@ -11,38 +11,6 @@ window.rtcWhiteboard = rtcWhiteboard;
  * 初始化pano rts相关逻辑，pano rts包括 Whiteboard, Annotation, RtcMessage, RemoteControl 等
  */
 export default function initPanoRtc() {
-  /**
-   * 如果会议还没有结束，将始终尝试重连rts 服务
-   */
-  const rejoinRtms = () => {
-    if (
-      store.getters.meetingStatus === 'connected' ||
-      store.getters.meetingStatus === 'reconnecting'
-    ) {
-      console.log(
-        'rejoinRtms, meetingStore.meetingStatus',
-        store.getters.meetingStatus
-      );
-      rtcWhiteboard.joinChannel(
-        {
-          appId: store.getters.appId,
-          token: store.getters.panoToken,
-          channelId: store.getters.channelId,
-          name: store.getters.userMe.userName,
-          userId: store.getters.userMe.userId
-        },
-        () => {
-          console.log('rejoinRtms success');
-          Message.success('PanoRts 服务重连成功');
-        },
-        () => {
-          console.error('rejoinRtms failed');
-          rejoinRtms();
-        }
-      );
-    }
-  };
-
   rtsService.on(RtsService.Events.failover, data => {
     // data:  { state: 'Reconnecting' | 'Success' | 'Failed' }
     if (data.state === 'Reconnecting') {
@@ -51,7 +19,8 @@ export default function initPanoRtc() {
       console.log('rejoinRtms success');
       Message.success('PanoRts 服务重连成功');
     } else if (data.state === 'Failed') {
-      rejoinRtms();
+      store.commit('setmeetingEndReason', 'RtsService 无法连接到服务器');
+      store.commit('setMeetingStatus', 'ended');
     }
   });
 
