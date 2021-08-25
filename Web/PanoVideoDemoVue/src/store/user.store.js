@@ -57,9 +57,16 @@ function createUserMe() {
 export default {
   state: {
     userMe: createUserMe(),
-    userList: []
+    userList: [],
+    userAudioLevel: {}
   },
   mutations: {
+    updateUserAudioLevel(state, payload) {
+      state.userAudioLevel = {
+        ...state.userAudioLevel,
+        [payload.userId]: payload.level
+      };
+    },
     updateUserMe(state, payload) {
       state.userMe = { ...state.userMe, ...payload };
     },
@@ -228,6 +235,7 @@ export default {
     }
   },
   getters: {
+    userAudioLevel: state => state.userAudioLevel,
     allUsers: state => [state.userMe, ...state.userList],
     userList: state => state.userList,
     userMe: state => state.userMe,

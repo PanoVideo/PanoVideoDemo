@@ -6,6 +6,7 @@ import {
   subscribeVideoQuota,
   MOMENT_FOR_UNSUBSCRIBE
 } from '../constants';
+import { MessageBox } from 'element-ui';
 
 // 初始化 panortc
 // 全局单例
@@ -453,4 +454,38 @@ export default function initPanoRtc() {
   rtcEngine.selectCam(store.getters.cameraId);
   rtcEngine.selectMic(store.getters.micId);
   rtcEngine.selectSpeaker(store.getters.speakerId);
+
+  // 设置用户音量回调
+  let noAudioInputCount = 0;
+  const intervalMs = 200;
+  // 自己的音量回调
+  rtcEngine.setRecordingAudioIndication(record => {
+    //  record: { level: number, userId: string, active: boolean }
+    if (record.active && record.level < 0.00001) {
+      noAudioInputCount++;
+    } else {
+      noAudioInputCount = 0;
+    }
+    // 3s 内一直检测到音频输入音量很低即弹框提示用户麦克风异常
+    if (noAudioInputCount === Math.floor(3000 / intervalMs)) {
+      MessageBox.alert(
+        '检测到您的音频输入音量很低，可能影响通话质量，请检查您的麦克风是否正常',
+        '提示'
+      );
+    }
+    store.commit('updateUserAudioLevel', {
+      userId: record.userId,
+      level: record.level
+    });
+  }, intervalMs);
+  // 其他用户的音量回调
+  rtcEngine.setUserAudioIndication(records => {
+    // records: { level: number, userId: string, active: boolean }[]
+    records.forEach(r => {
+      store.commit('updateUserAudioLevel', {
+        userId: r.userId,
+        level: r.level
+      });
+    });
+  }, intervalMs);
 }

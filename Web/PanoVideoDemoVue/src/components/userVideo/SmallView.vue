@@ -39,18 +39,10 @@
         {{ showScreenShare ? '(Share)' : '' }}
         {{ isUserMe ? '(Me)' : '' }}
       </div>
-      <i
-        v-if="user.audioMuted"
-        class="iconfont icon-microphone-slash"
-        :style="{ color: 'red', fontSize: '14px' }"
-      />
-      <i
-        v-else
-        class="iconfont icon-microphone"
-        :style="{
-          color: user.isSpeaking ? '#00ff00' : '#fff',
-          fontSize: '14px'
-        }"
+      <AudioLevel
+        :userId="user.userId"
+        :audioMuted="user.audioMuted"
+        :fontSize="14"
       />
     </div>
   </div>
@@ -59,6 +51,7 @@
 <script>
 import { mapActions, mapGetters, mapMutations } from 'vuex';
 import { get } from 'lodash-es';
+import AudioLevel from '@/components/AudioLevel';
 
 const RENDER_RATE = 20;
 
@@ -68,6 +61,9 @@ export default {
       renderInterval: '',
       smallViewCanvas: document.createElement('canvas')
     };
+  },
+  components: {
+    AudioLevel
   },
   props: {
     user: {

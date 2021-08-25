@@ -268,7 +268,7 @@
 </template>
 
 <script>
-import { RtcWhiteboard, Constants } from '@pano.video/whiteboard';
+import { RtcWhiteboard, Constants } from '@pano.video/panortc';
 import { mapGetters } from 'vuex';
 import { get } from 'lodash-es';
 import { Popover } from 'element-ui';

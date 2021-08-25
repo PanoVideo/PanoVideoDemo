@@ -23,12 +23,11 @@
     >
       <div class="toolBar">
         <Button class="btnClass" @click="onClickMicMute">
-          <i
-            v-if="userMe.audioMuted"
-            class="iconfont icon-microphone-slash"
-            style="color: red"
+          <AudioLevel
+            :userId="userMe.userId"
+            :audioMuted="userMe.audioMuted"
+            :fontSize="22"
           />
-          <i v-else class="iconfont icon-microphone" />
           <span style="margin-left: 0px">
             {{ userMe.audioMuted ? '取消静音' : '静音' }}
           </span>
@@ -94,6 +93,7 @@ import MainView from '../components/userVideo/MainView';
 import SmallVideoList from '../components/SmallVideoList';
 import PanoWhiteboard from '../components/whiteboard/PanoWhiteboard';
 import MeetingInfo from '../components/MeetingInfo';
+import AudioLevel from '@/components/AudioLevel';
 import { applyForWbAdmin } from '../utils/panorts';
 
 export default {
@@ -110,7 +110,8 @@ export default {
     SmallVideoList,
     PanoWhiteboard,
     MainView,
-    MeetingInfo
+    MeetingInfo,
+    AudioLevel
   },
   computed: {
     ...mapGetters([

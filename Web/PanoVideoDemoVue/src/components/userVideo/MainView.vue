@@ -65,17 +65,10 @@
         {{ mainViewUser.isScreenInMainView ? '(Share)' : '' }}
         {{ isUserMe ? '(Me)' : '' }}
       </div>
-      <i
-        class="iconfont icon-microphone-slash"
-        v-if="mainViewUser.audioMuted"
-      />
-      <i
-        class="iconfont icon-microphone"
-        v-else
-        :style="{
-          color: mainViewUser.isSpeaking ? '#00ff00' : '#fff',
-          fontSize: '14px'
-        }"
+      <AudioLevel
+        :userId="mainViewUser.userId"
+        :audioMuted="mainViewUser.audioMuted"
+        :fontSize="18"
       />
     </div>
   </div>
@@ -84,6 +77,7 @@
 <script>
 import { mapGetters, mapMutations } from 'vuex';
 import { RtsService } from '@pano.video/panortc';
+import AudioLevel from '@/components/AudioLevel';
 import AnnotationToolbar from '@/components/annotation/AnnotationToolbar';
 
 export default {
@@ -94,7 +88,8 @@ export default {
     };
   },
   components: {
-    AnnotationToolbar
+    AnnotationToolbar,
+    AudioLevel
   },
   computed: {
     ...mapGetters(['mainViewUser', 'userMe', 'isWhiteboardOpen']),
