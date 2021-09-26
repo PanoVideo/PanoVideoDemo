@@ -107,6 +107,8 @@ import ShareSelector from '../components/ShareSelector';
 import Setting from '../components/Setting';
 import { applyForWbAdmin } from '../utils/panorts';
 // import robotjs from '@pano.video/robotjs';
+import { enableOpenVideo, enableOpenAudio } from '../utils/panortc';
+import * as Constants from '../constants';
 
 const electron = window.require('electron');
 
@@ -203,7 +205,17 @@ export default {
     onMouseLeaveMenu() {
       this.isMouseOnToolbar = false;
     },
-    onClickMicMute() {
+    async checkEnableOpenAudio() {
+      if (!(await enableOpenAudio())) {
+        this.$message.info('没有检测到麦克风');
+        return false;
+      }
+      return true;
+    },
+    async onClickMicMute() {
+      if (!(await this.checkEnableOpenAudio())) {
+        return;
+      }
       if (this.userMe.audioMuted) {
         window.rtcEngine.unmuteAudio();
       } else {
@@ -214,7 +226,11 @@ export default {
         audioMuted: !this.userMe.audioMuted
       });
     },
-    onClickCamMute() {
+    async onClickCamMute() {
+      if (!(await enableOpenVideo())) {
+        this.$message.info('没有检测到摄像头');
+        return;
+      }
       if (this.userMe.videoMuted) {
         window.rtcEngine.startVideo(this.userMe.videoDomRef, {
           profile: this.myVideoProfileType,
@@ -544,7 +560,7 @@ export default {
       }
     }
   },
-  mounted() {
+  async mounted() {
     if (this.meetingStatus !== 'connected') {
       this.$router.replace({ name: 'Login' });
       return;
@@ -576,6 +592,23 @@ export default {
       'userScreenResolutionChanged',
       this.onUserScreenResolutionChanged
     );
+    const autoMuteAudio =
+      localStorage.getItem(Constants.localCacheKeyMuteMicAtStart) == 'yes';
+    const autoOpenVideo =
+      localStorage.getItem(Constants.localCacheKeyMuteCamAtStart) == 'no';
+    if (autoOpenVideo) {
+      this.onClickCamMute();
+    }
+    if (await this.checkEnableOpenAudio()) {
+      window.rtcEngine.startAudio();
+      this.updateUser({
+        userId: this.userMe.userId,
+        audioMuted: false
+      });
+      if (autoMuteAudio) {
+        this.onClickMicMute();
+      }
+    }
   },
   beforeDestroy() {
     this.leaveChannel(false);

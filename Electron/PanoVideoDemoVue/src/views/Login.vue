@@ -174,17 +174,6 @@ export default {
     onJoinChannelSuccess() {
       this.loading = false;
       const { audioOn, videoOn } = this.form;
-      window.rtcEngine.startAudio();
-      if (!audioOn) {
-        window.rtcEngine.muteAudio();
-      }
-      if (videoOn) {
-        window.rtcEngine.startVideo(this.userMe.videoDomRef, {
-          profile: this.myVideoProfileType,
-          scaling: VideoScalingMode.Fit,
-          mirror: true
-        });
-      }
       localStorage.setItem(
         Constants.localCacheKeyMuteMicAtStart,
         audioOn ? 'no' : 'yes'
@@ -193,7 +182,6 @@ export default {
         Constants.localCacheKeyMuteCamAtStart,
         videoOn ? 'no' : 'yes'
       );
-      this.updateUserMe({ audioMuted: !audioOn, videoMuted: !videoOn });
       this.setMeetingStatus('connected');
       this.$router.replace({ name: 'Meeting' });
     },

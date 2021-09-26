@@ -126,17 +126,23 @@ export default {
       'setCamera',
       'setVideoProfile'
     ]),
+    startPreview() {
+      if (this.camera && this.cameras.length > 0) {
+        console.log('this.camera', this.camera, this.cameras.length);
+        this.videoTag && window.rtcEngine.stopPreview(this.videoTag);
+        window.rtcEngine.startPreview(
+          this.camera,
+          this.onPreviewSuccess,
+          this.onPreviewFailed,
+          this.selectedVideoProfile
+        );
+        window.rtcEngine.selectCam(this.camera);
+      }
+    },
     onCameraChange() {
-      this.videoTag && window.rtcEngine.stopPreview(this.videoTag);
-      window.rtcEngine.startPreview(
-        this.camera,
-        this.onPreviewSuccess,
-        this.onPreviewFailed,
-        this.selectedVideoProfile
-      );
+      this.startPreview();
       this.setCamera(this.camera);
       this.setVideoProfile(this.selectedVideoProfile);
-      window.rtcEngine.selectCam(this.camera);
     },
     onPreviewSuccess(videoTag) {
       const wrapper = this.$refs.view;
@@ -166,12 +172,7 @@ export default {
       this.mic = this.micId;
       window.rtcEngine.getCams(cameras => {
         this.cameras = cameras;
-        window.rtcEngine.startPreview(
-          this.camera,
-          this.onPreviewSuccess,
-          this.onPreviewFailed,
-          this.selectedVideoProfile
-        );
+        this.startPreview();
       });
       window.rtcEngine.getMics(mics => {
         this.mics = mics;

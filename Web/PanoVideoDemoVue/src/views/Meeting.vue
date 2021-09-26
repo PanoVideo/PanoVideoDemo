@@ -95,6 +95,12 @@ import PanoWhiteboard from '../components/whiteboard/PanoWhiteboard';
 import MeetingInfo from '../components/MeetingInfo';
 import AudioLevel from '@/components/AudioLevel';
 import { applyForWbAdmin } from '../utils/panorts';
+import {
+  enableOpenVideo,
+  enableOpenAudio,
+  updateCaptureDeviceId
+} from '../utils/panortc';
+import * as Constants from '../constants';
 
 export default {
   name: 'Meeting',
@@ -184,7 +190,18 @@ export default {
     onMouseLeaveMenu() {
       this.isMouseOnToolbar = false;
     },
-    onClickMicMute() {
+    async checkEnableOpenAudio() {
+      const enable = await enableOpenAudio();
+      if (!enable) {
+        this.$message.info('没有检测到麦克风');
+        return false;
+      }
+      return true;
+    },
+    async onClickMicMute() {
+      if (!(await this.checkEnableOpenAudio())) {
+        return;
+      }
       if (this.userMe.audioMuted) {
         window.rtcEngine.unmuteMic();
       } else {
@@ -195,8 +212,14 @@ export default {
         audioMuted: !this.userMe.audioMuted
       });
     },
-    onClickCamMute() {
+    async onClickCamMute() {
+      const enable = await enableOpenVideo();
+      if (!enable) {
+        this.$message.info('没有检测到摄像头');
+        return;
+      }
       if (this.userMe.videoMuted) {
+        await updateCaptureDeviceId();
         window.rtcEngine.startVideo(this.videoPorfile);
       } else {
         if (this.userMe.videoAnnotationOpen) {
@@ -273,7 +296,7 @@ export default {
       goLogin && this.$router.replace({ name: 'Login' });
     }
   },
-  mounted() {
+  async mounted() {
     if (this.meetingStatus !== 'connected') {
       this.$router.replace({ name: 'Login' });
       return;
@@ -285,6 +308,25 @@ export default {
       }
       return '确定离开？';
     };
+    const autoMuteAudio =
+      localStorage.getItem(Constants.localCacheKeyMuteMicAtStart) == 'yes';
+    const autoOpenVideo =
+      localStorage.getItem(Constants.localCacheKeyMuteCamAtStart) == 'no';
+
+    console.log('autoOpenVideo', autoOpenVideo, 'autoMuteAudio', autoMuteAudio);
+    if (autoOpenVideo) {
+      this.onClickCamMute();
+    }
+    if (await this.checkEnableOpenAudio()) {
+      window.rtcEngine.startAudio();
+      this.updateUser({
+        userId: this.userMe.userId,
+        audioMuted: false
+      });
+      if (autoMuteAudio) {
+        this.onClickMicMute();
+      }
+    }
   },
   beforeDestroy() {
     this.leaveChannel(false);

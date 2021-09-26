@@ -426,10 +426,23 @@ export default function initPanoRtc() {
 
   // 没有默认选择的 camera
   const cameras = rtcEngine.video.getCaptureDeviceList();
-  if (!store.getters.cameraId) {
+  if (
+    !store.getters.cameraId ||
+    !cameras.find(item => item.deviceId === store.getters.cameraId)
+  ) {
     store.commit('setCamera', get(cameras, '0.deviceId'));
   }
-  rtcEngine.video.setCaptureDevice(store.getters.cameraId);
-  rtcEngine.audio.setRecordDevice(store.getters.micId);
-  rtcEngine.audio.setPlayoutDevice(store.getters.speakerId);
+  if (store.getters.cameraId) {
+    rtcEngine.video.setCaptureDevice(store.getters.cameraId);
+  }
+}
+
+export async function enableOpenVideo() {
+  const captureDeviceList = await rtcEngine.video.getCaptureDeviceList();
+  return captureDeviceList.length > 0;
+}
+
+export async function enableOpenAudio() {
+  const recordDeviceList = await rtcEngine.audio.getRecordDeviceList();
+  return recordDeviceList.length > 0;
 }

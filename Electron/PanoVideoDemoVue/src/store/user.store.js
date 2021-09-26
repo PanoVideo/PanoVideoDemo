@@ -1,5 +1,4 @@
 import { VideoProfileType } from '@pano.video/panortc-electron-sdk';
-import * as Constants from '../constants';
 import { find, findIndex } from 'lodash-es';
 import {
   subscribeUserScreen,
@@ -47,10 +46,8 @@ function createUserMe() {
     ...createUser('1234', 'me'),
     showInMainView: true,
     isScreenInMainView: false,
-    videoMuted:
-      localStorage.getItem(Constants.localCacheKeyMuteCamAtStart) === 'yes',
-    audioMuted:
-      localStorage.getItem(Constants.localCacheKeyMuteMicAtStart) === 'yes',
+    videoMuted: true,
+    audioMuted: true,
     screenOpen: false
   };
 }

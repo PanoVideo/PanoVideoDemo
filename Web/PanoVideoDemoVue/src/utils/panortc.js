@@ -6,7 +6,7 @@ import {
   subscribeVideoQuota,
   MOMENT_FOR_UNSUBSCRIBE
 } from '../constants';
-import { MessageBox } from 'element-ui';
+import { MessageBox, Message } from 'element-ui';
 
 // 初始化 panortc
 // 全局单例
@@ -432,6 +432,21 @@ export default function initPanoRtc() {
     });
   });
 
+  rtcEngine.on(PanoRtc.RtcEngine.Events.getVideoMediaFailed, data => {
+    showStartMediaFailureMessage('video', data);
+    store.commit('updateUserMe', { videoMuted: true });
+  });
+
+  rtcEngine.on(PanoRtc.RtcEngine.Events.getAudioMediaFailed, data => {
+    showStartMediaFailureMessage('audio', data);
+    store.commit('updateUserMe', { audioMuted: true });
+  });
+
+  rtcEngine.on(PanoRtc.RtcEngine.Events.getScreenMediaFailed, data => {
+    showStartMediaFailureMessage('screen', data);
+    store.commit('updateUserMe', { screenOpen: false });
+  });
+
   const onLocalScreenEnd = () => {
     console.log('本地桌面共享结束');
     store.commit('updateUser', {
@@ -451,9 +466,9 @@ export default function initPanoRtc() {
   //   }
   //   rtcEngine.selectCam(store.getters.cameraId);
   // });
-  rtcEngine.selectCam(store.getters.cameraId);
-  rtcEngine.selectMic(store.getters.micId);
-  rtcEngine.selectSpeaker(store.getters.speakerId);
+  // rtcEngine.selectCam(store.getters.cameraId);
+  // rtcEngine.selectMic(store.getters.micId);
+  // rtcEngine.selectSpeaker(store.getters.speakerId);
 
   // 设置用户音量回调
   let noAudioInputCount = 0;
@@ -488,4 +503,76 @@ export default function initPanoRtc() {
       });
     });
   }, intervalMs);
+}
+
+export async function updateCaptureDeviceId() {
+  if (!store.getters.cameraId) {
+    return;
+  }
+  await rtcEngine.getCams(cameras => {
+    if (!cameras.find(item => item.deviceId === store.getters.cameraId)) {
+      if (cameras[0]) {
+        store.commit('setCamera', cameras[0].deviceId);
+      }
+    }
+    if (store.getters.cameraId) {
+      rtcEngine.selectCam(store.getters.cameraId);
+    }
+  });
+}
+
+async function getCaptureDeviceList() {
+  return new Promise((resolve, reject) => {
+    rtcEngine.getCams(
+      devices =>
+        resolve(
+          devices.map(d => ({ deviceName: d.label, deviceId: d.deviceId }))
+        ),
+      error => {
+        console.log('getCaptureDeviceList failed', error);
+        reject(error);
+      }
+    );
+  });
+}
+
+async function getRecordDeviceList() {
+  return new Promise((resolve, reject) => {
+    window.rtcEngine.getMics(
+      devices =>
+        resolve(
+          devices.map(d => ({ deviceName: d.label, deviceId: d.deviceId }))
+        ),
+      error => {
+        console.log('getRecordDeviceList failed', error);
+        reject(error);
+      }
+    );
+  });
+}
+
+export async function enableOpenVideo() {
+  const captureDeviceList = await getCaptureDeviceList();
+  return captureDeviceList.length > 0;
+}
+
+export async function enableOpenAudio() {
+  const recordDeviceList = await getRecordDeviceList();
+  return recordDeviceList.length > 0;
+}
+
+function showStartMediaFailureMessage(type, data) {
+  let device = '麦克风';
+  if (type !== 'audio') {
+    device = type === 'video' ? '摄像头' : '共享屏幕';
+  }
+  if (data.errorName === 'NotAllowedError') {
+    Message.info(`没有权限使用${device}`);
+  } else if (data.errorName === 'NotFoundError') {
+    Message.info(`没有检测到${device}`);
+  } else if (data.errorName === 'NotReadableError') {
+    Message.info(`${device}被占用，无法访问`);
+  } else if (type === 'audio' || type === 'video') {
+    Message.info(`开启${device}失败`);
+  }
 }
