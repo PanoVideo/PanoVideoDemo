@@ -8,7 +8,8 @@
     android:background="@drawable/popup_view_wb_graphics_bg"
     app:layout_constraintBottom_toBottomOf="parent"
     android:paddingTop="10dp"
-    android:visibility="gone">
+    android:visibility="gone"
+    tools:visibility="visible">
 
     <RadioGroup android:id="@+id/radio_graphics_tools_group"
         android:layout_width="match_parent"
@@ -113,6 +114,7 @@
             android:button="@null"
             android:gravity="center"
             android:layout_weight="1"
+            tools:checked="false"
             />
 
         <RadioButton
@@ -123,6 +125,7 @@
             android:background="@drawable/btn_color_red_selector"
             android:button="@null"
             android:gravity="center"
+            tools:checked="true"
             />
 
         <RadioButton

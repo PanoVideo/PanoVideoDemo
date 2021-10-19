@@ -4,18 +4,21 @@ android {
     compileSdkVersion 29
     buildToolsVersion '29.0.3'
 
+
     defaultConfig {
         applicationId 'video.pano.panocall'
         minSdkVersion 19
         targetSdkVersion 29
-        versionCode 8
-        versionName '2.0.0'
+        versionCode 9
+        versionName '2.1.0'
+
 
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
+
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -45,9 +48,6 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation fileTree(dir: '../../SDK', include: ['*.aar'])
-
     implementation "androidx.appcompat:appcompat:1.2.0"
     implementation "com.google.android.material:material:1.2.1"
     implementation "androidx.constraintlayout:constraintlayout:2.0.4"
@@ -57,4 +57,6 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-livedata:2.2.0"
     implementation "androidx.legacy:legacy-support-v4:1.0.0"
     implementation "androidx.preference:preference:1.1.1"
+    implementation "com.android.support:multidex:1.0.3"
+
 }

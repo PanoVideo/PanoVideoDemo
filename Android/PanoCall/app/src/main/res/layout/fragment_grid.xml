@@ -38,6 +38,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            tools:visibility="visible"
             />
 
         <ImageView
@@ -49,7 +50,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:visibility="gone" />
+            android:visibility="gone"
+            tools:visibility="visible" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="wrap_content"
@@ -71,10 +73,14 @@
                 android:layout_centerVertical="true"
                 android:singleLine="true"
                 android:textSize="10sp"
+                android:maxLength="10"
+                android:ellipsize="middle"
+                android:maxEms="10"
                 android:textColor="@color/colorDEDEDE"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
+                tools:text="aaaa"
                 />
 
             <ImageView
@@ -130,6 +136,7 @@
             android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="visible"
             />
 
         <ImageView
@@ -142,6 +149,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             android:visibility="gone"
+            tools:visibility="visible"
             />
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -166,9 +174,13 @@
                 android:textColor="@color/colorDEDEDE"
                 android:layout_centerVertical="true"
                 android:textSize="10sp"
+                android:maxLength="10"
+                android:ellipsize="middle"
+                android:maxEms="10"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
+                tools:text="999999"
                 />
 
             <ImageView
@@ -224,6 +236,7 @@
             android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="visible"
             />
 
         <ImageView
@@ -235,7 +248,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:visibility="gone"/>
+            android:visibility="gone"
+            tools:visibility="visible" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="wrap_content"
@@ -259,9 +273,13 @@
                 android:singleLine="true"
                 android:textColor="@color/colorDEDEDE"
                 android:textSize="10sp"
+                android:maxLength="10"
+                android:ellipsize="middle"
+                android:maxEms="10"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
+                tools:text="77777"
                 />
 
             <ImageView
@@ -271,7 +289,6 @@
                 android:layout_weight="1"
                 android:scaleType="centerCrop"
                 android:src="@drawable/svg_icon_small_audio_normal"
-                android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/tv_medium_view_leftbottom_user"
@@ -319,6 +336,7 @@
             android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="visible"
             />
 
         <ImageView
@@ -331,7 +349,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            />
+            tools:visibility="visible" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="wrap_content"
@@ -355,9 +373,13 @@
                 android:singleLine="true"
                 android:textColor="@color/colorWhite"
                 android:textSize="10sp"
+                android:maxLength="10"
+                android:ellipsize="middle"
+                android:maxEms="10"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
+                tools:text="0000"
                 />
 
             <ImageView

@@ -60,13 +60,13 @@ public class ClearableEditText extends AppCompatEditText implements TextWatcher 
         if (mClearIconDrawable != null) {
             mClearIconDrawable.setCallback(this);
         }
-        if (a.hasValue(R.styleable.ClearableEditText_clearBgDrawable)) {
-            Drawable clearBgDrawable = a.getDrawable(R.styleable.ClearableEditText_clearBgDrawable);
-            setBackground(clearBgDrawable);
-        } else {
-            Drawable clearBgDrawable = ContextCompat.getDrawable(context, DEFAULT_CLEAR_BG_RES_ID);
-            setBackground(clearBgDrawable);
-        }
+//        if (a.hasValue(R.styleable.ClearableEditText_clearBgDrawable)) {
+//            Drawable clearBgDrawable = a.getDrawable(R.styleable.ClearableEditText_clearBgDrawable);
+//            setBackground(clearBgDrawable);
+//        } else {
+//            Drawable clearBgDrawable = ContextCompat.getDrawable(context, DEFAULT_CLEAR_BG_RES_ID);
+//            setBackground(clearBgDrawable);
+//        }
 
         mClearIconDrawWhenFocused =
                 a.getBoolean(R.styleable.ClearableEditText_clearIconDrawWhenFocused, true);

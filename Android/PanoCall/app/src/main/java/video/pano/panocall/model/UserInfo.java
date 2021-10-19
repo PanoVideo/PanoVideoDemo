@@ -11,7 +11,7 @@ public class UserInfo {
     public boolean videoMuted = false;
     public boolean screenMuted = false;
 
-    public boolean audioMuted = false;
+    public boolean audioMuted = true;
     public boolean videoStarted = false;
 
     public boolean screenStarted = false;

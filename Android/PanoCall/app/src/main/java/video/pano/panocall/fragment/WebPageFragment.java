@@ -5,6 +5,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,8 +23,11 @@ public class WebPageFragment extends Fragment {
 
     private String mWebLink = "https://pano.video/";
 
-    public WebPageFragment() {
+    public WebPageFragment(String webLink) {
         // Required empty public constructor
+        if(!TextUtils.isEmpty(webLink)){
+            mWebLink = webLink ;
+        }
     }
 
     public void setWebLink(String link) {

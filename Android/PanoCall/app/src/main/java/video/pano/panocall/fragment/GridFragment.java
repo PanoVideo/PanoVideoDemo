@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
@@ -19,12 +20,17 @@ import video.pano.panocall.model.UserInfo;
 import video.pano.panocall.utils.AnnotationHelper;
 import video.pano.panocall.utils.Utils;
 
+import static video.pano.panocall.info.Constant.KEY_GRID_LAST_POS;
+import static video.pano.panocall.info.Constant.KEY_GRID_POS;
 import static video.pano.panocall.info.Constant.KEY_USER_ID;
 import static video.pano.panocall.info.Constant.KEY_USE_PIN_VIDEO;
+import static video.pano.panocall.info.Constant.KEY_VIDEO_ANNOTATION_START;
 
 public class GridFragment extends CallFragment {
 
     private final static int VOLUME_LIMIT = 500 ;
+    private int mCurrentPos;
+    private int mLastPos;
 
     @Override
     public View onCreateView(
@@ -35,6 +41,20 @@ public class GridFragment extends CallFragment {
         return inflater.inflate(R.layout.fragment_grid, container, false);
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+        getExtra();
+        super.onViewCreated(view, savedInstanceState);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        UserInfo localUser = mViewModel.getUserManager().getLocalUser();
+        if (localUser.isVideoStarted()) {
+            updateLocalVideoRender(mLocalView,mLocalViewIndex,mLocalViewMirror);
+        }
+    }
 
     @Override
     void setupUserViewArray() {
@@ -88,7 +108,7 @@ public class GridFragment extends CallFragment {
                     view.findViewById(R.id.cl_layout_rightbottom));
         }
 
-        initUserVideoView(0,false);
+        initUserVideoView();
 
         // 设置长按小图时将此小图的用户和大图用户交换视图
         for (int i=0; i<mUserViewCount; i++) {
@@ -104,7 +124,83 @@ public class GridFragment extends CallFragment {
             toFloatView();
         }else{
             clearUserViewArray();
-            initUserVideoView(0,false);
+            initUserVideoView();
+        }
+    }
+
+    private void getExtra(){
+        Bundle bundle = getArguments();
+        if(bundle != null && bundle.containsKey(KEY_GRID_POS)){
+            mCurrentPos = bundle.getInt(KEY_GRID_POS);
+        }
+        if(bundle != null){
+            if(bundle.containsKey(KEY_GRID_POS)){
+                mCurrentPos = bundle.getInt(KEY_GRID_POS);
+            }
+            if(bundle.containsKey(KEY_GRID_LAST_POS)){
+                mLastPos = bundle.getInt(KEY_GRID_LAST_POS);
+            }
+        }
+    }
+
+    void initUserVideoView() {
+        UserInfo localUser = mViewModel.getUserManager().getLocalUser();
+
+        if (mViewModel.mIsRoomJoined || localUser.isVideoStarted()) {
+            //if (localUser.isVideoStarted())
+            { // always show avatar even if video is not started
+                mUserViewArray[0].isFree = !localUser.isVideoStarted();
+                mUserViewArray[0].setUser(localUser.userId, localUser.userName,mViewModel.getUserManager().isMySelf(localUser.userId));
+                if (localUser.isVideoStarted()) {
+                    mUserViewArray[0].setVisible(true);
+                } else {
+                    mUserViewArray[0].setDefaultHeadVisible(true);
+                    mUserViewArray[0].setUserVisible(true);
+                }
+                updateLocalVideoRender(mUserViewArray[0].rtcView, 0);
+                updateUserAudioState(0);
+            }
+
+            int startPos = ( mCurrentPos - 1 ) * 3  ;
+            int count = mUserViewCount - 1;
+            LongSparseArray<UserInfo> remoteUsers = mViewModel.getUserManager().getRemoteUsers();
+            int userCount = remoteUsers.size();
+            for(int i= startPos; i<userCount && count>0; i++){
+                UserInfo user = remoteUsers.valueAt(i);
+                if (user.isVideoStarted()) {
+                    setupUserVideoView(user);
+                    --count;
+                }else{
+                    if (getIndexForNotFreeUser(user.userId) == -1) {
+                        setupUserView(user);
+                        --count;
+                    }
+                }
+            }
+
+            // 5. remove other non-video user
+            if(count > 0){
+                for(int k = 0 ; k < mUserViewCount ; k ++){
+                    if (mUserViewArray[k].userId == 0L ) {
+                        mUserViewArray[k].setVisible(false);
+                    }
+                }
+            }
+        } else {
+            // 启动视频预览，并且显示到大图
+            if (mViewModel.mAutoStartCamera && mViewModel.getUserManager().isRemoteEmpty()) {
+                mUserViewArray[0].isFree = false;
+                mUserViewArray[0].setUser(localUser.userId, localUser.userName,mViewModel.getUserManager().isMySelf(localUser.userId));
+                mUserViewArray[0].setVisible(true);
+
+                updateLocalVideoRender(mUserViewArray[0].rtcView, 0);
+                updateUserAudioState(0);
+                PanoApplication app = (PanoApplication) Utils.getApp();
+                if (!app.mIsLocalVideoStarted) {
+                    mViewModel.rtcEngine().startPreview(mViewModel.mLocalProfile, mViewModel.mIsFrontCamera);
+                    app.mIsLocalVideoStarted = true;
+                }
+            }
         }
     }
 
@@ -119,24 +215,63 @@ public class GridFragment extends CallFragment {
     }
 
     @Override
-    void setupUserScreenView(UserInfo user) {
-        if (AnnotationHelper.getInstance().annotationEnable()) {
+    public void onUserScreenStart(long userId) {
+        if (AnnotationHelper.getIns().annotationEnable()) {
             return;
         }
        toFloatView();
     }
+
+    /******************************Annotation Start*********************************************/
+    @Override
+    public void onVideoAnnotationStart(long userId, int streamId) {
+        NavController navController = NavHostFragment.findNavController(GridFragment.this);
+        Bundle bundle = new Bundle();
+        bundle.putLong(KEY_USER_ID,userId);
+        bundle.putBoolean(KEY_VIDEO_ANNOTATION_START,true);
+        bundle.putInt(KEY_GRID_POS,0);
+        navController.navigate(R.id.action_GridFragment_to_FloatFragment,bundle);
+    }
+    /******************************Annotation End*********************************************/
 
     private void toFloatView() {
         NavHostFragment.findNavController(GridFragment.this)
                 .navigate(R.id.action_GridFragment_to_FloatFragment);
     }
 
-    private void toFloatViewByArgs(long userId){
-        NavController navController = NavHostFragment.findNavController(GridFragment.this);
+    private void toSwipeRight(){
         Bundle bundle = new Bundle();
-        bundle.putLong(KEY_USER_ID,userId);
-        bundle.putBoolean(KEY_USE_PIN_VIDEO,true);
-        navController.navigate(R.id.action_GridFragment_to_FloatFragment,bundle);
+        if(mCurrentPos > 0) mCurrentPos-- ;
+
+        if (mCurrentPos == 0) {
+            bundle.putInt(KEY_GRID_POS,mCurrentPos);
+            NavHostFragment.findNavController(GridFragment.this)
+                    .navigate(R.id.action_GridFragment_to_FloatFragment,bundle);
+        }else{
+            bundle.putInt(KEY_GRID_POS,mCurrentPos);
+            NavHostFragment.findNavController(GridFragment.this)
+                    .navigate(R.id.action_GridFragment_to_GridFragment,bundle);
+        }
+    }
+
+    private void toNewGridView(){
+        int remoteUserSize = mViewModel.getUserManager().getRemoteUsers().size();
+        if (remoteUserSize < 4) {
+            return;
+        }
+        if(mLastPos == mCurrentPos){
+            return ;
+        }
+        Bundle bundle = new Bundle();
+
+        int nextPos = mCurrentPos + 1 ;
+        if(remoteUserSize < nextPos * 3){
+            bundle.putInt(KEY_GRID_LAST_POS,nextPos);
+        }
+
+        bundle.putInt(KEY_GRID_POS,nextPos);
+        NavHostFragment.findNavController(GridFragment.this)
+                .navigate(R.id.action_GridFragment_to_GridFragment,bundle);
     }
 
     class VideoTouchListener extends OnPanoTouchListener {
@@ -153,8 +288,13 @@ public class GridFragment extends CallFragment {
         }
 
         @Override
+        public void onSwipeLeft() {
+            toNewGridView();
+        }
+
+        @Override
         public void onSwipeRight() {
-            toFloatView();
+            toSwipeRight();
         }
     }
 
@@ -173,7 +313,12 @@ public class GridFragment extends CallFragment {
             if(mUserId == mViewModel.getLocalUserId()){
                 return ;
             }
-            toFloatViewByArgs(mUserId);
+            NavController navController = NavHostFragment.findNavController(GridFragment.this);
+            Bundle bundle = new Bundle();
+            bundle.putLong(KEY_USER_ID,mUserId);
+            bundle.putBoolean(KEY_USE_PIN_VIDEO,true);
+            bundle.putInt(KEY_GRID_POS,0);
+            navController.navigate(R.id.action_GridFragment_to_FloatFragment,bundle);
         }
     }
 

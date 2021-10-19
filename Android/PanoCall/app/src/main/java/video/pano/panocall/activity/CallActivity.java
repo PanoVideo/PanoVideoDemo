@@ -1,23 +1,48 @@
 package video.pano.panocall.activity;
 
+import static video.pano.panocall.info.Constant.KEY_AUTO_MUTE_AUDIO;
+import static video.pano.panocall.info.Constant.KEY_AUTO_START_CAMERA;
+import static video.pano.panocall.info.Constant.KEY_AUTO_START_SPEAKER;
+import static video.pano.panocall.info.Constant.KEY_DEVICE_RATING;
+import static video.pano.panocall.info.Constant.KEY_ENABLE_DEBUG_MODE;
+import static video.pano.panocall.info.Constant.KEY_ENABLE_FACE_BEAUTY;
+import static video.pano.panocall.info.Constant.KEY_FACE_BEAUTY_INTENSITY;
+import static video.pano.panocall.info.Constant.KEY_GRID_POS;
+import static video.pano.panocall.info.Constant.KEY_LEAVE_CONFIRM;
+import static video.pano.panocall.info.Constant.KEY_PANO_TOKEN;
+import static video.pano.panocall.info.Constant.KEY_ROOM_ID;
+import static video.pano.panocall.info.Constant.KEY_SOUND_FEEDBACK_COMMAND;
+import static video.pano.panocall.info.Constant.KEY_SOUND_FEEDBACK_DESCRIPTION;
+import static video.pano.panocall.info.Constant.KEY_SOUND_FEEDBACK_TYPE;
+import static video.pano.panocall.info.Constant.KEY_USER_ID;
+import static video.pano.panocall.info.Constant.KEY_USER_NAME;
+import static video.pano.panocall.info.Constant.KEY_VIDEO_SENDING_RESOLUTION;
+import static video.pano.panocall.info.Constant.MSG_KEY;
+import static video.pano.panocall.info.Constant.VALUE_SOUND_FEEDBACK_COMMAND_STARTDUMP;
+import static video.pano.panocall.info.Constant.VALUE_SOUND_FEEDBACK_TYPE_COMMAND;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.ImageView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -29,17 +54,22 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.pano.rtc.api.Constants;
 import com.pano.rtc.api.Constants.DeviceRating;
-import com.pano.rtc.api.PanoAnnotation;
 import com.pano.rtc.api.PanoAnnotationManager;
-import com.pano.rtc.api.RtcAudioIndication;
 import com.pano.rtc.api.RtcChannelConfig;
+import com.pano.rtc.api.RtcEngine;
 import com.pano.rtc.api.RtcEngineCallback;
+import com.pano.rtc.api.RtcMediaStatsObserver;
+import com.pano.rtc.api.RtcMessageService;
 import com.pano.rtc.api.RtcWhiteboard;
-import com.pano.rtc.api.model.RtcAudioLevel;
+import com.pano.rtc.api.model.stats.RtcAudioRecvStats;
+import com.pano.rtc.api.model.stats.RtcAudioSendStats;
+import com.pano.rtc.api.model.stats.RtcSystemStats;
+import com.pano.rtc.api.model.stats.RtcVideoBweStats;
+import com.pano.rtc.api.model.stats.RtcVideoRecvStats;
+import com.pano.rtc.api.model.stats.RtcVideoSendStats;
 
 import org.json.JSONObject;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -52,65 +82,64 @@ import video.pano.panocall.fragment.CallFragment;
 import video.pano.panocall.fragment.FloatFragment;
 import video.pano.panocall.fragment.GridFragment;
 import video.pano.panocall.fragment.TopControlPanelFragment;
+import video.pano.panocall.fragment.UserListFragment;
 import video.pano.panocall.fragment.WhiteboardFragment;
+import video.pano.panocall.info.Config;
 import video.pano.panocall.listener.AnnotationListener;
 import video.pano.panocall.listener.OnBottomControlPanelListener;
 import video.pano.panocall.listener.OnControlEventListener;
+import video.pano.panocall.listener.OnOrientationChangeListener;
 import video.pano.panocall.listener.OnTopControlPanelListener;
 import video.pano.panocall.model.UserInfo;
+import video.pano.panocall.rtc.PanoRtcEngine;
 import video.pano.panocall.service.ScreenCaptureService;
 import video.pano.panocall.utils.AnnotationHelper;
 import video.pano.panocall.utils.DeviceRatingTest;
 import video.pano.panocall.utils.MiscUtils;
+import video.pano.panocall.utils.SPUtils;
+import video.pano.panocall.utils.ScreenSensorUtils;
 import video.pano.panocall.utils.Utils;
 import video.pano.panocall.viewmodel.CallViewModel;
 import video.pano.rtc.base.util.NetworkChangeObserver;
 import video.pano.rtc.base.util.NetworkChangeReceiver;
 import video.pano.rtc.base.util.NetworkUtils;
 
-import static video.pano.panocall.info.Constant.KEY_AUTO_MUTE_AUDIO;
-import static video.pano.panocall.info.Constant.KEY_AUTO_START_CAMERA;
-import static video.pano.panocall.info.Constant.KEY_AUTO_START_SPEAKER;
-import static video.pano.panocall.info.Constant.KEY_DEVICE_RATING;
-import static video.pano.panocall.info.Constant.KEY_ENABLE_DEBUG_MODE;
-import static video.pano.panocall.info.Constant.KEY_ENABLE_FACE_BEAUTY;
-import static video.pano.panocall.info.Constant.KEY_FACE_BEAUTY_INTENSITY;
-import static video.pano.panocall.info.Constant.KEY_LEAVE_CONFIRM;
-import static video.pano.panocall.info.Constant.KEY_PANO_TOKEN;
-import static video.pano.panocall.info.Constant.KEY_ROOM_ID;
-import static video.pano.panocall.info.Constant.KEY_USER_ID;
-import static video.pano.panocall.info.Constant.KEY_USER_NAME;
-import static video.pano.panocall.info.Constant.KEY_VIDEO_SENDING_RESOLUTION;
-import static video.pano.panocall.info.Constant.MSG_KEY;
-
 
 public class CallActivity extends AppCompatActivity implements OnControlEventListener,
         PanoAnnotationManager.Callback,
         RtcWhiteboard.Callback,
         RtcEngineCallback,
+        RtcMessageService.Callback,
         OnTopControlPanelListener,
         AnnotationListener,
         OnBottomControlPanelListener,
-        NetworkChangeObserver{
+        NetworkChangeObserver,
+        OnOrientationChangeListener,
+        RtcMediaStatsObserver{
     public static final String TAG = "PVC";
+    private static final long TIME_OUT_DELAY = 60 * 1000 ;
+    private static final long DUMP_SIZE = 200 * 1024 * 1024;
 
-    private CallViewModel mViewModel;
     private int mCurrentFragmentId = R.id.FloatFragment;
+    private int mPreToWhiteboardId = R.id.action_FloatFragment_to_WhiteboardFragment ;
+    private CallViewModel mViewModel;
+    private int mCurrentPos = 0 ;
 
     TopControlPanelFragment mTopControlPanel;
     BottomControlPanelFragment mBottomControlPanel;
     AnnotationControlPanelFragment mAnnotationControlPanelFragment;
-    boolean mIsControlPanelShowed = false;
+
+    private RadioGroup mClDots;
 
     private Timer mPanelTimer;
-    private ConstraintLayout mClDots;
-    private boolean mEnableDeviceRating = true;
-    private DeviceRating mDeviceRating;
-    private AlertDialog mMoreDialog;
-    private AlertDialog mShareDialog;
     private Intent mScreenCaptureService;
-    private boolean mScreenCaptureOn = false;
     private NetworkChangeReceiver mNetworkChangeReceiver;
+
+    private boolean mIsControlPanelShowed = false;
+    private boolean mEnableDeviceRating = true;
+    private boolean mScreenCaptureOn = false;
+
+    private final Handler mHandler = new Handler(Looper.getMainLooper());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,31 +147,31 @@ public class CallActivity extends AppCompatActivity implements OnControlEventLis
         setContentView(R.layout.activity_call);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        try{
+        try
+        {
             this.getSupportActionBar().hide();
-        }catch (NullPointerException e){}
+        }
+        catch (NullPointerException e){}
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         MiscUtils.setScreenOnFlag(getWindow());
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        mEnableDeviceRating = prefs.getBoolean(KEY_DEVICE_RATING, true);
+        mEnableDeviceRating = SPUtils.getBoolean(KEY_DEVICE_RATING, true);
 
         mViewModel = new ViewModelProvider(this).get(CallViewModel.class);
 
         PanoApplication app = (PanoApplication)Utils.getApp();
-        app.registerEventHandler(this);
-        app.registerWhiteboardHandler(this);
-        app.registerAnnotationCallback(this);
+        PanoRtcEngine.getIns().registerEventHandler(this);
+        PanoRtcEngine.getIns().registerWhiteboardHandler(this);
+        PanoRtcEngine.getIns().registerAnnotationCallback(this);
+        PanoRtcEngine.getIns().registerMessageCallback(this);
+        PanoRtcEngine.getIns().registerRtcMediaStatsObserver(this);
 
-        mViewModel.setPanoRtcEngine(app.getPanoEngine());
+        mViewModel.setPanoRtcEngine(PanoRtcEngine.getIns().getPanoEngine());
 
         mClDots = findViewById(R.id.cl_dots);
-        ImageView imgDot1 = findViewById(R.id.img_dot_1);
-        ImageView imgDot2 = findViewById(R.id.img_dot_2);
-        imgDot1.setSelected(true);
+        mClDots.setVisibility(View.GONE);
 
         String roomId = getIntent().getStringExtra(KEY_ROOM_ID);
         mTopControlPanel = TopControlPanelFragment.newInstance(roomId);
@@ -156,16 +185,22 @@ public class CallActivity extends AppCompatActivity implements OnControlEventLis
             if (mCurrentFragmentId == R.id.WhiteboardFragment) {
                 mClDots.setVisibility(View.GONE);
             } else {
-                imgDot1.setSelected(mCurrentFragmentId == R.id.FloatFragment);
-                imgDot2.setSelected(mCurrentFragmentId == R.id.GridFragment);
-                checkDotIndicatorState();
+                int childCount = mClDots.getChildCount();
+                if(arguments != null && arguments.containsKey(KEY_GRID_POS)){
+                    int pos = arguments.getInt(KEY_GRID_POS);
+                    if(pos < childCount){
+                        mClDots.check(mClDots.getChildAt(pos).getId());
+                        mCurrentPos = pos ;
+                    }
+                }
+                mClDots.setVisibility(View.VISIBLE);
             }
         });
-        mClDots.setVisibility(View.GONE);
 
         loadSettings();
 
         app.mIsFrontCamera = mViewModel.mIsFrontCamera;
+
         joinRoom();
 
         mScreenCaptureService = new Intent(this, ScreenCaptureService.class);
@@ -177,8 +212,7 @@ public class CallActivity extends AppCompatActivity implements OnControlEventLis
 
     @Override
     public void onBackPressed() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean needConfirm = prefs.getBoolean(KEY_LEAVE_CONFIRM, true);
+        boolean needConfirm = SPUtils.getBoolean(KEY_LEAVE_CONFIRM, false);
         if (needConfirm) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle(R.string.msg_call_exit_alert);
@@ -193,12 +227,48 @@ public class CallActivity extends AppCompatActivity implements OnControlEventLis
     }
 
     @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        NavDestination current = navController.getCurrentDestination();
+        if (current == null) {
+            return ;
+        }
+        if ("Whiteboard Fragment".contentEquals(current.getLabel())) {
+            navController.navigateUp();
+            navController.navigate(mPreToWhiteboardId);
+        }
+    }
+
+    @Override
+    public void orientationChanged(int newOrientation) {
+        if(getResources() == null || getResources().getConfiguration() == null){
+            return ;
+        }
+        if(getResources().getConfiguration().orientation == newOrientation){
+            return ;
+        }
+        if(!ScreenSensorUtils.getIns().isAutoOrientation()){
+            return ;
+        }
+
+        if(newOrientation == Configuration.ORIENTATION_PORTRAIT){
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }else{
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        }
+    }
+
+    @Override
     protected void onDestroy() {
-        PanoApplication app = (PanoApplication)Utils.getApp();
-        app.removeWhiteboardHandler(this);
-        app.removeEventHandler(this);
-        app.removeAnnotationCallback(this);
+        PanoRtcEngine.getIns().removeWhiteboardHandler(this);
+        PanoRtcEngine.getIns().removeEventHandler(this);
+        PanoRtcEngine.getIns().removeAnnotationCallback(this);
+        PanoRtcEngine.getIns().removeMessageCallback(this);
+        PanoRtcEngine.getIns().removeRtcMediaStatsObserver(this);
+
         super.onDestroy();
+        mHandler.removeCallbacksAndMessages(null);
         mViewModel.reset();
         resetTimer();
         unregisterNetworkReceiver();
@@ -210,13 +280,12 @@ public class CallActivity extends AppCompatActivity implements OnControlEventLis
     public void onChannelJoinConfirm(Constants.QResult result) {
         Log.i(TAG, "onChannelJoinConfirm, result="+result);
         if (mEnableDeviceRating) {
-            mDeviceRating = mViewModel.rtcEngine().queryDeviceRating();
-            Log.i(TAG, "mDeviceRating = " + mDeviceRating);
-            updateProfileByDeviceRating(mDeviceRating);
+            DeviceRating deviceRating = mViewModel.rtcEngine().queryDeviceRating();
+            Log.i(TAG, "mDeviceRating = " + deviceRating);
+            updateProfileByDeviceRating(deviceRating);
         }
         mViewModel.onChannelJoinConfirm(result);
     }
-
     @Override
     public void onChannelLeaveIndication(Constants.QResult result) {
         Log.i(TAG, "onChannelLeaveIndication, result="+result);
@@ -315,6 +384,7 @@ public class CallActivity extends AppCompatActivity implements OnControlEventLis
             Toast.makeText(this, R.string.msg_whiteboard_unavailable, Toast.LENGTH_SHORT).show();
             return;
         }
+        mViewModel.onWhiteboardStart();
         onClickWhiteboard();
     }
 
@@ -347,8 +417,13 @@ public class CallActivity extends AppCompatActivity implements OnControlEventLis
     }
 
     @Override
-    public void onChannelFailover(Constants.FailoverState state) {
-
+    public void onChannelFailover(Constants.FailoverState failoverState) {
+        View loadingView = findViewById(R.id.loading_layout);
+        if(failoverState.equals(Constants.FailoverState.Reconnecting)){
+            loadingView.setVisibility(View.VISIBLE);
+        }else{
+            loadingView.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -437,7 +512,7 @@ public class CallActivity extends AppCompatActivity implements OnControlEventLis
             String name = userInfo.getUserName();
             Toast.makeText(this, getString(R.string.whiteboard_stopped_vision_share, name), Toast.LENGTH_SHORT).show();
         }
-        ((PanoApplication)Utils.getApp()).getPanoWhiteboard().stopFollowVision();
+        PanoRtcEngine.getIns().getPanoWhiteboard().stopFollowVision();
     }
 
     @Override
@@ -447,7 +522,7 @@ public class CallActivity extends AppCompatActivity implements OnControlEventLis
             String name = userInfo.getUserName();
             Toast.makeText(this, getString(R.string.whiteboard_started_vision_share, name), Toast.LENGTH_SHORT).show();
         }
-        ((PanoApplication)Utils.getApp()).getPanoWhiteboard().startFollowVision();
+        PanoRtcEngine.getIns().getPanoWhiteboard().startFollowVision();
     }
 
     /**************  RtcWhiteboard  **************/
@@ -478,7 +553,7 @@ public class CallActivity extends AppCompatActivity implements OnControlEventLis
     /**************  OnControlEventListener  **************/
     @Override
     public void onShowHideControlPanel() {
-        if (!AnnotationHelper.getInstance().annotationEnable()) {
+        if (!AnnotationHelper.getIns().annotationEnable()) {
             if (mIsControlPanelShowed) {
                 hideControlPanel();
             } else {
@@ -519,6 +594,8 @@ public class CallActivity extends AppCompatActivity implements OnControlEventLis
         if (call != null) {
             call.onLocalAudio(muted);
         }
+        mViewModel.clearRtcAudioLevels();
+        mViewModel.setShowMuteAudioToast(muted);
     }
     @Override
     public void onBCPanelVideo(boolean closed) {
@@ -535,10 +612,11 @@ public class CallActivity extends AppCompatActivity implements OnControlEventLis
         }
         int itemArray = mScreenCaptureOn ? R.array.share_settings_screen_share_on
                 : R.array.share_settings;
-        mShareDialog = new AlertDialog.Builder(this)
+        AlertDialog shareDialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.title_call_share)
                 .setItems(itemArray, (dialog, which) -> {
                     if (which == 0) {
+                        mViewModel.onWhiteboardStart();
                         onClickWhiteboard();
                     } else if (which == 1) {
                        onClickScreenShare();
@@ -546,13 +624,28 @@ public class CallActivity extends AppCompatActivity implements OnControlEventLis
                 })
                 .setNegativeButton(R.string.title_button_cancel, (dialog, which) -> dialog.dismiss())
                 .create();
-        if (!mShareDialog.isShowing()) {
-            mShareDialog.show();
+        if (!shareDialog.isShowing()) {
+            shareDialog.show();
         }
     }
+
+    @Override
+    public void onBCPanelUserList() {
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        NavDestination current = navController.getCurrentDestination();
+        if (current == null) {
+            return ;
+        }
+        if ("Float Fragment".contentEquals(current.getLabel())) {
+            navController.navigate(R.id.action_FloatFragment_to_UserListFragment);
+        } else if ("Grid Fragment".contentEquals(current.getLabel())) {
+            navController.navigate(R.id.action_GridFragment_to_UserListFragment);
+        }
+    }
+
     @Override
     public void onBCPanelMore() {
-        mMoreDialog = new AlertDialog.Builder(this)
+        AlertDialog moreDialog = new AlertDialog.Builder(this)
             .setTitle(R.string.title_call_more)
             .setItems(R.array.more_settings, (dialog, which) -> {
                 if (which == 0) {
@@ -563,8 +656,8 @@ public class CallActivity extends AppCompatActivity implements OnControlEventLis
             })
             .setNegativeButton(R.string.title_button_cancel, (dialog, which) -> dialog.dismiss())
             .create();
-        if (!mMoreDialog.isShowing()) {
-            mMoreDialog.show();
+        if (!moreDialog.isShowing()) {
+            moreDialog.show();
         }
     }
     /**************  OnBottomControlPanelListener  **************/
@@ -573,7 +666,7 @@ public class CallActivity extends AppCompatActivity implements OnControlEventLis
 
     @Override
     public void onAnnotationStart() {
-        AnnotationHelper.getInstance().setAnnotationEnable(true);
+        AnnotationHelper.getIns().setAnnotationEnable(true);
         hideControlPanel();
         showAnnotationControlPanel();
     }
@@ -581,6 +674,7 @@ public class CallActivity extends AppCompatActivity implements OnControlEventLis
     @Override
     public void onAnnotationClose() {
         hideAnnotationControlPanel();
+        showControlPanel();
     }
 
     /**************  OnAnnotationControlPanelListener  **************/
@@ -602,6 +696,101 @@ public class CallActivity extends AppCompatActivity implements OnControlEventLis
     }
     /**************  NetworkChangeObserver  **************/
 
+    /**************  RtcMessageService.Callback  **************/
+    @Override
+    public void onUserMessage(long userId, byte[] data) {
+        String jsonStr = new String(data);
+        try {
+            Log.d(TAG,"onUserMessage : userId = "+userId+" , message : "+jsonStr);
+            JSONObject jsonObject = new JSONObject(jsonStr);
+            String msgType = jsonObject.getString(KEY_SOUND_FEEDBACK_TYPE);
+            String command = jsonObject.getString(KEY_SOUND_FEEDBACK_COMMAND);
+            String desc = jsonObject.getString(KEY_SOUND_FEEDBACK_DESCRIPTION);
+
+            if(VALUE_SOUND_FEEDBACK_TYPE_COMMAND.equals(msgType)
+                    && VALUE_SOUND_FEEDBACK_COMMAND_STARTDUMP.equals(command)){
+                mViewModel.rtcEngine().startAudioDump(DUMP_SIZE);
+                mHandler.postDelayed(() -> {
+                    mViewModel.rtcEngine().stopAudioDump();
+
+                    RtcEngine.FeedbackInfo info = new RtcEngine.FeedbackInfo();
+                    info.type = Constants.FeedbackType.Audio;
+                    info.productName = "PanoVideoCall";
+                    info.description = desc;
+                    info.extraInfo = ((PanoApplication)Utils.getApp()).getAppUuid();
+                    info.uploadLogs = true;
+                    UserInfo localUser = mViewModel.getUserManager().getLocalUser();
+                    if(localUser != null && !TextUtils.isEmpty(localUser.userName)){
+                        info.contact = localUser.userName;
+                    }
+                    mViewModel.rtcEngine().sendFeedback(info);
+                },TIME_OUT_DELAY);
+
+            }
+        } catch (Exception e) {
+            return;
+        }
+
+    }
+
+    /**************  RtcMessageService.Callback  **************/
+
+    /**************  RtcMediaStatsObserver  **************/
+    @Override
+    public void onVideoSendStats(RtcVideoSendStats stats) {
+    }
+
+    @Override
+    public void onVideoRecvStats(RtcVideoRecvStats stats) {
+    }
+
+    @Override
+    public void onAudioSendStats(RtcAudioSendStats stats) {
+
+    }
+
+    @Override
+    public void onAudioRecvStats(RtcAudioRecvStats stats) {
+
+    }
+
+    @Override
+    public void onScreenSendStats(RtcVideoSendStats stats) {
+
+    }
+
+    @Override
+    public void onScreenRecvStats(RtcVideoRecvStats stats) {
+    }
+
+    @Override
+    public void onVideoBweStats(RtcVideoBweStats stats) {
+
+    }
+
+    @Override
+    public void onSystemStats(RtcSystemStats stats) {
+
+    }
+
+    /**************  RtcMediaStatsObserver  **************/
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateFaceBeautyData();
+    }
+
+    private void updateFaceBeautyData(){
+        boolean fbEnabled = SPUtils.getBoolean(KEY_ENABLE_FACE_BEAUTY, false);
+        mViewModel.rtcEngine().setFaceBeautify(fbEnabled);
+        if (fbEnabled) {
+            float fbIntensity = SPUtils.getFloat(KEY_FACE_BEAUTY_INTENSITY, 0);
+            mViewModel.rtcEngine().setFaceBeautifyIntensity(fbIntensity);
+        }
+    }
+
+    /**************  RtcVideoTextureFilter  **************/
 
     // 加入房间
     private boolean joinRoom() {
@@ -625,13 +814,7 @@ public class CallActivity extends AppCompatActivity implements OnControlEventLis
         mViewModel.rtcEngine().setLoudspeakerStatus(mViewModel.mIsAudioSpeakerOpened);
 
         // face beauty settings
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean fbEnabled = prefs.getBoolean(KEY_ENABLE_FACE_BEAUTY, false);
-        mViewModel.rtcEngine().setFaceBeautify(fbEnabled);
-        if (fbEnabled) {
-            float fbIntensity = prefs.getFloat(KEY_FACE_BEAUTY_INTENSITY, 0);
-            mViewModel.rtcEngine().setFaceBeautifyIntensity(fbIntensity);
-        }
+        updateFaceBeautyData();
 
         RtcChannelConfig config = new RtcChannelConfig();
         config.userName = userName;
@@ -658,7 +841,7 @@ public class CallActivity extends AppCompatActivity implements OnControlEventLis
     }
 
     private void onConfirmedBackPressed() {
-        mViewModel.onAnnotationStop();
+        mViewModel.onClickAnnotationStop();
         leaveRoom();
         int count = getSupportFragmentManager().getBackStackEntryCount();
         for (int i=0; i<count; i++) {
@@ -713,9 +896,10 @@ public class CallActivity extends AppCompatActivity implements OnControlEventLis
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
         FragmentManager navHostManager = Objects.requireNonNull(navHostFragment).getChildFragmentManager();
         for (Fragment fragment : navHostManager.getFragments()) {
-            if ((fragment instanceof FloatFragment && Objects.equals(current.getLabel(), "Float Fragment")) ||
-                    (fragment instanceof GridFragment && Objects.equals(current.getLabel(), "Grid Fragment")) ||
-                    (fragment instanceof WhiteboardFragment && Objects.equals(current.getLabel(), "Whiteboard Fragment"))) {
+            if ((fragment instanceof FloatFragment && Objects.equals(current.getLabel(), "Float Fragment"))
+                    || (fragment instanceof GridFragment && Objects.equals(current.getLabel(), "Grid Fragment"))
+                    || (fragment instanceof WhiteboardFragment && Objects.equals(current.getLabel(), "Whiteboard Fragment"))
+                    || (fragment instanceof UserListFragment && Objects.equals(current.getLabel(), "UserList Fragment"))) {
                 return (CallFragment) fragment;
             }
         }
@@ -724,12 +908,12 @@ public class CallActivity extends AppCompatActivity implements OnControlEventLis
     }
 
     private void loadSettings() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        mViewModel.mIsAudioMuted = mViewModel.mAutoMuteAudio = prefs.getBoolean(KEY_AUTO_MUTE_AUDIO, false);
-        mViewModel.mIsAudioSpeakerOpened = prefs.getBoolean(KEY_AUTO_START_SPEAKER, true);
-        mViewModel.mAutoStartCamera = prefs.getBoolean(KEY_AUTO_START_CAMERA, true);
-        mViewModel.mEnableDebugMode = prefs.getBoolean(KEY_ENABLE_DEBUG_MODE, false);
-        int resolution = Integer.parseInt(Objects.requireNonNull(prefs.getString(KEY_VIDEO_SENDING_RESOLUTION, "1")));
+        mViewModel.mIsAudioMuted = mViewModel.mAutoMuteAudio = SPUtils.getBoolean(KEY_AUTO_MUTE_AUDIO, false);
+        mViewModel.mIsAudioSpeakerOpened = SPUtils.getBoolean(KEY_AUTO_START_SPEAKER, false);
+        mViewModel.mAutoStartCamera = SPUtils.getBoolean(KEY_AUTO_START_CAMERA, true);
+        mViewModel.mIsVideoClosed = !mViewModel.mAutoStartCamera;
+        mViewModel.mEnableDebugMode = SPUtils.getBoolean(KEY_ENABLE_DEBUG_MODE, false);
+        int resolution = SPUtils.getInt(KEY_VIDEO_SENDING_RESOLUTION, 2);
         mViewModel.mLocalProfile = DeviceRatingTest.getIns().getProfileType(resolution);
     }
 
@@ -745,21 +929,36 @@ public class CallActivity extends AppCompatActivity implements OnControlEventLis
         if (userCount <= 2) {
             mClDots.setVisibility(View.GONE);
         } else {
+            mClDots.removeAllViews();
+            int pageSize = 2 ;
+            if(userCount > 4){
+                pageSize = userCount /4 + 2 ;
+            }
+            for(int i = 0 ; i < pageSize ; i ++){
+                RadioButton dotItem = (RadioButton) LayoutInflater.from(this).inflate(R.layout.layout_dot_item,mClDots,false);
+                dotItem.setId(Config.sNextGeneratedId.incrementAndGet());
+                mClDots.addView(dotItem);
+            }
             NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
             NavDestination current = navController.getCurrentDestination();
-            if (current != null) {
-                if (current.getId() == R.id.WhiteboardFragment) {
+            if(current != null){
+                if(current.getId() == R.id.WhiteboardFragment){
                     mClDots.setVisibility(View.GONE);
                     return;
                 }
+            }
+            if(mCurrentPos == pageSize){
+                mClDots.check(mClDots.getChildAt(mCurrentPos - 1).getId());
+                navController.navigateUp();
+            }else if(mCurrentPos < pageSize){
+                mClDots.check(mClDots.getChildAt(mCurrentPos).getId());
             }
             mClDots.setVisibility(View.VISIBLE);
         }
     }
 
     private void updateProfileByDeviceRating(DeviceRating deviceRating) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        int resolution = Integer.parseInt(Objects.requireNonNull(prefs.getString(KEY_VIDEO_SENDING_RESOLUTION, "1")));
+        int resolution = SPUtils.getInt(KEY_VIDEO_SENDING_RESOLUTION, 2);
 
         int maxProfile = DeviceRatingTest.getIns().updateProfileByDeviceRating(deviceRating);
 
@@ -769,24 +968,24 @@ public class CallActivity extends AppCompatActivity implements OnControlEventLis
         }
         mViewModel.mLocalProfile = DeviceRatingTest.getIns().getProfileType(resolution);
 
-        prefs.edit().putString(KEY_VIDEO_SENDING_RESOLUTION, String.valueOf(resolution)).apply();
+        SPUtils.put(KEY_VIDEO_SENDING_RESOLUTION, resolution);
     }
 
     private void hideAnnotationControlPanel() {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.remove(mAnnotationControlPanelFragment)
-                .commitAllowingStateLoss();
+        ft.remove(mAnnotationControlPanelFragment).commitAllowingStateLoss();
         mIsControlPanelShowed = false;
     }
 
     private void showAnnotationControlPanel() {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.replace(R.id.fl_bottom_control_panel, mAnnotationControlPanelFragment)
+        ft.replace(R.id.fl_control_panel, mAnnotationControlPanelFragment)
                 .addToBackStack(null);
         try {
             ft.show(mAnnotationControlPanelFragment)
                     .commitAllowingStateLoss();
         } catch (IllegalStateException e) {
+            e.printStackTrace();
         }
     }
 
@@ -797,8 +996,10 @@ public class CallActivity extends AppCompatActivity implements OnControlEventLis
             return ;
         }
         if ("Float Fragment".contentEquals(current.getLabel())) {
+            mPreToWhiteboardId = R.id.action_FloatFragment_to_WhiteboardFragment ;
             navController.navigate(R.id.action_FloatFragment_to_WhiteboardFragment);
         } else if ("Grid Fragment".contentEquals(current.getLabel())) {
+            mPreToWhiteboardId = R.id.action_GridFragment_to_WhiteboardFragment ;
             navController.navigate(R.id.action_GridFragment_to_WhiteboardFragment);
         }
     }
@@ -808,8 +1009,8 @@ public class CallActivity extends AppCompatActivity implements OnControlEventLis
             Toast.makeText(this,R.string.msg_open_your_video,Toast.LENGTH_LONG).show();
             return ;
         }
-        mViewModel.onAnnotationStart();
-        AnnotationHelper.getInstance().setAnnotationEnable(true);
+        mViewModel.onClickAnnotationStart();
+        AnnotationHelper.getIns().setAnnotationEnable(true);
         hideControlPanel();
         showAnnotationControlPanel();
     }
@@ -864,6 +1065,12 @@ public class CallActivity extends AppCompatActivity implements OnControlEventLis
         context.startActivity(intent);
     }
 
+    public static void launch(Context context) {
+        Intent intent = new Intent();
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.setClass(context, CallActivity.class);
+        context.startActivity(intent);
+    }
 
     class PanelTask extends TimerTask {
         @Override

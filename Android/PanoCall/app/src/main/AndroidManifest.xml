@@ -14,15 +14,15 @@
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.BROADCAST_STICKY" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
 
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
-
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application
         android:name=".PanoApplication"
@@ -32,6 +32,8 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:testOnly="false"
+        android:resizeableActivity="true"
+        android:requestLegacyExternalStorage="true"
         android:theme="@style/AppTheme">
 
         <!-- Provider Start -->
@@ -59,19 +61,34 @@
         <!-- Activity Start -->
         <activity
             android:name=".activity.SettingsActivity"
-            android:label="@string/title_activity_settings" />
+            android:label="@string/title_activity_settings"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"
+            />
+        <activity
+            android:name=".activity.StatisticsActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"
+            />
+        <activity
+            android:name=".activity.ContainerActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            />
         <activity
             android:name=".activity.CallActivity"
             android:label="@string/title_activity_call"
-            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="portrait"
+            android:configChanges="keyboardHidden|orientation|screenSize"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name="video.pano.rtc.impl.screen.PanoScreenCaptureAssistantActivity"
             android:theme="@style/ScreenCaptureActivityTheme" />
         <activity
             android:name=".activity.SplashActivity"
+            android:screenOrientation="portrait"
             android:theme="@style/SplashTheme">
+            <meta-data android:name="android.notch_support" android:value="true"/>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -80,6 +97,7 @@
         <activity
             android:name=".activity.MainActivity"
             android:label="@string/title_join_call"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

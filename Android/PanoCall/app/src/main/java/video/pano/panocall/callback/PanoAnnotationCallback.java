@@ -9,17 +9,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import video.pano.panocall.utils.AnnotationHelper;
-import video.pano.panocall.PanoApplication;
+import video.pano.panocall.rtc.PanoRtcEngine;
 
 public class PanoAnnotationCallback implements PanoAnnotationManager.Callback {
 
     private static final String TAG = "PanoAnnotationCallback";
-    private PanoApplication mApp;
     private List<PanoAnnotationManager.Callback> mListeners = new ArrayList<>();
-
-    public PanoAnnotationCallback(PanoApplication app) {
-        mApp = app;
-    }
 
     public void addListener(PanoAnnotationManager.Callback listener) {
         mListeners.add(listener);
@@ -32,8 +27,8 @@ public class PanoAnnotationCallback implements PanoAnnotationManager.Callback {
     @Override
     public void onVideoAnnotationStart(long userId, int streamId) {
         Log.i(TAG, "onVideoAnnotationStart");
-        PanoAnnotation annotation = mApp.getPanoEngine().getAnnotationMgr().getVideoAnnotation(userId, streamId);
-        AnnotationHelper.getInstance().setAnnotation(annotation);
+        PanoAnnotation annotation = PanoRtcEngine.getIns().getPanoEngine().getAnnotationMgr().getVideoAnnotation(userId, streamId);
+        AnnotationHelper.getIns().setAnnotation(annotation);
 
         if(mListeners == null || mListeners.isEmpty()){
             return ;
@@ -61,8 +56,8 @@ public class PanoAnnotationCallback implements PanoAnnotationManager.Callback {
     @Override
     public void onShareAnnotationStart(long userId) {
         Log.i(TAG, "onShareAnnotationStart");
-        PanoAnnotation annotation = mApp.getPanoEngine().getAnnotationMgr().getShareAnnotation(userId);
-        AnnotationHelper.getInstance().setAnnotation(annotation);
+        PanoAnnotation annotation = PanoRtcEngine.getIns().getPanoEngine().getAnnotationMgr().getShareAnnotation(userId);
+        AnnotationHelper.getIns().setAnnotation(annotation);
 
         if(mListeners == null || mListeners.isEmpty()){
             return ;

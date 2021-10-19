@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        >
+
+        <FrameLayout
+            android:id="@+id/fl_cpu_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="7dp"
+            android:paddingBottom="7dp"
+            android:paddingStart="11dp"
+            android:paddingEnd="11dp"
+            android:layout_marginTop="15dp"
+            android:background="@drawable/shape_statistics_item_title_bg"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="10sp"
+                android:textColor="@color/color999999"
+                android:drawablePadding="4.5dp"
+                android:gravity="center"
+                android:drawableStart="@drawable/svg_icon_cpu"
+                android:text="CPU"
+                />
+        </FrameLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_cpu_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/shape_statistics_item_content_bg"
+            android:paddingBottom="11dp"
+            android:paddingTop="11dp"
+            android:paddingStart="11dp"
+            android:paddingEnd="11dp"
+            >
+            <TextView
+                android:id="@+id/tv_cpu_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/color333333"
+                android:textSize="10sp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                android:text="—"
+                />
+
+            <TextView
+                android:id="@+id/tv_cpu_percent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/panoBlue"
+                android:textSize="10sp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:text="—"
+                />
+
+            <ProgressBar
+                android:id="@+id/progress_cpu"
+                android:layout_width="0dp"
+                android:layout_height="4dp"
+                android:layout_marginTop="8.5dp"
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                app:layout_constraintTop_toBottomOf="@+id/tv_cpu_title"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <FrameLayout
+            android:id="@+id/fl_ram_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="7dp"
+            android:paddingBottom="7dp"
+            android:paddingStart="11dp"
+            android:paddingEnd="11dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/shape_statistics_item_title_bg"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="10sp"
+                android:textColor="@color/color999999"
+                android:drawablePadding="4.5dp"
+                android:gravity="center"
+                android:drawableStart="@drawable/svg_icon_ram"
+                android:text="@string/title_statistics_memory"
+                />
+        </FrameLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="11dp"
+            android:paddingTop="11dp"
+            android:paddingStart="11dp"
+            android:paddingEnd="11dp"
+            android:background="@drawable/shape_statistics_item_content_bg"
+            >
+            <TextView
+                android:id="@+id/tv_ram_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/color333333"
+                android:textSize="10sp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                android:text="—"
+                />
+
+            <TextView
+                android:id="@+id/tv_ram_percent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/panoBlue"
+                android:textSize="10sp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:text="—"
+                />
+
+            <ProgressBar
+                android:id="@+id/progress_ram"
+                android:layout_width="0dp"
+                android:layout_height="4dp"
+                android:layout_marginTop="8.5dp"
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                app:layout_constraintTop_toBottomOf="@+id/tv_ram_title"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:paddingBottom="11dp"
+            android:paddingTop="11dp"
+            android:paddingStart="11dp"
+            android:paddingEnd="11dp"
+            android:background="@drawable/shape_statistics_item_bg"
+            >
+            <TextView
+                android:id="@+id/tv_bandwidth_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/color333333"
+                android:textSize="12sp"
+                android:text="@string/title_statistics_bandwidth"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                />
+
+            <TextView
+                android:id="@+id/tv_bandwidth_percent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                tools:text="—"
+                />
+
+            <TextView
+                android:id="@+id/tv_bandwidth_type"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textColor="@color/color333333"
+                android:layout_marginTop="15dp"
+                android:text="@string/title_statistics_network_type"
+                app:layout_constraintTop_toBottomOf="@+id/tv_bandwidth_title"
+                app:layout_constraintStart_toStartOf="parent"
+                />
+
+            <TextView
+                android:id="@+id/tv_bandwidth_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textColor="@color/color333333"
+                android:layout_marginTop="15dp"
+                app:layout_constraintTop_toBottomOf="@+id/tv_bandwidth_title"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:text="—"
+                />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

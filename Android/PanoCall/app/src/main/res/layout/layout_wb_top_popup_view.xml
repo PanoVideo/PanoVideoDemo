@@ -26,7 +26,7 @@
         android:paddingEnd="10dp"
         android:singleLine="true"
         android:textSize="12sp"
-        />
+        tools:text="当前白板：默认白板白板白板白板白板白板白板白板白板" />
 
     <TextView
         android:id="@+id/tv_page_speaker"
@@ -35,7 +35,8 @@
         android:layout_marginTop="7.5dp"
         android:paddingStart="10dp"
         android:paddingEnd="10dp"
-        android:textSize="12sp"/>
+        android:textSize="12sp"
+        tools:text="当前演示人 : 小贝" />
 
     <View
         android:layout_width="match_parent"
@@ -52,7 +53,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:visibility="gone">
+            android:visibility="gone"
+            tools:visibility="visible">
 
             <TextView
                 android:id="@+id/tv_page_prev"
@@ -148,7 +150,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:visibility="gone">
+            android:visibility="gone"
+            tools:visibility="gone">
 
             <TextView
                 android:id="@+id/tv_page_apply_show"

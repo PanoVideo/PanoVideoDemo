@@ -1,21 +1,23 @@
 package video.pano.panocall.fragment;
 
+import static android.Manifest.permission.CAMERA;
+import static video.pano.panocall.info.Constant.KEY_ENABLE_FACE_BEAUTY;
+import static video.pano.panocall.info.Constant.KEY_FACE_BEAUTY_INTENSITY;
+import static video.pano.panocall.info.Constant.KEY_VIDEO_SENDING_RESOLUTION;
+import static video.pano.panocall.info.Constant.PERMISSION_REQUEST_CODE;
+
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.Fragment;
-
-import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
-import android.widget.Switch;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.app.ActivityCompat;
 
 import com.pano.rtc.api.Constants;
 import com.pano.rtc.api.IVideoRender;
@@ -24,33 +26,30 @@ import com.pano.rtc.api.RtcView;
 import java.util.ArrayList;
 import java.util.List;
 
-import video.pano.RendererCommon;
 import video.pano.panocall.PanoApplication;
 import video.pano.panocall.R;
 import video.pano.panocall.activity.MainActivity;
+import video.pano.panocall.rtc.PanoRtcEngine;
 import video.pano.panocall.utils.DeviceRatingTest;
+import video.pano.panocall.utils.SPUtils;
 import video.pano.panocall.utils.Utils;
 
-import static android.Manifest.permission.CAMERA;
-import static video.pano.panocall.info.Constant.KEY_ENABLE_FACE_BEAUTY;
-import static video.pano.panocall.info.Constant.KEY_FACE_BEAUTY_INTENSITY;
-import static video.pano.panocall.info.Constant.KEY_VIDEO_SENDING_RESOLUTION;
-import static video.pano.panocall.info.Constant.PERMISSION_REQUEST_CODE;
 
+public class FaceBeautyFragment extends BaseSettingFragment{
 
-public class FaceBeautyFragment extends Fragment {
+    private static final String TAG = "FaceBeautyFragment";
 
     private static final String[] PERMISSIONS = {
             CAMERA,
     };
 
     private boolean mNeedSwitchCamera = false;
+
     private RtcView mRtcView;
-
-    public FaceBeautyFragment() {
-        // Required empty public constructor
-    }
-
+    private boolean mEnabled;
+    private float mIntensity;
+    private SeekBar mSbIntensity;
+    private SwitchCompat mSwFaceBeautify;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -59,59 +58,65 @@ public class FaceBeautyFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_face_beauty, container, false);
     }
 
+    @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         mRtcView = view.findViewById(R.id.face_beauty_view);
         mRtcView.setScalingType(IVideoRender.ScalingType.SCALE_ASPECT_FILL);
-        mRtcView.init(new RendererCommon.RendererEvents() {
-            @Override
-            public void onFirstFrameRendered() {}
-            @Override
-            public void onFrameResolutionChanged(int i, int i1, int i2) {}
-        });
         mRtcView.setZOrderMediaOverlay(true);
 
-        PanoApplication app = (PanoApplication) Utils.getApp();
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        boolean enabled = prefs.getBoolean(KEY_ENABLE_FACE_BEAUTY, false);
-        float intensity = prefs.getFloat(KEY_FACE_BEAUTY_INTENSITY, 0);
+        initFaceBeauty(view);
+    }
 
-        SeekBar sbIntensity = view.findViewById(R.id.seekBar_face_beauty_intensity);
-        Switch swFaceBeautify = view.findViewById(R.id.switch_face_beauty_enable);
-        swFaceBeautify.setChecked(enabled);
-        sbIntensity.setEnabled(enabled);
-        sbIntensity.setProgress((int)(intensity*sbIntensity.getMax()));
-        app.getPanoEngine().setFaceBeautify(enabled);
-        if (enabled) {
-            app.getPanoEngine().setFaceBeautifyIntensity(intensity);
+    private void updateFaceBeautyData(){
+        mEnabled = SPUtils.getBoolean(KEY_ENABLE_FACE_BEAUTY, false);
+        mIntensity = SPUtils.getFloat(KEY_FACE_BEAUTY_INTENSITY, 0);
+
+        mSwFaceBeautify.setChecked(mEnabled);
+        mSbIntensity.setEnabled(mEnabled);
+        mSbIntensity.setProgress((int) (mIntensity * mSbIntensity.getMax()));
+        PanoRtcEngine.getIns().getPanoEngine().setFaceBeautify(mEnabled);
+        if (mEnabled) {
+            PanoRtcEngine.getIns().getPanoEngine().setFaceBeautifyIntensity(mIntensity);
         }
-        swFaceBeautify.setOnClickListener(v -> {
-            boolean enabled1 = swFaceBeautify.isChecked();
-            app.getPanoEngine().setFaceBeautify(enabled1);
-            sbIntensity.setEnabled(enabled1);
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putBoolean(KEY_ENABLE_FACE_BEAUTY, enabled1);
-            editor.apply();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        checkCameraPermission(getActivity());
+        updateFaceBeautyData();
+    }
+
+    private void initFaceBeauty(View view){
+
+        mSbIntensity = view.findViewById(R.id.seekBar_face_beauty_intensity);
+        mSwFaceBeautify = view.findViewById(R.id.switch_face_beauty_enable);
+
+        mSwFaceBeautify.setOnClickListener(v -> {
+            boolean enabled1 = mSwFaceBeautify.isChecked();
+            PanoRtcEngine.getIns().getPanoEngine().setFaceBeautify(enabled1);
+            mSbIntensity.setEnabled(enabled1);
+            SPUtils.put(KEY_ENABLE_FACE_BEAUTY, enabled1);
         });
-        sbIntensity.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        mSbIntensity.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                float intensity = seekBar.getProgress()/(float)sbIntensity.getMax();
-                app.getPanoEngine().setFaceBeautifyIntensity(intensity);
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putFloat(KEY_FACE_BEAUTY_INTENSITY, intensity);
-                editor.apply();
+                float intensity = seekBar.getProgress() / (float) mSbIntensity.getMax();
+                PanoRtcEngine.getIns().getPanoEngine().setFaceBeautifyIntensity(intensity);
+                SPUtils.put(KEY_FACE_BEAUTY_INTENSITY, intensity);
             }
 
+            @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
             }
 
+            @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
             }
         });
 
-        checkCameraPermission(getActivity());
     }
 
     @Override
@@ -119,11 +124,11 @@ public class FaceBeautyFragment extends Fragment {
         super.onPause();
         PanoApplication app = (PanoApplication) Utils.getApp();
         if (!app.mIsLocalVideoStarted) {
-            app.getPanoEngine().stopPreview();
+            PanoRtcEngine.getIns().getPanoEngine().stopPreview();
         } else if (mNeedSwitchCamera) {
-            app.getPanoEngine().switchCamera();
+            PanoRtcEngine.getIns().getPanoEngine().switchCamera();
         }
-        app.getPanoEngine().setLocalVideoRender(null);
+        PanoRtcEngine.getIns().getPanoEngine().setLocalVideoRender(null);
     }
 
     @Override
@@ -141,18 +146,16 @@ public class FaceBeautyFragment extends Fragment {
         }
     }
 
-    private void openCamera()
-    {
+    private void openCamera() {
         PanoApplication app = (PanoApplication) Utils.getApp();
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        int resolution = Integer.parseInt(prefs.getString(KEY_VIDEO_SENDING_RESOLUTION, "1"));
+        int resolution = SPUtils.getInt(KEY_VIDEO_SENDING_RESOLUTION, 2);
         Constants.VideoProfileType profile = DeviceRatingTest.getIns().getProfileType(resolution);
 
         mNeedSwitchCamera = false;
-        app.getPanoEngine().setLocalVideoRender(mRtcView);
+        PanoRtcEngine.getIns().getPanoEngine().setLocalVideoRender(mRtcView);
         if (!app.mIsLocalVideoStarted) {
             mRtcView.setMirror(true);
-            app.getPanoEngine().startPreview(profile, true);
+            PanoRtcEngine.getIns().getPanoEngine().startPreview(profile, true);
         } else {
             if (!app.mIsFrontCamera) {
                 //app.getPanoEngine().switchCamera();
@@ -164,8 +167,8 @@ public class FaceBeautyFragment extends Fragment {
 
     private List<String> getUngrantedPermissions(Context context) {
         List<String> ungranted = new ArrayList<>();
-        for(String permission : PERMISSIONS) {
-            if(!MainActivity.checkPermission(context, permission)) {
+        for (String permission : PERMISSIONS) {
+            if (!MainActivity.checkPermission(context, permission)) {
                 ungranted.add(permission);
             }
         }

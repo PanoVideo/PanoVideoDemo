@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -10,7 +10,7 @@
     tools:ignore="ContentDescription"
     tools:context=".fragment.BottomControlPanelFragment">
 
-    <Button
+    <TextView
         android:id="@+id/btn_call_audio"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -24,12 +24,9 @@
         android:text="@string/title_call_audio_normal"
         android:textColor="@color/colorWhite"
         android:textSize="@dimen/button_small_text_size"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/btn_call_video"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:gravity="center"/>
 
-    <Button
+    <TextView
         android:id="@+id/btn_call_video"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -43,11 +40,9 @@
         android:text="@string/title_call_video_normal"
         android:textColor="@color/colorWhite"
         android:textSize="@dimen/button_small_text_size"
-        app:layout_constraintStart_toEndOf="@+id/btn_call_audio"
-        app:layout_constraintEnd_toStartOf="@+id/btn_call_share"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:gravity="center" />
 
-    <Button
+    <TextView
         android:id="@+id/btn_call_share"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -61,11 +56,25 @@
         android:text="@string/title_call_share"
         android:textColor="@color/colorWhite"
         android:textSize="@dimen/button_small_text_size"
-        app:layout_constraintStart_toEndOf="@+id/btn_call_video"
-        app:layout_constraintEnd_toStartOf="@+id/btn_call_more"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:gravity="center" />
 
-    <Button
+    <TextView
+        android:id="@+id/btn_call_user_list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="?android:selectableItemBackground"
+        android:contentDescription="@string/title_call_user"
+        android:drawableTop="@drawable/svg_icon_user"
+        android:drawablePadding="5dp"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp"
+        android:text="@string/title_call_user"
+        android:textColor="@color/colorWhite"
+        android:textSize="@dimen/button_small_text_size"
+        android:gravity="center" />
+
+    <TextView
         android:id="@+id/btn_call_more"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -79,8 +88,6 @@
         android:text="@string/title_call_more"
         android:textColor="@color/colorWhite"
         android:textSize="@dimen/button_small_text_size"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/btn_call_share"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:gravity="center"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

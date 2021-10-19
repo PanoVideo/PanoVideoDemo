@@ -1,9 +1,12 @@
 package video.pano.panocall.fragment;
 
+import static video.pano.panocall.info.Constant.KEY_GRID_POS;
+import static video.pano.panocall.info.Constant.KEY_USER_ID;
+import static video.pano.panocall.info.Constant.KEY_USE_PIN_VIDEO;
+import static video.pano.panocall.info.Constant.KEY_VIDEO_ANNOTATION_START;
+
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.LongSparseArray;
 import android.view.LayoutInflater;
@@ -21,22 +24,16 @@ import com.pano.rtc.api.IVideoRender;
 import com.pano.rtc.api.PanoAnnotation;
 import com.pano.rtc.api.RtcWbView;
 
+import video.pano.panocall.PanoApplication;
 import video.pano.panocall.R;
+import video.pano.panocall.activity.CallActivity;
 import video.pano.panocall.listener.AnnotationListener;
 import video.pano.panocall.listener.OnPanoTouchListener;
 import video.pano.panocall.listener.PanoAnnotationHandler;
 import video.pano.panocall.model.UserInfo;
 import video.pano.panocall.model.UserViewInfo;
 import video.pano.panocall.utils.AnnotationHelper;
-
-import static video.pano.panocall.fragment.AnnotationControlPanelFragment.DEFAULT_COLOR;
-import static video.pano.panocall.fragment.AnnotationControlPanelFragment.DEFAULT_WIDTH;
-import static video.pano.panocall.info.Constant.COLORS;
-import static video.pano.panocall.info.Constant.KEY_ANNOTATION_COLOR;
-import static video.pano.panocall.info.Constant.KEY_ANNOTATION_COLOR_ID;
-import static video.pano.panocall.info.Constant.KEY_ANNOTATION_INTENSITY;
-import static video.pano.panocall.info.Constant.KEY_USER_ID;
-import static video.pano.panocall.info.Constant.KEY_USE_PIN_VIDEO;
+import video.pano.panocall.utils.Utils;
 
 
 public class FloatFragment extends CallFragment implements PanoAnnotationHandler {
@@ -45,13 +42,19 @@ public class FloatFragment extends CallFragment implements PanoAnnotationHandler
 
     private static final int DELAY_TIME = 1000;
 
-    private long mAnnotationUser;
-    private int mCurrentColor;
-    private int mCurrentWidth;
+    private static final int ALL_MODE = 1 ;
+    private static final int ANNOTATION_MODE = 2 ;
+    private static final int SCREEN_MODE = 3 ;
+    private static final int PIN_VIDEO_MODE = 5 ;
+    private static final int USER_LEAVE_MODE = 6 ;
+
+
     private RtcWbView mRtcWbView;
     private FrameLayout mRtcWbViewContainer ;
     private AnnotationListener mAnnotationListener;
+
     private boolean mPinVideoSuccess;
+
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -64,8 +67,7 @@ public class FloatFragment extends CallFragment implements PanoAnnotationHandler
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState
-    ) {
+            Bundle savedInstanceState ) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_float, container, false);
     }
@@ -82,11 +84,6 @@ public class FloatFragment extends CallFragment implements PanoAnnotationHandler
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-        mCurrentColor = prefs.getInt(KEY_ANNOTATION_COLOR, DEFAULT_COLOR);
-        mCurrentWidth = prefs.getInt(KEY_ANNOTATION_INTENSITY, DEFAULT_WIDTH);
-
         getExtra();
     }
 
@@ -97,10 +94,24 @@ public class FloatFragment extends CallFragment implements PanoAnnotationHandler
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        UserInfo localUser = mViewModel.getUserManager().getLocalUser();
+        if (localUser.isVideoStarted()) {
+            if(mUserViewArray[0].userId == localUser.userId){
+                updateLocalVideoRender(mLocalView,0,mLocalViewMirror);
+            }else if(mUserViewArray[1].userId == localUser.userId){
+                updateLocalVideoRender(mLocalView,1,mLocalViewMirror);
+            }
+        }
+    }
+
+    @Override
     public void onPause() {
         super.onPause();
         // save large view user
         mViewModel.mLargeViewUserId = mUserViewArray[0].userId;
+
     }
 
     private void getExtra(){
@@ -110,6 +121,10 @@ public class FloatFragment extends CallFragment implements PanoAnnotationHandler
             boolean usePinVideo = bundle.getBoolean(KEY_USE_PIN_VIDEO);
             if(usePinVideo && userId > 0){
                 mPinVideoSuccess = onPinVideoItemClick(userId);
+            }
+            boolean annotationStart = bundle.getBoolean(KEY_VIDEO_ANNOTATION_START);
+            if(annotationStart && userId > 0){
+                onVideoAnnotationStart(userId, -1);
             }
         }
     }
@@ -148,8 +163,38 @@ public class FloatFragment extends CallFragment implements PanoAnnotationHandler
                 view.findViewById(R.id.cl_small_view_righttop));
 
         LongSparseArray<UserInfo> remoteUsers = mViewModel.getUserManager().getRemoteUsers();
-        int localIndex = remoteUsers.size() > 0 ? 1 : 0;
-        initUserVideoView(localIndex,true);
+        mLocalViewIndex = remoteUsers.size() > 0 ? 1 : 0;
+        initUserVideoView();
+    }
+
+    void initUserVideoView() {
+        UserInfo localUser = mViewModel.getUserManager().getLocalUser();
+
+        if (mViewModel.mIsRoomJoined || localUser.isVideoStarted()) {
+            refreshVideoView(ALL_MODE,0L);
+        } else {
+            // 启动视频预览，并且显示到大图
+            if (mViewModel.getUserManager().isRemoteEmpty()) {
+                mUserViewArray[0].isFree = false;
+                mUserViewArray[0].setUser(localUser.userId, localUser.userName,mViewModel.getUserManager().isMySelf(localUser.userId));
+                if (mViewModel.mAutoStartCamera) {
+                    mUserViewArray[0].setVisible(true);
+                } else {
+                    mUserViewArray[0].setDefaultHeadVisible(true);
+                    mUserViewArray[0].setUserVisible(true);
+                }
+                updateUserAudioState(0);
+
+                if(mViewModel.mAutoStartCamera){
+                    updateLocalVideoRender(mUserViewArray[0].rtcView, 0);
+                    PanoApplication app = (PanoApplication)Utils.getApp();
+                    if (!app.mIsLocalVideoStarted) {
+                        mViewModel.rtcEngine().startPreview(mViewModel.mLocalProfile, mViewModel.mIsFrontCamera);
+                        app.mIsLocalVideoStarted = true;
+                    }
+                }
+            }
+        }
     }
 
 
@@ -171,7 +216,7 @@ public class FloatFragment extends CallFragment implements PanoAnnotationHandler
         // 此用户还未显示，找到一个空闲的显示位置
         UserInfo localUser = mViewModel.getUserManager().getLocalUser();
         // 先检查大图是否空闲，如空闲则将此用户显示到大图
-        if (mUserViewArray[0].isFree || mUserViewArray[0].userId == localUser.userId) {
+        if (mUserViewArray[0].isFree || (mUserViewArray[0].userId == localUser.userId && !AnnotationHelper.getIns().annotationHost())) {
             // large view is free or used by local user, then make this user to large view
             // 如果大图被本地用户占用，则将本地用户移到小图，如果没有空闲的小图，则不显示本地用户视频
             if (mUserViewArray[0].userId == localUser.userId) {
@@ -179,7 +224,12 @@ public class FloatFragment extends CallFragment implements PanoAnnotationHandler
                 mLocalView = null;
                 if (mUserViewArray[mUserViewCount - 1].isFree) {
                     mLocalView = mUserViewArray[mUserViewCount - 1].rtcView;
-                    mUserViewArray[mUserViewCount - 1].setVisible(true);
+                    if (localUser.isVideoStarted()) {
+                        mUserViewArray[mUserViewCount - 1].setVisible(true);
+                    } else {
+                        mUserViewArray[mUserViewCount - 1].setDefaultHeadVisible(true);
+                        mUserViewArray[mUserViewCount - 1].setUserVisible(true);
+                    }
                     mUserViewArray[mUserViewCount - 1].isFree = false;
                     mUserViewArray[mUserViewCount - 1].isScreen = false;
                     mUserViewArray[mUserViewCount - 1].setUser(localUser.userId, localUser.userName,mViewModel.getUserManager().isMySelf(localUser.userId));
@@ -207,124 +257,81 @@ public class FloatFragment extends CallFragment implements PanoAnnotationHandler
 
     @Override
     void onUserLeave(long userId) {
-        if (mAnnotationUser == userId) {
-            PanoAnnotation annotation = AnnotationHelper.getInstance().getAnnotation();
-            if (annotation != null) {
-                annotation.stopAnnotation();
-                AnnotationHelper.getInstance().setAnnotation(null);
+        if (AnnotationHelper.getIns().getAnnotationUserId() == userId) {
+            onVideoAnnotationStop(userId,-1);
+        }
+    }
+
+
+    @Override
+    public void onAnnotationToolsClick() {
+        mRtcWbView.setPassThrough(false);
+    }
+
+    /***************************Start/Stop LocalVideo*******************************************/
+    @Override
+    protected void stopLocalVideo() {
+        UserInfo localUser = mViewModel.getUserManager().getLocalUser();
+        if (mViewModel.mIsRoomJoined) {
+            mViewModel.rtcEngine().stopVideo();
+            localUser.setVideoStarted(false);
+        } else {
+            mViewModel.rtcEngine().stopPreview();
+        }
+        clearLocalVideoRender();
+        if (localUser.userId == mUserViewArray[mLocalViewIndex].userId) {
+            mUserViewArray[mLocalViewIndex].setVideoVisible(false);
+            mUserViewArray[mLocalViewIndex].isFree = true;
+        }
+        PanoApplication app = (PanoApplication)Utils.getApp();
+        app.mIsLocalVideoStarted = false;
+    }
+
+    @Override
+    protected void startLocalVideo() {
+        UserInfo localUser = mViewModel.getUserManager().getLocalUser();
+        if (mViewModel.mIsRoomJoined) {
+            mViewModel.rtcEngine().startVideo(mViewModel.mLocalProfile,mViewModel.mIsFrontCamera);
+            localUser.setVideoStarted(true);
+        } else {
+            mViewModel.rtcEngine().startPreview(mViewModel.mLocalProfile, mViewModel.mIsFrontCamera);
+        }
+
+        for (int i = 0; i < mUserViewCount; i++) {
+            if (mUserViewArray[i].userId == localUser.userId) {
+                mUserViewArray[i].isFree = false;
+                mUserViewArray[i].setUser(localUser.userId, localUser.userName,mViewModel.getUserManager().isMySelf(localUser.userId));
+                mUserViewArray[i].setVisible(localUser.isVideoStarted());
+                updateLocalVideoRender(mUserViewArray[i].rtcView, i);
+                break;
             }
         }
+
+        PanoApplication app = (PanoApplication)Utils.getApp();
+        app.mIsLocalVideoStarted = true;
     }
 
-    @Override
-    public void onClickPencil(boolean checked) {
-        PanoAnnotation annotation = AnnotationHelper.getInstance().getAnnotation();
-        if (checked) {
-            annotation.setToolType(Constants.WBToolType.Path);
-            annotation.setLineWidth(mCurrentWidth);
-            annotation.setColor(mCurrentColor);
-        } else {
-            annotation.setToolType(Constants.WBToolType.None);
-        }
-        mRtcWbView.setPassThrough(!checked);
-    }
-
-    @Override
-    public void onClickArrow(boolean checked) {
-        PanoAnnotation annotation = AnnotationHelper.getInstance().getAnnotation();
-        if (checked) {
-            annotation.setToolType(Constants.WBToolType.Arrow);
-            annotation.setLineWidth(mCurrentWidth);
-            annotation.setColor(mCurrentColor);
-        } else {
-            annotation.setToolType(Constants.WBToolType.None);
-        }
-        mRtcWbView.setPassThrough(!checked);
-    }
-
-    @Override
-    public void onClickEraser(boolean checked) {
-        PanoAnnotation annotation = AnnotationHelper.getInstance().getAnnotation();
-        if (checked) {
-            annotation.setToolType(Constants.WBToolType.Eraser);
-            annotation.setLineWidth(mCurrentWidth);
-            annotation.setColor(mCurrentColor);
-        } else {
-            annotation.setToolType(Constants.WBToolType.None);
-        }
-        mRtcWbView.setPassThrough(!checked);
-    }
-
-    @Override
-    public void onProgressChange(int progress) {
-        if (progress < 0) {
-            return;
-        }
-        mCurrentWidth = progress;
-        PanoAnnotation annotation = AnnotationHelper.getInstance().getAnnotation();
-        annotation.setLineWidth(mCurrentWidth);
-        annotation.setToolType(Constants.WBToolType.Path);
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putInt(KEY_ANNOTATION_INTENSITY, progress);
-        editor.apply();
-    }
-
-    @Override
-    public void onCheckedColor(int index, int colorId) {
-        if (index < 0) {
-            return;
-        }
-        mCurrentColor = COLORS[index];
-        PanoAnnotation annotation = AnnotationHelper.getInstance().getAnnotation();
-        annotation.setColor(mCurrentColor);
-        annotation.setToolType(Constants.WBToolType.Path);
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putInt(KEY_ANNOTATION_COLOR, mCurrentColor);
-        editor.putInt(KEY_ANNOTATION_COLOR_ID, colorId);
-        editor.apply();
-    }
+    /***************************Start/Stop LocalVideo*******************************************/
 
     /***************************Indication Start*******************************************/
     @Override
     public void onUserLeaveIndication(UserInfo user, Constants.UserLeaveReason reason) {
-        //Local View refresh
-        if (mUserViewArray[0].userId == user.userId) {
-            switchUserViewInfoToNext();
-        //Remote View refresh
-        } else if (mUserViewArray[1].userId == user.userId) {
-            clearViewRender(mUserViewArray[1]);
-            refreshRemoteView();
-        }
+        refreshVideoView(USER_LEAVE_MODE,user.userId);
         onUserLeave(user.userId);
     }
 
     /******************************Screen Start*********************************************/
     @Override
-    void setupUserScreenView(UserInfo user) {
-        if (AnnotationHelper.getInstance().annotationEnable()) {
-            return;
-        }
-        UserViewInfo largeInfo = mUserViewArray[0];
-        UserViewInfo smallInfo = mUserViewArray[1];
-        clearViewRender(largeInfo);
-        clearRemoteVideoRender(largeInfo.userId);
-        clearViewRender(smallInfo);
-
-        //LocalView refresh
-        subscribeUserScreen(user.userId, user.userName, largeInfo);
-        updateUserAudioState(0);
-
-        //Remote View refresh
-        refreshRemoteView();
+    public void onUserScreenStart(long userId) {
+        refreshVideoView(SCREEN_MODE,userId);
     }
 
     @Override
     public void onUserScreenStop(UserInfo user) {
-        switchUserViewInfoToNext();
+        if (AnnotationHelper.getIns().annotationEnable()) {
+            return;
+        }
+        refreshVideoView(ALL_MODE,0L);
     }
 
     /******************************Screen Start*********************************************/
@@ -332,13 +339,16 @@ public class FloatFragment extends CallFragment implements PanoAnnotationHandler
 
     /******************************Annotation Start*********************************************/
     @Override
-    public void onAnnotationStop() {
-        AnnotationHelper.getInstance().setAnnotationEnable(false);
+    public void onClickAnnotationStop() {
+        AnnotationHelper.getIns().setAnnotationEnable(false);
         removeAnnotationView();
-        PanoAnnotation annotation = AnnotationHelper.getInstance().getAnnotation();
-        if (AnnotationHelper.getInstance().annotationHost() && annotation != null) {
-            switchUserViewInfoToNext();
+        PanoAnnotation annotation = AnnotationHelper.getIns().getAnnotation();
+        if (AnnotationHelper.getIns().annotationHost() && annotation != null) {
+            refreshVideoView(ALL_MODE,0L);
             annotation.stopAnnotation();
+            AnnotationHelper.getIns().setAnnotation(null);
+            AnnotationHelper.getIns().setAnnotationUserId(0L);
+            AnnotationHelper.getIns().setAnnotationHost(false);
         }
         if (mAnnotationListener != null) {
             mAnnotationListener.onAnnotationClose();
@@ -346,40 +356,46 @@ public class FloatFragment extends CallFragment implements PanoAnnotationHandler
     }
 
     @Override
-    public void onAnnotationStart() {
-        PanoAnnotation annotation = AnnotationHelper.getInstance().getAnnotation();
+    public void onClickAnnotationStart() {
+        PanoAnnotation annotation = AnnotationHelper.getIns().getAnnotation();
         Log.i(TAG, "startAnnotation annotation " + annotation);
         if (annotation == null) {
             addAnnotationView();
-            onAnnotationBegin(mViewModel.getLocalUserId());
+            refreshVideoView(ANNOTATION_MODE,mViewModel.getLocalUserId());
 
             annotation = mViewModel.rtcEngine().getAnnotationMgr().getVideoAnnotation(mViewModel.getLocalUserId(), 0);
             annotation.startAnnotation(mRtcWbView);
-            AnnotationHelper.getInstance().setAnnotation(annotation);
-            AnnotationHelper.getInstance().setAnnotationHost(true);
+            AnnotationHelper.getIns().setAnnotation(annotation);
+            AnnotationHelper.getIns().setAnnotationHost(true);
+            AnnotationHelper.getIns().setAnnotationUserId(mViewModel.getLocalUserId());
         } else {
             Log.i(TAG, "remote annotation: " + annotation.getClass().getName());
-            AnnotationHelper.getInstance().setAnnotationHost(false);
+            AnnotationHelper.getIns().setAnnotationHost(false);
+            refreshVideoView(ANNOTATION_MODE,AnnotationHelper.getIns().getAnnotationUserId());
             mRtcWbView.setVisibility(View.VISIBLE);
+            annotation.startAnnotation(mRtcWbView);
         }
     }
 
     @Override
     public void onVideoAnnotationStart(long userId, int streamId) {
         Log.i(TAG, "onVideoAnnotationStart");
-        AnnotationHelper.getInstance().setAnnotationHost(false);
         mHandler.postDelayed(() -> {
             UserInfo user = mViewModel.getUserManager().getRemoteUser(userId);
             if (user == null) {
                 return;
             }
-            mAnnotationUser = userId;
+            PanoAnnotation annotation = AnnotationHelper.getIns().getAnnotation();
+            if(annotation == null){
+                return ;
+            }
+            AnnotationHelper.getIns().setAnnotationUserId(userId);
+            AnnotationHelper.getIns().setAnnotationHost(false);
             addAnnotationView();
-
-            AnnotationHelper.getInstance().getAnnotation().startAnnotation(mRtcWbView);
+            annotation.startAnnotation(mRtcWbView);
             Log.i(TAG, "switchToLargeView " + userId);
+            refreshVideoView(ANNOTATION_MODE,userId);
 
-            onAnnotationBegin(userId);
             Toast.makeText(getActivity(), getString(R.string.annotation_user_start, user.userName), Toast.LENGTH_SHORT).show();
             if (mAnnotationListener != null) {
                 mAnnotationListener.onAnnotationStart();
@@ -390,22 +406,20 @@ public class FloatFragment extends CallFragment implements PanoAnnotationHandler
     @Override
     public void onVideoAnnotationStop(long userId, int streamId) {
         Log.i(TAG, "onVideoAnnotationStop");
-        AnnotationHelper.getInstance().setAnnotationEnable(false);
+        AnnotationHelper.getIns().setAnnotationEnable(false);
         mHandler.post(() -> {
-            mAnnotationUser = 0L;
-
+            AnnotationHelper.getIns().setAnnotationUserId(0L);
             removeAnnotationView();
-
-            PanoAnnotation annotation = AnnotationHelper.getInstance().getAnnotation();
+            PanoAnnotation annotation = AnnotationHelper.getIns().getAnnotation();
             if (annotation != null) {
                 annotation.stopAnnotation();
-                AnnotationHelper.getInstance().setAnnotation(null);
+                AnnotationHelper.getIns().setAnnotation(null);
             }
             UserInfo user = mViewModel.getUserManager().getRemoteUser(userId);
             if (user != null) {
                 Toast.makeText(getActivity(), getString(R.string.annotation_user_stop, user.userName), Toast.LENGTH_SHORT).show();
             }
-            switchUserViewInfoToNext();
+            refreshVideoView(ALL_MODE,0L);
             if (mAnnotationListener != null) {
                 mAnnotationListener.onAnnotationClose();
             }
@@ -414,20 +428,20 @@ public class FloatFragment extends CallFragment implements PanoAnnotationHandler
 
     @Override
     public void onShareAnnotationStart(long userId) {
-        AnnotationHelper.getInstance().setAnnotationHost(false);
+        AnnotationHelper.getIns().setAnnotationHost(false);
         Log.i(TAG, "onShareAnnotationStart userId = " + userId);
         mHandler.postDelayed(() -> {
             UserInfo user = mViewModel.getUserManager().getRemoteUser(userId);
             if (user == null) {
                 return;
             }
-            mAnnotationUser = userId;
+            AnnotationHelper.getIns().setAnnotationUserId(userId);
             if (mUserViewArray != null && mUserViewArray.length > 0) {
                 mUserViewArray[0].rtcView.setScalingRatio(IVideoRender.ScalingRatio.SCALE_RATIO_FIT);
             }
             addAnnotationView();
 
-            AnnotationHelper.getInstance().getAnnotation().startAnnotation(mRtcWbView);
+            AnnotationHelper.getIns().getAnnotation().startAnnotation(mRtcWbView);
             Toast.makeText(getActivity(), getString(R.string.annotation_user_start, user.userName), Toast.LENGTH_SHORT).show();
             if (mAnnotationListener != null) {
                 mAnnotationListener.onAnnotationStart();
@@ -438,16 +452,16 @@ public class FloatFragment extends CallFragment implements PanoAnnotationHandler
     @Override
     public void onShareAnnotationStop(long userId) {
         Log.i(TAG, "onShareAnnotationStop");
-        AnnotationHelper.getInstance().setAnnotationEnable(false);
+        AnnotationHelper.getIns().setAnnotationEnable(false);
         mHandler.post(() -> {
-            mAnnotationUser = 0L;
+            AnnotationHelper.getIns().setAnnotationUserId(0L);
 
             removeAnnotationView();
 
-            PanoAnnotation annotation = AnnotationHelper.getInstance().getAnnotation();
+            PanoAnnotation annotation = AnnotationHelper.getIns().getAnnotation();
             if (annotation != null) {
                 annotation.stopAnnotation();
-                AnnotationHelper.getInstance().setAnnotation(null);
+                AnnotationHelper.getIns().setAnnotation(null);
             }
             UserInfo user = mViewModel.getUserManager().getRemoteUser(userId);
             if (user != null) {
@@ -459,53 +473,47 @@ public class FloatFragment extends CallFragment implements PanoAnnotationHandler
         });
     }
 
+    private void clearAnnotationView(){
+        PanoAnnotation annotation = AnnotationHelper.getIns().getAnnotation();
+        if (annotation != null) {
+            removeAnnotationView();
+            AnnotationHelper.getIns().setAnnotationEnable(false);
+            if (mAnnotationListener != null) {
+                mAnnotationListener.onAnnotationClose();
+            }
+            if (AnnotationHelper.getIns().annotationHost()) {
+                annotation.stopAnnotation();
+                AnnotationHelper.getIns().setAnnotation(null);
+            }
+        }
+    }
+
+    private void addAnnotationView(){
+        mRtcWbView = new RtcWbView(getContext());
+        mRtcWbView.setPassThrough(true);
+
+        mRtcWbViewContainer.removeAllViews();
+        mRtcWbViewContainer.addView(mRtcWbView);
+    }
+
+    private void removeAnnotationView(){
+        mRtcWbView.setVisibility(View.GONE);
+    }
+
     /******************************Annotation Stop*********************************************/
+
+    /******************************Whiteboard Start*********************************************/
+    @Override
+    public void onWhiteboardStart() {
+        clearAnnotationView();
+    }
+    /******************************Whiteboard Start*********************************************/
 
     /******************************Pin Video Start*********************************************/
 
     private boolean onPinVideoItemClick(long userId) {
-        if (userId == mUserViewArray[0].userId) {
-            return false;
-        }
-        if (mUserViewArray[1].isFree) {
-            return false;
-        }
         Toast.makeText(getActivity(),R.string.msg_pin_video_tips,Toast.LENGTH_LONG).show();
-
-        UserViewInfo largeInfo = mUserViewArray[0];
-        UserViewInfo smallInfo = mUserViewArray[1];
-
-        UserInfo localUser = mViewModel.getUserManager().getLocalUser();
-
-        clearViewRender(largeInfo);
-        clearViewRender(smallInfo);
-
-        //refresh Local View
-        if (userId == localUser.userId) {
-            subscribeLocalVideo(largeInfo, localUser, false);
-        } else {
-            UserInfo remoteUser = mViewModel.getUserManager().getRemoteUser(userId);
-            subscribeUserVideo(remoteUser.userId, remoteUser.userName, largeInfo, getProfileForVideoView(0));
-        }
-        updateUserAudioState(0);
-
-        //refresh Remote View
-        if (userId == localUser.userId) {
-            if (mViewModel.getUserManager().isRemoteEmpty()) {
-                smallInfo.isScreen = false;
-                smallInfo.isSubscribed = false;
-                smallInfo.isFree = true;
-                smallInfo.setVisible(false);
-            } else {
-                UserInfo remoteUser = mViewModel.getUserManager().getRemoteUsers().valueAt(0);
-                subscribeUserVideo(remoteUser.userId, remoteUser.userName, smallInfo, getProfileForVideoView(1));
-            }
-        } else {
-            subscribeLocalVideo(smallInfo, localUser, false);
-        }
-
-        updateUserAudioState(1);
-        return true ;
+        return refreshVideoView(PIN_VIDEO_MODE,userId) ;
     }
 
     /******************************Pin Video Stop*********************************************/
@@ -525,144 +533,169 @@ public class FloatFragment extends CallFragment implements PanoAnnotationHandler
         }
     }
 
-    private void refreshLocalView() {
-        boolean isScreenEmpty = mViewModel.getUserManager().isScreenEmpty();
-        boolean isRemoteEmpty = mViewModel.getUserManager().isRemoteEmpty();
-        UserInfo localUser = mViewModel.getUserManager().getLocalUser();
-
-        UserViewInfo largeInfo = mUserViewArray[0];
-
-        if (!isScreenEmpty) {
-            UserInfo screenUser = mViewModel.getUserManager().getScreenUsers().valueAt(0);
-            subscribeUserScreen(screenUser.userId, screenUser.userName, largeInfo);
-        } else if (!isRemoteEmpty) {
-            UserInfo remoteUser = mViewModel.getUserManager().getRemoteUsers().valueAt(0);
-            subscribeUserVideo(remoteUser.userId, remoteUser.userName, largeInfo, getProfileForVideoView(0));
-        } else {
-            subscribeLocalVideo(largeInfo, localUser, true);
-        }
-        updateUserAudioState(0);
-    }
-
-    private void refreshRemoteView() {
-        boolean isRemoteEmpty = mViewModel.getUserManager().isRemoteEmpty();
-        UserInfo localUser = mViewModel.getUserManager().getLocalUser();
-
-        UserViewInfo smallInfo = mUserViewArray[1];
-
-        //Remote View refresh
-       if (isRemoteEmpty) {
-            smallInfo.isScreen = false;
-            smallInfo.isSubscribed = false;
-            smallInfo.isFree = true;
-            smallInfo.setVisible(false);
-        } else {
-            subscribeLocalVideo(smallInfo, localUser, false);
-        }
-        updateUserAudioState(1);
-    }
-
-    private void switchUserViewInfoToNext() {
-        clearViewRender(mUserViewArray[0]);
-        clearViewRender(mUserViewArray[1]);
-        refreshLocalView();
-        refreshRemoteView();
-    }
-
-    private void subscribeLocalVideo(UserViewInfo userViewInfo, UserInfo userInfo, boolean isMirror) {
+    private boolean subscribeLocalVideo(UserViewInfo userViewInfo, UserInfo userInfo, int index , boolean isMirror) {
         userViewInfo.setUser(userInfo.userId, userInfo.userName,mViewModel.getUserManager().isMySelf(userInfo.userId));
-        userViewInfo.setVisible(true);
+        userViewInfo.setVideoVisible(userInfo.isVideoStarted());
+        userViewInfo.setUserVisible(true);
         userViewInfo.isFree = false;
         userViewInfo.isScreen = false;
         userViewInfo.isSubscribed = false;
-        updateLocalVideoRender(userViewInfo.rtcView, isMirror);
+        updateLocalVideoRender(userViewInfo.rtcView, index,isMirror);
+
+        return true ;
     }
 
-    private void onAnnotationBegin(long userId) {
-        if (userId == mUserViewArray[0].userId) {
-            return;
+    @Override
+    protected boolean subscribeUserVideo(long userId, String userName, UserViewInfo viewInfo, UserInfo userInfo, Constants.VideoProfileType profile) {
+        viewInfo.rtcView.setMirror(false);
+        viewInfo.setUser(userId, userName,mViewModel.getUserManager().isMySelf(userId));
+        viewInfo.setVideoVisible(userInfo.isVideoStarted());
+        viewInfo.setUserVisible(true);
+        viewInfo.isFree = false;
+        viewInfo.isScreen = false;
+        updateRemoteVideoRender(userId,viewInfo.rtcView);
+
+        if(userInfo.isVideoStarted()) {
+            Constants.QResult ret = mViewModel.rtcEngine().subscribeVideo(userId, profile);
+            if (ret == Constants.QResult.OK) {
+                viewInfo.subProfile = profile;
+                viewInfo.isSubscribed = true;
+                return true;
+            } else {
+                String msg = "subscribeUserVideo failed, userId=" + userId + ", result=" + ret;
+                Log.w(CallActivity.TAG, msg);
+                Toast.makeText(getActivity(), msg, Toast.LENGTH_LONG).show();
+                return false;
+            }
         }
-        if (mUserViewArray[1].isFree) {
-            return;
+        return true;
+    }
+
+    private boolean refreshVideoView(int mode , long userId){
+        UserViewInfo bigViewInfo = mUserViewArray[0];
+        UserViewInfo smallViewInfo = mUserViewArray[1];
+
+        if(mode == ALL_MODE || (mode == USER_LEAVE_MODE && bigViewInfo.userId == userId)){
+            clearViewRender(bigViewInfo);
+            clearViewRender(smallViewInfo);
+
+            if (!mViewModel.getUserManager().isScreenEmpty()) {
+                refreshLocalView(mViewModel.getUserManager().getScreenUsers().valueAt(0),null);
+            } else if (!mViewModel.getUserManager().isVideoEmpty()) {
+                refreshLocalView(null,mViewModel.getUserManager().getVideoUsers().valueAt(0));
+            } else if (!mViewModel.getUserManager().isRemoteEmpty()) {
+                refreshLocalView(null,mViewModel.getUserManager().getRemoteUsers().valueAt(0));
+            }else {
+                subscribeLocalVideo(bigViewInfo, mViewModel.getUserManager().getLocalUser(), 0,true);
+                updateUserAudioState(0);
+            }
+            refreshRemoteView();
+
+        }else if(mode == USER_LEAVE_MODE && smallViewInfo.userId == userId){
+            clearViewRender(smallViewInfo);
+            refreshRemoteView();
+
+        }else if(mode == ANNOTATION_MODE){
+
+            clearViewRender(bigViewInfo);
+            clearViewRender(smallViewInfo);
+
+            if (userId == mViewModel.getUserManager().getLocalUser().userId) {
+                subscribeLocalVideo(bigViewInfo, mViewModel.getUserManager().getLocalUser(), 0,false);
+                updateUserAudioState(0);
+            } else {
+                refreshLocalView(null,mViewModel.getUserManager().getRemoteUser(userId));
+            }
+            refreshRemoteView();
+
+        }else if(mode == SCREEN_MODE){
+            if (AnnotationHelper.getIns().annotationEnable()) {
+                return false;
+            }
+            clearViewRender(bigViewInfo);
+            clearViewRender(smallViewInfo);
+
+            refreshLocalView(mViewModel.getUserManager().getRemoteUser(userId),null);
+            refreshRemoteView();
+
+        }else if(mode == PIN_VIDEO_MODE){
+            if (userId == bigViewInfo.userId) {
+                return false;
+            }
+            if (smallViewInfo.isFree) {
+                return false;
+            }
+            if (!bigViewInfo.isFree && bigViewInfo.isScreen) {
+                return false;
+            }
+            clearViewRender(bigViewInfo);
+            clearViewRender(smallViewInfo);
+
+            refreshLocalView(null,mViewModel.getUserManager().getRemoteUser(userId));
+            refreshRemoteView();
         }
-        boolean isRemoteEmpty = mViewModel.getUserManager().isRemoteEmpty();
 
-        UserViewInfo largeInfo = mUserViewArray[0];
-        UserViewInfo smallInfo = mUserViewArray[1];
+        return true ;
+    }
 
-        UserInfo localUser = mViewModel.getUserManager().getLocalUser();
+    private void refreshLocalView(UserInfo bigScreenUser , UserInfo bigRemoteUser){
+        UserViewInfo bigViewInfo = mUserViewArray[0];
 
-        clearViewRender(largeInfo);
-        clearViewRender(smallInfo);
-
-        //refresh Local View
-        if (userId == localUser.userId) {
-            subscribeLocalVideo(largeInfo, localUser, false);
-        } else {
-            UserInfo remoteUser = mViewModel.getUserManager().getRemoteUser(userId);
-            subscribeUserVideo(remoteUser.userId, remoteUser.userName, largeInfo, getProfileForVideoView(0));
+        //Refresh Local View
+        if(bigScreenUser != null){
+            subscribeUserScreen(bigScreenUser.userId, bigScreenUser.userName, bigViewInfo);
+        }else if(bigRemoteUser != null){
+            subscribeUserVideo(bigRemoteUser.userId, bigRemoteUser.userName, bigViewInfo, bigRemoteUser,getProfileForVideoView(0));
         }
         updateUserAudioState(0);
+    }
 
-        //refresh Remote View
-        if (userId == localUser.userId) {
-            if (isRemoteEmpty) {
-                smallInfo.isScreen = false;
-                smallInfo.isSubscribed = false;
-                smallInfo.isFree = true;
-                smallInfo.setVisible(false);
-            } else {
-                UserInfo remoteUser = mViewModel.getUserManager().getRemoteUsers().valueAt(0);
-                subscribeUserVideo(remoteUser.userId, remoteUser.userName, smallInfo, getProfileForVideoView(1));
+    private void refreshRemoteView(){
+        UserViewInfo bigViewInfo = mUserViewArray[0];
+        UserViewInfo smallViewInfo = mUserViewArray[1];
+
+        if(mViewModel.getUserManager().getLocalUser().userId  != bigViewInfo.userId){
+            subscribeLocalVideo(smallViewInfo, mViewModel.getUserManager().getLocalUser(), 1,false);
+        } else if(!mViewModel.getUserManager().isRemoteEmpty()) {
+            UserInfo remoteUser = mViewModel.getUserManager().getRemoteUsers().valueAt(0);
+            if (remoteUser != null && remoteUser.userId != bigViewInfo.userId) {
+                subscribeUserVideo(remoteUser.userId, remoteUser.userName, smallViewInfo, remoteUser, getProfileForVideoView(1));
             }
         } else {
-            subscribeLocalVideo(smallInfo, localUser, false);
+            smallViewInfo.isScreen = false;
+            smallViewInfo.isSubscribed = false;
+            smallViewInfo.isFree = true;
+            smallViewInfo.setVisible(false);
         }
 
         updateUserAudioState(1);
     }
 
-    private void addAnnotationView(){
-        mRtcWbView = new RtcWbView(getContext());
-        mRtcWbView.setPassThrough(true);
-
-        mRtcWbViewContainer.removeAllViews();
-        mRtcWbViewContainer.addView(mRtcWbView);
-    }
-
-    private void removeAnnotationView(){
-        mRtcWbView.setVisibility(View.GONE);
-    }
-
-
     /****************************  RefreshView  End******************************************/
 
+    @Override
     int getAudioMutedResourceId(int index) {
         return index == 0 ? R.drawable.svg_icon_audio_mute : R.drawable.svg_icon_small_audio_mute;
     }
 
+    @Override
     int getAudioNormalResourceId(int index) {
         return index == 0 ? R.drawable.svg_icon_audio_normal : R.drawable.svg_icon_small_audio_normal;
     }
 
+    @Override
     int getSignalLowResourceId(int index){
         return index == 0 ? R.drawable.svg_icon_signal_low : R.drawable.svg_icon_small_signal_low;
     }
 
+    @Override
     int getSignalPoorResourceId(int index){
         return index == 0 ? R.drawable.svg_icon_signal_poor : R.drawable.svg_icon_small_signal_poor;
     }
 
+    @Override
     int getSignalGoodResourceId(int index){
         return index == 0 ? R.drawable.svg_icon_signal_good : R.drawable.svg_icon_small_signal_good;
-    }
-
-    private void toGridView() {
-        if (mViewModel.getUserManager().getRemoteUsers().size() < 2) {
-            return;
-        }
-        NavHostFragment.findNavController(FloatFragment.this)
-                .navigate(R.id.action_FloatFragment_to_GridFragment);
     }
 
     class VideoTouchListener extends OnPanoTouchListener {
@@ -679,14 +712,31 @@ public class FloatFragment extends CallFragment implements PanoAnnotationHandler
         }
         @Override
         public void onSwipeLeft() {
-            toGridView();
+            if (mViewModel.getUserManager().getRemoteUsers().size() < 2) {
+                return;
+            }
+            if(AnnotationHelper.getIns().annotationEnable()){
+                return ;
+            }
+            Bundle bundle = new Bundle();
+            bundle.putInt(KEY_GRID_POS,1);
+            NavHostFragment.findNavController(FloatFragment.this)
+                    .navigate(R.id.action_FloatFragment_to_GridFragment,bundle);
+            clearViewRender(mUserViewArray[1]);
+            clearViewRender(mUserViewArray[0]);
         }
 
         @Override
         public void onDoubleTap() {
             if(mPinVideoSuccess){
-                switchUserViewInfoToNext();
+                refreshVideoView(ALL_MODE,0L);
                 Toast.makeText(getActivity(),R.string.msg_exit_pin_video_tips,Toast.LENGTH_LONG).show();
+                mPinVideoSuccess = false ;
+
+                Bundle bundle = getArguments();
+                if(bundle != null){
+                    bundle.putBoolean(KEY_USE_PIN_VIDEO,false);
+                }
             }
         }
     }

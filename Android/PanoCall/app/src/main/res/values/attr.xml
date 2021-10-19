@@ -5,4 +5,9 @@
         <attr name="clearBgDrawable" format="color|reference" />
         <attr name="clearIconDrawWhenFocused" format="boolean" />
     </declare-styleable>
+
+    <declare-styleable name="DragViewContainer">
+        <attr name="dragMarginTop" format="integer" />
+        <attr name="dragMarginBottom" format="integer" />
+    </declare-styleable>
 </resources>

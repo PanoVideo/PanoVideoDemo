@@ -1,13 +1,24 @@
 package video.pano.panocall.activity;
 
+import static video.pano.panocall.info.Config.APPID;
+import static video.pano.panocall.info.Config.APP_TOKEN;
+import static video.pano.panocall.info.Config.PANO_SERVER;
+import static video.pano.panocall.info.Config.USER_ID;
+import static video.pano.panocall.info.Constant.FACE_BEAUTY_FRAGMENT;
+import static video.pano.panocall.info.Constant.KEY_AUTO_MUTE_AUDIO;
+import static video.pano.panocall.info.Constant.KEY_AUTO_START_CAMERA;
+import static video.pano.panocall.info.Constant.KEY_ROOM_ID;
+import static video.pano.panocall.info.Constant.KEY_USER_NAME;
+import static video.pano.panocall.info.Constant.PERMISSION_RTC_REQUEST_CODE;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,6 +31,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.app.ActivityCompat;
 
 import com.pano.rtc.api.RtcEngine;
@@ -30,20 +42,19 @@ import java.util.Random;
 
 import video.pano.panocall.PanoApplication;
 import video.pano.panocall.R;
-
-import static video.pano.panocall.info.Config.APPID;
-import static video.pano.panocall.info.Config.APP_TOKEN;
-import static video.pano.panocall.info.Config.PANO_SERVER;
-import static video.pano.panocall.info.Config.USER_ID;
-import static video.pano.panocall.info.Constant.KEY_ROOM_ID;
-import static video.pano.panocall.info.Constant.KEY_USER_NAME;
-import static video.pano.panocall.info.Constant.PERMISSION_RTC_REQUEST_CODE;
+import video.pano.panocall.rtc.PanoRtcEngine;
+import video.pano.panocall.utils.SPUtils;
+import video.pano.panocall.utils.Utils;
 
 public class MainActivity extends AppCompatActivity {
 
     private EditText mEditRoomId;
     private EditText mEditUserName;
     private ProgressBar mPBarIndicator;
+
+    private long mLocalUserId;
+    private String mLocalRoomId;
+    private String mLocalUserName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,14 +80,16 @@ public class MainActivity extends AppCompatActivity {
 
         rightIcon.setVisibility(View.VISIBLE);
         rightIcon.setImageResource(R.drawable.svg_icon_setting);
-        rightIcon.setOnClickListener(view ->{
-            SettingsActivity.launch(MainActivity.this,false);
+        rightIcon.setOnClickListener(view -> {
+            if(!Utils.doubleClick()){
+                SettingsActivity.launch(MainActivity.this, false);
+            }
         });
 
         leftIcon.setVisibility(View.VISIBLE);
         leftIcon.setImageResource(R.drawable.svg_icon_advanced_settings);
-        leftIcon.setOnClickListener(view ->{
-            View customView = LayoutInflater.from(this).inflate(R.layout.dialog_room_advanced_setting, null);
+        leftIcon.setOnClickListener(view -> {
+            View customView = LayoutInflater.from(this).inflate(R.layout.layout_room_advanced_setting_dialog, null);
             EditText appId = customView.findViewById(R.id.app_id);
             appId.setText(APPID);
             EditText appServer = customView.findViewById(R.id.app_server);
@@ -94,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
                         PANO_SERVER = appServer.getText().toString();
                         APP_TOKEN = token.getText().toString();
                         USER_ID = userId.getText().toString();
-                        ((PanoApplication) getApplication()).refreshPanoEngine();
+                        PanoRtcEngine.getIns().refresh();
                     })
                     .setNegativeButton(R.string.title_button_cancel, null)
                     .create();
@@ -102,14 +115,33 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @SuppressLint ("UseSwitchCompatOrMaterialCode")
     private void setupViews(){
+
         findViewById(R.id.tv_join_room).setOnClickListener(view -> {
             doJoinRoom();
         });
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String userName = prefs.getString(KEY_USER_NAME, "");
-        String roomId = prefs.getString(KEY_ROOM_ID, "");
+        findViewById(R.id.tv_face_beauty_setting).setOnClickListener(v ->
+            ContainerActivity.launch(MainActivity.this,FACE_BEAUTY_FRAGMENT,
+                    getString(R.string.title_face_beauty),"")
+        );
+
+        SwitchCompat audioMuteSwitch = findViewById(R.id.switch_audio_mute);
+        audioMuteSwitch.setChecked(SPUtils.getBoolean(KEY_AUTO_MUTE_AUDIO,false));
+        audioMuteSwitch.setOnCheckedChangeListener((buttonView, isChecked) ->
+                SPUtils.put(KEY_AUTO_MUTE_AUDIO,isChecked)
+        );
+
+        SwitchCompat autoStartCameraSwitch = findViewById(R.id.switch_auto_start_camera);
+        autoStartCameraSwitch.setChecked(SPUtils.getBoolean(KEY_AUTO_START_CAMERA,true));
+        autoStartCameraSwitch.setOnCheckedChangeListener((buttonView, isChecked) ->
+                SPUtils.put(KEY_AUTO_START_CAMERA,isChecked)
+
+        );
+
+        String userName = SPUtils.getString(KEY_USER_NAME, "");
+        String roomId = SPUtils.getString(KEY_ROOM_ID, "");
         if (!TextUtils.isEmpty(userName)) {
             mEditUserName.setText(userName);
         }
@@ -148,29 +180,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void doJoinRoom() {
-        String roomId = mEditRoomId.getText().toString();
-        if (TextUtils.isEmpty(roomId)) {
-            Toast.makeText(MainActivity.this, "Room ID is empty", Toast.LENGTH_LONG).show();
-            return;
+        mLocalRoomId = mEditRoomId.getText().toString();
+        mLocalUserName = mEditUserName.getText().toString();
+
+        if(TextUtils.isEmpty(mLocalRoomId) || TextUtils.isEmpty(mLocalUserName)){
+            Toast.makeText(this,R.string.msg_join_alert,Toast.LENGTH_LONG).show();
+            return ;
         }
         checkPermissions();
     }
 
     private void startPanoCall() {
-        String roomId = mEditRoomId.getText().toString();
-        String userName = mEditUserName.getText().toString();
+        SPUtils.put(KEY_USER_NAME, mLocalUserName);
+        SPUtils.put(KEY_ROOM_ID, mLocalRoomId);
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(KEY_USER_NAME, userName);
-        editor.putString(KEY_ROOM_ID, roomId);
-        editor.apply();
-
-        long localUserId ;
         if (!TextUtils.isEmpty(USER_ID)) {
-            localUserId = Long.parseLong(USER_ID);
+            mLocalUserId = Long.parseLong(USER_ID);
         } else {
-            localUserId = 10000 + new Random().nextInt(5000);
+            mLocalUserId = 10000 + new Random().nextInt(5000);
         }
 
         if (TextUtils.isEmpty(APP_TOKEN)) {
@@ -188,27 +215,21 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        CallActivity.launch(this, APP_TOKEN, roomId, localUserId, userName);
-    }
-
-    public static void launch(Context context) {
-        Intent intent = new Intent();
-        intent.setClass(context, MainActivity.class);
-        context.startActivity(intent);
+        CallActivity.launch(this, APP_TOKEN, mLocalRoomId, mLocalUserId, mLocalUserName);
     }
 
     // 确保离开房间。在某些case下房间未离开但是UI回到了主界面
     void ensureLeaveRtcRoom() {
         PanoApplication app = (PanoApplication)getApplication();
         Log.w(PanoApplication.TAG, "The room is not left when back to main page");
-        RtcEngine rtcEngine = app.getPanoEngine();
+        RtcEngine rtcEngine = PanoRtcEngine.getIns().getPanoEngine();
         if(rtcEngine != null){
             rtcEngine.stopVideo();
             rtcEngine.stopPreview();
             rtcEngine.stopAudio();
             rtcEngine.leaveChannel();
-            app.mIsLocalVideoStarted = false;
         }
+        app.mIsLocalVideoStarted = false;
     }
 
     private void checkPermissions() {
@@ -240,8 +261,12 @@ public class MainActivity extends AppCompatActivity {
 
             return;
         }
-
         startPanoCall();
+    }
+
+    public static void launch(Activity activity){
+        Intent intent = new Intent(activity,MainActivity.class);
+        activity.startActivity(intent);
     }
 
     public static boolean checkPermission(Context context, String permission) {
@@ -250,5 +275,7 @@ public class MainActivity extends AppCompatActivity {
                 android.os.Process.myUid()) ==
                 PackageManager.PERMISSION_GRANTED;
     }
+
+
 
 }

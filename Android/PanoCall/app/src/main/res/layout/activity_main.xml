@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorF5F7FF"
     android:orientation="vertical"
     tools:context=".activity.MainActivity">
 
@@ -11,67 +12,249 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp">
+        android:layout_height="match_parent">
 
-        <video.pano.panocall.view.ClearableEditText
-            android:id="@+id/edit_room_id"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_edit_container"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:digits="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-            android:ems="10"
-            android:layout_marginTop="40dp"
-            android:hint="@string/title_room_id"
-            android:textColorHint="#999999"
-            android:textSize="14sp"
-            android:maxLength="20"
-            android:focusable="true"
-            android:drawableStart="@drawable/svg_icon_room_number"
-            android:textCursorDrawable="@drawable/edit_input_cursor_bg"
-            android:drawablePadding="8.5dp"
-            android:paddingTop="30dp"
-            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="10dp"
+            android:background="@color/colorWhite"
+            android:paddingStart="16dp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/tv_room_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="19dp"
+                android:text="@string/title_room_id"
+                android:textColor="@color/color666666"
+                android:textSize="14sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="房间号" />
+
+            <video.pano.panocall.view.ClearableEditText
+                android:id="@+id/edit_room_id"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:minHeight="25dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="16dp"
+                android:digits="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                android:ems="10"
+                android:focusable="true"
+                android:maxLength="20"
+                android:paddingEnd="16dp"
+                android:hint="@string/title_room_id_hint"
+                android:textColorHint="@color/color999999"
+                android:textColor="@color/color333333"
+                android:textCursorDrawable="@drawable/edit_input_cursor_bg"
+                android:background="@null"
+                android:textSize="14sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/tv_room_id"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="syncddsssdddss"/>
+
+            <View
+                android:id="@+id/view_divider1"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_marginTop="6.5dp"
+                android:background="@color/colorDDDDDD"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/edit_room_id" />
 
 
-        <video.pano.panocall.view.ClearableEditText
-            android:id="@+id/edit_user_name"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:hint="@string/title_user_name"
-            android:textColorHint="#999999"
-            android:textSize="14sp"
-            android:inputType="text"
-            android:paddingTop="36dp"
-            android:layout_marginTop="30dp"
-            android:drawableStart="@drawable/svg_icon_user_name"
-            android:textCursorDrawable="@drawable/edit_input_cursor_bg"
-            android:drawablePadding="8.5dp"
-            app:layout_constraintTop_toBottomOf="@+id/edit_room_id"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"/>
+            <TextView
+                android:id="@+id/tv_user_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="@string/title_user_name"
+                android:textColor="@color/color666666"
+                android:textSize="14sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/view_divider1"
+                tools:text="用户名" />
+
+            <video.pano.panocall.view.ClearableEditText
+                android:id="@+id/edit_user_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:minHeight="25dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="11dp"
+                android:ems="10"
+                android:inputType="text"
+                android:paddingEnd="16dp"
+                android:textColor="@color/color333333"
+                android:hint="@string/title_user_name_hint"
+                android:textColorHint="@color/color999999"
+                android:textCursorDrawable="@drawable/edit_input_cursor_bg"
+                android:background="@null"
+                android:textSize="14sp"
+                android:maxLength="20"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/tv_user_name"
+                app:layout_constraintTop_toBottomOf="@+id/view_divider1"
+                tools:text="小贝" />
+
+            <View
+                android:id="@+id/view_divider2"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_marginTop="6.5dp"
+                android:background="@color/colorDDDDDD"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/edit_user_name" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
 
         <TextView
             android:id="@+id/tv_join_room"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="44dp"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/btn_ok_bg"
+            android:gravity="center"
             android:paddingTop="10dp"
             android:paddingBottom="10dp"
-            android:textSize="16sp"
-            android:textColor="@color/colorWhite"
-            android:gravity="center"
             android:text="@string/title_join_channel"
-            android:background="@color/panoBlue"
-            app:layout_constraintTop_toBottomOf="@+id/edit_user_name"
+            android:textColor="@color/colorWhite"
+            android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            />
+            app:layout_constraintTop_toBottomOf="@+id/cl_edit_container" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_tools_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:background="@color/colorWhite"
+            android:paddingStart="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_join_room">
+
+            <TextView
+                android:id="@+id/tv_audio_mute"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/title_auto_mute_audio"
+                android:textColor="@color/color333333"
+                android:textSize="14sp"
+                app:layout_constraintBottom_toTopOf="@+id/view_divider3"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="进入通话时静音" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switch_audio_mute"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="13dp"
+                android:thumb="@drawable/switch_thumb_setting_video_selector"
+                android:track="@drawable/switch_track_setting_video_selector"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+            <View
+                android:id="@+id/view_divider3"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_marginTop="8dp"
+                android:background="@color/colorDDDDDD"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/switch_audio_mute" />
+
+            <TextView
+                android:id="@+id/tv_auto_start_camera"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/title_auto_start_camera"
+                android:textColor="@color/color333333"
+                android:textSize="14sp"
+                app:layout_constraintTop_toBottomOf="@+id/view_divider3"
+                app:layout_constraintBottom_toTopOf="@+id/view_divider4"
+                app:layout_constraintStart_toStartOf="parent"
+                tools:text="进入通话时打开摄像头" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switch_auto_start_camera"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="13dp"
+                android:thumb="@drawable/switch_thumb_setting_video_selector"
+                android:track="@drawable/switch_track_setting_video_selector"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/view_divider3"
+                tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+            <View
+                android:id="@+id/view_divider4"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_marginTop="8dp"
+                android:background="@color/colorDDDDDD"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/switch_auto_start_camera" />
+
+            <TextView
+                android:id="@+id/tv_face_beauty"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/title_face_beauty"
+                android:textColor="@color/color333333"
+                android:textSize="14sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/view_divider5"
+                app:layout_constraintTop_toBottomOf="@+id/view_divider4"
+                tools:text="美颜" />
+
+            <TextView
+                android:id="@+id/tv_face_beauty_setting"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/panoBlue"
+                android:text="@string/title_face_beauty_setting"
+                android:drawableEnd="@drawable/svg_icon_right_arrow"
+                android:drawablePadding="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/view_divider4"
+                app:layout_constraintBottom_toTopOf="@+id/view_divider5"
+                tools:text="点开设置"
+                />
+
+            <View
+                android:id="@+id/view_divider5"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:background="@color/colorDDDDDD"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <ProgressBar
             android:id="@+id/pbar_room_indicator"
@@ -84,7 +267,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="visible" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -19,6 +19,8 @@
         android:textSize="12sp"
         android:drawablePadding="3dp"
         android:drawableLeft="@drawable/btn_wb_top_popup_item_selector"
+        tools:text="默认白板"
+        tools:drawableStart="@drawable/svg_icon_wb_popup_choose_selected"
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -3,11 +3,13 @@ package video.pano.panocall.activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.WindowManager;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import video.pano.panocall.R;
+import video.pano.panocall.utils.MiscUtils;
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -18,6 +20,8 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
         jump2Main();
     }
 

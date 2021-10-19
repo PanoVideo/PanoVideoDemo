@@ -3,14 +3,17 @@ package video.pano.panocall.fragment;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.fragment.app.Fragment;
 
+import android.text.Editable;
 import android.text.InputFilter;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.pano.rtc.api.Constants;
@@ -18,19 +21,15 @@ import com.pano.rtc.api.RtcEngine;
 
 import video.pano.panocall.PanoApplication;
 import video.pano.panocall.R;
+import video.pano.panocall.rtc.PanoRtcEngine;
 import video.pano.panocall.utils.Utils;
 
 
-public class FeedbackFragment extends Fragment {
+public class FeedbackFragment extends BaseSettingFragment {
     private static final int kMaxDescriptionLength = 300;
     private static final int kMaxContactLength = 100;
 
     private int mFeedbackType = -1;
-
-    public FeedbackFragment() {
-        // Required empty public constructor
-    }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -57,9 +56,12 @@ public class FeedbackFragment extends Fragment {
             mFeedbackType = 0;
         });
 
+        TextView countText = view.findViewById(R.id.tv_count);
+        countText.setText(getString(R.string.title_text_count_watch,kMaxDescriptionLength));
+
         EditText editDesc = view.findViewById(R.id.edit_feedback_desc);
         EditText editContact = view.findViewById(R.id.edit_feedback_contact);
-        Switch switchUploadLog = view.findViewById(R.id.switch_feedback_upload_log);
+        SwitchCompat switchUploadLog = view.findViewById(R.id.switch_feedback_upload_log);
         editDesc.setFilters(new InputFilter[] { new InputFilter.LengthFilter(kMaxDescriptionLength) });
         editContact.setFilters(new InputFilter[] { new InputFilter.LengthFilter(kMaxDescriptionLength) });
         switchUploadLog.setChecked(true);
@@ -76,6 +78,26 @@ public class FeedbackFragment extends Fragment {
             getActivity().onBackPressed();
         });
 
+        editDesc.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                int length = 0;
+                if (s != null) {
+                    length = s.toString().length();
+                }
+                int remainingCount = kMaxDescriptionLength - length ;
+                countText.setText(getString(R.string.title_text_count_watch,remainingCount));
+            }
+        });
+
         editDesc.requestFocus();
     }
 
@@ -87,9 +109,6 @@ public class FeedbackFragment extends Fragment {
             contact = contact.substring(0, kMaxContactLength);
         }
         PanoApplication app = (PanoApplication) Utils.getApp();
-        if (app.mFeedbackRoomId == null || app.mFeedbackRoomId.isEmpty()) {
-            return;
-        }
         RtcEngine.FeedbackInfo info = new RtcEngine.FeedbackInfo();
         switch (type) {
             case 1:
@@ -113,7 +132,7 @@ public class FeedbackFragment extends Fragment {
         info.contact = contact;
         info.extraInfo = app.getAppUuid();
         info.uploadLogs = enableUploadLog;
-        app.getPanoEngine().sendFeedback(info);
+        PanoRtcEngine.getIns().getPanoEngine().sendFeedback(info);
         Toast.makeText(getActivity(), R.string.msg_feedback_report_done, Toast.LENGTH_LONG).show();
     }
 }

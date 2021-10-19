@@ -7,8 +7,11 @@ import java.util.ArrayList;
 
 import static video.pano.panocall.utils.ThreadUtils.runOnUiThread;
 
+import android.util.Log;
+
 
 public class PanoEngineCallback implements RtcEngineCallback {
+    private static final String TAG = "PanoEngineCallback";
     private ArrayList<RtcEngineCallback> mListeners = new ArrayList<>();
 
     public void addListener(RtcEngineCallback listener) {
@@ -21,6 +24,7 @@ public class PanoEngineCallback implements RtcEngineCallback {
 
     // -------------------------- RTC Engine Callbacks --------------------------
     public void onChannelJoinConfirm(Constants.QResult result) {
+        Log.i(TAG, "onChannelJoinConfirm result: " + result);
         if(mListeners == null || mListeners.isEmpty()){
             return ;
         }
@@ -52,6 +56,7 @@ public class PanoEngineCallback implements RtcEngineCallback {
         });
     }
     public void onUserJoinIndication(long userId, String userName) {
+        Log.i(TAG, "onUserJoinIndication userId: " + userId+" , userName : "+userName);
         if(mListeners == null || mListeners.isEmpty()){
             return ;
         }
@@ -102,6 +107,7 @@ public class PanoEngineCallback implements RtcEngineCallback {
         });
     }
     public void onUserVideoStart(long userId, Constants.VideoProfileType maxProfile) {
+        Log.i(TAG, "onUserVideoStart userId: " + userId+" , maxProfile : "+maxProfile);
         if(mListeners == null || mListeners.isEmpty()){
             return ;
         }
@@ -122,6 +128,7 @@ public class PanoEngineCallback implements RtcEngineCallback {
         });
     }
     public void onUserVideoSubscribe(long userId, Constants.MediaSubscribeResult result) {
+        Log.i(TAG, "onUserVideoSubscribe userId: " + userId+" , result : "+result);
         if(mListeners == null || mListeners.isEmpty()){
             return ;
         }
@@ -131,6 +138,7 @@ public class PanoEngineCallback implements RtcEngineCallback {
             }
         });
     }
+    @Override
     public void onUserAudioMute(long userId) {
         if(mListeners == null || mListeners.isEmpty()){
             return ;
@@ -141,6 +149,7 @@ public class PanoEngineCallback implements RtcEngineCallback {
             }
         });
     }
+    @Override
     public void onUserAudioUnmute(long userId) {
         if(mListeners == null || mListeners.isEmpty()){
             return ;
@@ -370,18 +379,5 @@ public class PanoEngineCallback implements RtcEngineCallback {
             }
         });
     }
-
-    @Override
-    public void onActiveSpeakerListUpdated(long[] userIds) {
-        if(mListeners == null || mListeners.isEmpty()){
-            return ;
-        }
-        runOnUiThread(()-> {
-            for (RtcEngineCallback callback : mListeners) {
-                callback.onActiveSpeakerListUpdated(userIds);
-            }
-        });
-    }
-
 
 }

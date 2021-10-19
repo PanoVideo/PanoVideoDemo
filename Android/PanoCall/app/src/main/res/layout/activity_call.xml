@@ -22,4 +22,9 @@
 
     <include layout="@layout/content_call" />
 
+    <include
+        android:id="@+id/loading_layout"
+        layout="@layout/layout_loading_dialog"
+        android:visibility="gone" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

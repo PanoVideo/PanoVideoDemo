@@ -1,5 +1,8 @@
 package video.pano.panocall.fragment;
 
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -8,6 +11,7 @@ import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
+import android.util.LongSparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +20,10 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.FragmentActivity;
+import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -24,30 +32,44 @@ import com.pano.rtc.api.Constants;
 import com.pano.rtc.api.PanoCoursePageView;
 import com.pano.rtc.api.RtcWbView;
 import com.pano.rtc.api.RtcWhiteboard;
+import com.pano.rtc.api.WBDocInfo;
+import com.pano.rtc.api.WBVisionConfig;
 
 import org.json.JSONObject;
 
 import java.util.List;
 
+import video.pano.panocall.PanoApplication;
 import video.pano.panocall.R;
 import video.pano.panocall.adapter.WBItemAdapter;
+import video.pano.panocall.info.Config;
 import video.pano.panocall.info.FillColor;
+import video.pano.panocall.info.UserManager;
 import video.pano.panocall.model.UserInfo;
 import video.pano.panocall.model.UserViewInfo;
 import video.pano.panocall.utils.AnnotationHelper;
+import video.pano.panocall.utils.ScreenSensorUtils;
+import video.pano.panocall.utils.Utils;
 
+import static video.pano.panocall.info.Constant.FROM_GRAPHICS;
+import static video.pano.panocall.info.Constant.FROM_OTHER;
+import static video.pano.panocall.info.Constant.FROM_PENCIL;
+import static video.pano.panocall.info.Constant.FROM_TEXT;
+import static video.pano.panocall.info.Constant.FROM_TOP;
+import static video.pano.panocall.info.Constant.KEY_GRID_POS;
+import static video.pano.panocall.info.Constant.KEY_USER_ID;
+import static video.pano.panocall.info.Constant.KEY_VIDEO_ANNOTATION_START;
 import static video.pano.panocall.info.Constant.MSG_KEY;
+import static video.pano.panocall.utils.ScreenSensorUtils.DURATION;
 
 
-public class WhiteboardFragment extends CallFragment {
+public class WhiteboardFragment extends CallFragment  {
 
-    private static final int FROM_TEXT = 0;
-    private static final int FROM_PENCIL = 1;
-    private static final int FROM_GRAPHICS = 2;
-    private static final int FROM_TOP = 3;
-    private static final int FROM_OTHER = 4;
+    private static final int RATION_9 = 900 ;
+    private static final int RATION_16 = 1600 ;
 
     private RtcWhiteboard mRtcWhiteboard;
+    private PanoCoursePageView mCoursePageView;
 
     private TextView mTvPageName;
     private TextView mTvPageSpeaker;
@@ -72,9 +94,14 @@ public class WhiteboardFragment extends CallFragment {
     private View mAdminView;
     private View mAttendeeView;
 
+    private final Resources mResources = Utils.getApp().getResources();
+
     private Constants.WBToolType mToolType = Constants.WBToolType.None;
     private Constants.WBRoleType mRoleType = Constants.WBRoleType.Admin;
     private Constants.WBFillType mFillType = Constants.WBFillType.None;
+
+    private Constants.WBToolType mGraphicsToolsType = Constants.WBToolType.None ;
+    private Constants.WBFillType mGraphicsFillType = Constants.WBFillType.None ;
 
     private FillColor mTextFillColor = FillColor.Black;
     private FillColor mPencilFillColor = FillColor.Black;
@@ -82,6 +109,7 @@ public class WhiteboardFragment extends CallFragment {
 
     private int mLineWidth = 10;
     private int mFontSize = 36;
+    private long mLastTimeMillis = 0L ;
 
     private int mTextColorId = R.id.rb_text_color_black;
     private int mPencilColorId = R.id.rb_pencil_color_black;
@@ -89,9 +117,13 @@ public class WhiteboardFragment extends CallFragment {
     private int mGraphicsToolsId = R.id.rb_graphics_line;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+        if(mResources != null && mResources.getConfiguration() != null
+                && mResources.getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
+            return inflater.inflate(R.layout.fragment_whiteboard_land, container, false);
+        }
         return inflater.inflate(R.layout.fragment_whiteboard, container, false);
     }
 
@@ -102,6 +134,15 @@ public class WhiteboardFragment extends CallFragment {
         mRtcWhiteboard = mViewModel.rtcEngine().getWhiteboard();
 
         initUserInfo();
+        initViews(view);
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+    }
+
+    private void initViews(View view){
         initTopToolbarPopup(view);
         initBottomGraphicsPopup(view);
         initBottomPencilPopup(view);
@@ -114,7 +155,6 @@ public class WhiteboardFragment extends CallFragment {
         initBottomToolsBar(view);
 
         initCoursePageView(view);
-
     }
 
     private void initUserInfo() {
@@ -129,10 +169,50 @@ public class WhiteboardFragment extends CallFragment {
     }
 
     private void initCoursePageView(View view){
-        PanoCoursePageView panoCoursePageView = view.findViewById(R.id.pano_course_page_view);
-        RtcWbView webView = panoCoursePageView.getAttachRtcWbView();
-        webView.setTransparent(true);
+        mCoursePageView = view.findViewById(R.id.pano_course_page_view);
+
+        RtcWbView webView = mCoursePageView.getAttachRtcWbView();
+
+        WBVisionConfig config = new WBVisionConfig();
+        config.height = RATION_9;
+        config.width = RATION_16;
+        config.limited = true ;
+        mRtcWhiteboard.initVision(config);
+        String curFileId = mRtcWhiteboard.getCurrentFileId();
+        WBDocInfo docInfo = mRtcWhiteboard.getFileInfo(curFileId);
+        if(docInfo.type == Constants.WBDocType.H5.getValue()){
+            webView.setTransparent(true);
+        }
+
         mRtcWhiteboard.open(webView);
+
+        if(mResources != null
+                && mResources.getConfiguration() != null){
+            resize(mResources.getConfiguration().orientation);
+        }
+    }
+
+    private void resize(int orientation){
+        float scale = 0L ;
+        int pageHeight = 0 ;
+        int pageWidth = 0 ;
+
+        if(orientation == Configuration.ORIENTATION_LANDSCAPE){
+            pageHeight = Config.sScreenWidth ;
+            pageWidth = Config.sScreenWidth * RATION_16 / RATION_9;
+            scale = (float) pageHeight / RATION_16;
+        }else if(orientation == Configuration.ORIENTATION_PORTRAIT){
+            pageWidth = Config.sScreenWidth  ;
+            pageHeight = Config.sScreenWidth * RATION_9 / RATION_16 ;
+            scale = (float)pageHeight / RATION_16;
+        }
+
+        ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) mCoursePageView.getLayoutParams();
+        params.height = pageHeight;
+        params.width = pageWidth;
+        mCoursePageView.setLayoutParams(params);
+
+        mRtcWhiteboard.setCurrentScaleFactor(scale);
     }
 
     private void initTopToolsBar(View rootView) {
@@ -191,6 +271,31 @@ public class WhiteboardFragment extends CallFragment {
     }
 
     private void initBottomToolsBar(View rootView) {
+        rootView.findViewById(R.id.img_orientation).setOnClickListener(v ->{
+            if(mResources == null) return ;
+
+            Configuration configuration = mResources.getConfiguration();
+            if(configuration == null) return;
+
+            FragmentActivity activity = getActivity();
+            if(activity == null || activity.isFinishing()) return ;
+
+            long currentTimeMillis = System.currentTimeMillis() ;
+            if(currentTimeMillis - ScreenSensorUtils.getIns().getLastTimeMillis() < DURATION){
+                return ;
+            }
+
+            if(configuration.orientation == Configuration.ORIENTATION_PORTRAIT){
+//                ScreenSensorUtils.getIns().autoOrientation(false,ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                ScreenSensorUtils.getIns().setLastTimeMillis(currentTimeMillis);
+            }else{
+//                ScreenSensorUtils.getIns().autoOrientation(false,ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                ScreenSensorUtils.getIns().setLastTimeMillis(currentTimeMillis);
+            }
+        });
+
         rootView.findViewById(R.id.rb_toolbar_graphics).setOnClickListener(v -> {
             showOrHideOtherPopupView(FROM_GRAPHICS);
             showOrHideGraphicsPopupView();
@@ -342,6 +447,8 @@ public class WhiteboardFragment extends CallFragment {
             }else if(checkedId == R.id.rb_solid_square){
                 selectToolType(Constants.WBToolType.Rect, Constants.WBFillType.Color);
             }
+            mGraphicsFillType = mFillType;
+            mGraphicsToolsType = mToolType ;
             setColor(mGraphicsFillColor,mGraphicsColorId,FROM_GRAPHICS);
         });
 
@@ -409,7 +516,9 @@ public class WhiteboardFragment extends CallFragment {
             mPencilColorGroup.check(mPencilColorId);
 
             mRtcWhiteboard.setLineWidth(mLineWidth);
+
             selectToolType(Constants.WBToolType.Path);
+            setColor(mPencilFillColor, mPencilColorId, FROM_PENCIL);
         }
     }
 
@@ -423,7 +532,9 @@ public class WhiteboardFragment extends CallFragment {
             mTextColorGroup.check(mTextColorId);
 
             mRtcWhiteboard.setFontSize(mFontSize);
+
             selectToolType(Constants.WBToolType.Text);
+            setColor(mTextFillColor, mTextColorId, FROM_TEXT);
         }
     }
 
@@ -431,9 +542,16 @@ public class WhiteboardFragment extends CallFragment {
         int v = mGraphicsPopupView.getVisibility() == View.GONE ? View.VISIBLE : View.GONE;
         mGraphicsPopupView.setVisibility(v);
         if (v == View.VISIBLE) {
+            mToolType = mGraphicsToolsType ;
+            mFillType = mGraphicsFillType ;
+
             mGraphicsColorGroup.check(mGraphicsColorId);
             mGraphicsToolsGroup.check(mGraphicsToolsId);
+
             mRtcWhiteboard.setLineWidth(10);
+
+            selectToolType(mToolType,mFillType);
+            setColor(mGraphicsFillColor,mGraphicsColorId,FROM_GRAPHICS);
         }
     }
 
@@ -509,9 +627,20 @@ public class WhiteboardFragment extends CallFragment {
     }
 
     private void leaveWhiteboard(){
+        Configuration configuration = mResources.getConfiguration();
+        if(configuration != null && configuration.orientation == Configuration.ORIENTATION_LANDSCAPE){
+            FragmentActivity activity = getActivity();
+            if(activity != null && !activity.isFinishing()){
+                activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            }
+        }
         showOrHideOtherPopupView(FROM_OTHER);
         mRtcWhiteboard.close();
-        NavHostFragment.findNavController(WhiteboardFragment.this).navigateUp();
+        if(UserManager.getIns().getRemoteSize() < 2){
+            NavHostFragment.findNavController(WhiteboardFragment.this).navigate(R.id.action_WhiteboardFragment_to_FloatFragment);
+        }else{
+            NavHostFragment.findNavController(WhiteboardFragment.this).navigateUp();
+        }
     }
 
     private SpannableStringBuilder packageText(String start , String end){
@@ -671,6 +800,17 @@ public class WhiteboardFragment extends CallFragment {
 
     /***************************Indication End*******************************************/
 
+    /******************************Annotation Start*********************************************/
+    @Override
+    public void onVideoAnnotationStart(long userId, int streamId) {
+        NavController navController = NavHostFragment.findNavController(WhiteboardFragment.this);
+        Bundle bundle = new Bundle();
+        bundle.putLong(KEY_USER_ID,userId);
+        bundle.putBoolean(KEY_VIDEO_ANNOTATION_START,true);
+        navController.navigate(R.id.action_WhiteboardFragment_to_FloatFragment,bundle);
+    }
+    /******************************Annotation End*********************************************/
+
     private void switchUserViewIndex() {
         clearViewRender(mUserViewArray[0]);
         UserInfo localUser = mViewModel.getUserManager().getLocalUser();
@@ -684,7 +824,7 @@ public class WhiteboardFragment extends CallFragment {
         userViewInfo.isFree = false;
         userViewInfo.isScreen = false;
         userViewInfo.isSubscribed = false;
-        updateLocalVideoRender(userViewInfo.rtcView, true);
+        updateLocalVideoRender(userViewInfo.rtcView, 0,true);
     }
 
     private void clearViewRender(UserViewInfo userViewInfo) {
@@ -720,8 +860,70 @@ public class WhiteboardFragment extends CallFragment {
                     view.findViewById(R.id.cl_small_view_righttop));
 
         }
+        initUserVideoView();
+    }
 
-        initUserVideoView(0, false);
+    private void initUserVideoView() {
+        UserInfo localUser = mViewModel.getUserManager().getLocalUser();
+
+        int count = mUserViewCount;
+
+        // 3. add video user
+        int videoCount = mViewModel.getUserManager().getVideoSize();
+        for(int i=0; i<videoCount && count>0; i++){
+            UserInfo user = mViewModel.getUserManager().getVideoUsers().valueAt(i);
+            if (user.isVideoStarted()) {
+                setupUserVideoView(user);
+                --count;
+            }
+        }
+        // 4. add non-video user
+        if (count > 0) {
+            LongSparseArray<UserInfo> remoteUsers = mViewModel.getUserManager().getRemoteUsers();
+            int userCount = remoteUsers.size();
+            for(int i=0; i<userCount && count>0; i++){
+                UserInfo user = remoteUsers.valueAt(i);
+                if (getIndexForNotFreeUser(user.userId) == -1) {
+                    setupUserView(user);
+                    --count;
+                }
+            }
+        }
+        // 5. add myself
+        if(count > 0){
+            mUserViewArray[0].isFree = !localUser.isVideoStarted();
+            mUserViewArray[0].setUser(localUser.userId, localUser.userName,mViewModel.getUserManager().isMySelf(localUser.userId));
+            if (localUser.isVideoStarted()) {
+                mUserViewArray[0].setVisible(true);
+            } else {
+                mUserViewArray[0].setDefaultHeadVisible(true);
+                mUserViewArray[0].setUserVisible(true);
+            }
+            updateLocalVideoRender(mUserViewArray[0].rtcView, 0);
+            updateUserAudioState(0);
+        }
+    }
+
+    @Override
+    int getIndexForFreeRemoteUser(UserInfo user) {
+        int viewIndex = getIndexForUser(user.userId);
+        if (viewIndex != -1) {
+            return viewIndex;
+        }
+        // 尝试找到一个空闲的视图
+        // try to find a free view
+        for (int i=0; i < mUserViewCount; i++) {
+            if (mUserViewArray[i].isFree) {
+                viewIndex = i;
+                break;
+            }
+        }
+        if (viewIndex != -1) {
+            mUserViewArray[viewIndex].isFree = true;
+            mUserViewArray[viewIndex].isScreen = false;
+            mUserViewArray[viewIndex].isSubscribed = false;
+        }
+        return viewIndex;
     }
 
 }

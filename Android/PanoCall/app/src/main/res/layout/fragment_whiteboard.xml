@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorBlack"
     tools:context=".fragment.WhiteboardFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -17,8 +18,10 @@
 
         <com.pano.rtc.api.PanoCoursePageView
             android:id="@+id/pano_course_page_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -28,6 +31,7 @@
         android:id="@+id/cl_top_toolbar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:background="@color/color333333"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -44,12 +48,14 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            />
+            tools:text="收起白板" />
 
         <LinearLayout
             android:id="@+id/cl_page_tools"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            android:layout_marginBottom="7dp"
             android:background="@drawable/wb_toolbar_item_bg"
             android:orientation="horizontal"
             android:paddingStart="14dp"
@@ -69,7 +75,7 @@
                 android:layout_height="wrap_content"
                 android:textColor="@color/color333333"
                 android:textSize="14sp"
-                />
+                tools:text="1/5" />
 
             <TextView
                 android:id="@+id/tv_page_percent"
@@ -78,7 +84,7 @@
                 android:layout_marginStart="14dp"
                 android:textColor="@color/color333333"
                 android:textSize="14sp"
-                />
+                tools:text="100%" />
 
             <ImageView
                 android:id="@+id/img_page_list"
@@ -103,10 +109,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/wb_toolbar_item_bg"
-                android:paddingStart="14dp"
-                android:paddingTop="8dp"
-                android:paddingEnd="14dp"
-                android:paddingBottom="8dp"
+                android:paddingStart="4dp"
+                android:paddingTop="3.5dp"
+                android:paddingEnd="4dp"
+                android:paddingBottom="3.5dp"
                 android:src="@drawable/svg_icon_page_undo" />
 
             <ImageView
@@ -115,10 +121,10 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:background="@drawable/wb_toolbar_item_bg"
-                android:paddingStart="14dp"
-                android:paddingTop="8dp"
-                android:paddingEnd="14dp"
-                android:paddingBottom="8dp"
+                android:paddingStart="4dp"
+                android:paddingTop="3.5dp"
+                android:paddingEnd="4dp"
+                android:paddingBottom="3.5dp"
                 android:src="@drawable/svg_icon_page_redo" />
 
         </LinearLayout>
@@ -129,7 +135,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#DDDDDD"
+        android:background="@color/color333333"
         app:layout_constraintBottom_toTopOf="@+id/rg_bottom_toolbar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -138,6 +144,7 @@
         android:id="@+id/rg_bottom_toolbar"
         android:layout_width="0dp"
         android:layout_height="70dp"
+        android:background="@color/color333333"
         android:gravity="center"
         android:orientation="horizontal"
         android:paddingStart="16dp"
@@ -214,7 +221,7 @@
 
     </RadioGroup>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <video.pano.panocall.view.DragViewContainer
         android:id="@+id/cl_small_view_righttop"
         android:layout_width="@dimen/small_view_width"
         android:layout_height="@dimen/small_view_height"
@@ -224,9 +231,11 @@
         android:gravity="center"
         android:orientation="horizontal"
         android:visibility="gone"
+        app:dragMarginBottom="160"
+        app:dragMarginTop="120"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/cl_top_toolbar"
-        >
+        tools:visibility="visible">
 
         <com.pano.rtc.api.RtcView
             android:id="@+id/small_view_righttop"
@@ -235,7 +244,7 @@
             android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            />
+            tools:visibility="visible" />
 
         <ImageView
             android:id="@+id/img_small_view_default_head"
@@ -247,7 +256,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            />
+            tools:visibility="visible" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="wrap_content"
@@ -271,7 +280,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                />
+                tools:text="James" />
 
             <ImageView
                 android:id="@+id/img_small_view_righttop_audio"
@@ -289,12 +298,21 @@
                 android:scaleType="fitCenter"
                 android:src="@drawable/svg_icon_small_signal_good"
                 app:layout_constraintBottom_toBottomOf="@+id/img_small_view_righttop_audio"
-                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/img_small_view_righttop_audio" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </video.pano.panocall.view.DragViewContainer>
+
+    <ImageView
+        android:id="@+id/img_orientation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="32dp"
+        android:src="@drawable/btn_wb_orientation_land_icon"
+        app:layout_constraintBottom_toTopOf="@+id/rg_bottom_toolbar"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_top_toolbar_popup_view"
@@ -306,7 +324,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/cl_top_toolbar"
-        >
+        tools:visibility="gone">
 
         <include layout="@layout/layout_wb_top_popup_view" />
 
@@ -314,16 +332,16 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_bottom_toolbar_popup_view"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
+        android:background="@color/colorBlackAlpha20"
         android:paddingBottom="8dp"
-        app:layout_constraintTop_toTopOf="parent"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/rg_bottom_toolbar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:background="@color/colorBlackAlpha20"
-        android:visibility="gone"
-        >
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible">
 
         <include
             layout="@layout/layout_wb_pencil_popup_view"

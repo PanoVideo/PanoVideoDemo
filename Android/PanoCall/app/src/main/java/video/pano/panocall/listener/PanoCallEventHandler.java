@@ -14,12 +14,19 @@ public interface PanoCallEventHandler {
     void onUserLeaveIndication(UserInfo user, Constants.UserLeaveReason reason);
     void onUserAudioMute(UserInfo user);
     void onUserAudioUnmute(UserInfo user);
+    void onUserAudioStart(long userId);
+    void onUserAudioStop(long userId);
     void onUserVideoStart(UserInfo user);
     void onUserVideoStop(UserInfo user);
-    void onUserScreenStart(UserInfo user);
+    void onUserScreenStart(long userId);
     void onUserScreenStop(UserInfo user);
+    void onActiveSpeakerListUpdated(long[] userIds);
     void onNetworkQuality(long userId, Constants.QualityRating quality);
     /**************  RtcEngineCallback  **************/
+
+    /**************  RtcAudioIndication  **************/
+    void onUserAudioLevel(RtcAudioLevel level);
+    /**************  RtcAudioIndication  **************/
 
     /**************  RtcWhiteboard  **************/
     void onPageNumberChanged(int curPage, int totalPages);
@@ -36,6 +43,7 @@ public interface PanoCallEventHandler {
     void onUserLeft(long userId);
     void onMessage(long userId, byte[] msg);
     void onWhiteboardStop();
+    void onWhiteboardStart();
     void onCreateDoc(Constants.QResult result, String fileId);
     void onSwitchDoc(Constants.QResult result, String fileId);
     void onDeleteDoc(Constants.QResult result, String fileId);

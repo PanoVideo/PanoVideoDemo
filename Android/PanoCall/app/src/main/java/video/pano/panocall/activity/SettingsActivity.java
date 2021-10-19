@@ -1,194 +1,202 @@
 package video.pano.panocall.activity;
 
+import static video.pano.panocall.info.Config.MAX_AUDIO_DUMP_SIZE;
+import static video.pano.panocall.info.Constant.FACE_BEAUTY_FRAGMENT;
+import static video.pano.panocall.info.Constant.FEED_BACK_FRAGMENT;
+import static video.pano.panocall.info.Constant.KEY_AUTO_START_SPEAKER;
+import static video.pano.panocall.info.Constant.KEY_DEVICE_RATING;
+import static video.pano.panocall.info.Constant.KEY_ENABLE_DEBUG_MODE;
+import static video.pano.panocall.info.Constant.KEY_LEAVE_CONFIRM;
+import static video.pano.panocall.info.Constant.KEY_USER_NAME;
+import static video.pano.panocall.info.Constant.KEY_VIDEO_RESOLUTION_ID;
+import static video.pano.panocall.info.Constant.KEY_VIDEO_SENDING_RESOLUTION;
+import static video.pano.panocall.info.Constant.SOUND_FEED_BACK_FRAGMENT;
+import static video.pano.panocall.info.Constant.WEB_PAGE_FRAGMENT;
+
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.WindowManager;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.RadioGroup;
+import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.preference.ListPreference;
-import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
-import androidx.preference.SwitchPreference;
-
-import com.pano.rtc.api.Constants;
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SwitchCompat;
 
 import video.pano.panocall.BuildConfig;
-import video.pano.panocall.fragment.FaceBeautyFragment;
 import video.pano.panocall.PanoApplication;
 import video.pano.panocall.R;
-import video.pano.panocall.fragment.WebPageFragment;
+import video.pano.panocall.rtc.PanoRtcEngine;
 import video.pano.panocall.utils.DeviceRatingTest;
+import video.pano.panocall.utils.SPUtils;
 import video.pano.panocall.utils.Utils;
 
-import static video.pano.panocall.info.Config.MAX_AUDIO_DUMP_SIZE;
-import static video.pano.panocall.info.Constant.KEY_DEVICE_RATING;
-
-public class SettingsActivity extends AppCompatActivity implements
-        PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
-
-    private static final String TITLE_TAG = "settingsActivityTitle";
+public class SettingsActivity extends BaseSettingActivity{
 
     private static boolean sIsDeviceRating;
 
+    private PanoApplication mPanoApp;
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         setContentView(R.layout.activity_settings);
-        if (savedInstanceState == null) {
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.settings, new HeaderFragment())
-                    .commit();
-        } else {
-            setTitle(savedInstanceState.getCharSequence(TITLE_TAG));
-        }
-        getSupportFragmentManager().addOnBackStackChangedListener(
-                new FragmentManager.OnBackStackChangedListener() {
-                    @Override
-                    public void onBackStackChanged() {
-                        if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
-                            setTitle(R.string.title_activity_settings);
-                        }
-                    }
-                });
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
+
+        initData();
+        initTitleView();
+        initSettingViews();
+    }
+
+    private void initData() {
         Intent intent = getIntent();
         sIsDeviceRating = intent.getBooleanExtra(KEY_DEVICE_RATING, false);
+        mPanoApp = (PanoApplication) Utils.getApp();
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        // Save current activity title so we can set it again after a configuration change
-        outState.putCharSequence(TITLE_TAG, getTitle());
+    private void initTitleView() {
+        TextView titleView = findViewById(R.id.tv_title);
+        ImageView leftIcon = findViewById(R.id.iv_left_icon);
+
+        titleView.setText(R.string.title_activity_settings);
+
+        leftIcon.setVisibility(View.VISIBLE);
+        leftIcon.setImageResource(R.drawable.svg_icon_back);
+        leftIcon.setOnClickListener(v ->
+                finish()
+        );
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.settings);
-        if (fragment != null && fragment.isVisible()) {
-            if (fragment instanceof FaceBeautyFragment) {
-                fragment.onRequestPermissionsResult(requestCode, permissions, grantResults);
-            }
-        }
+    private void initSettingViews() {
+        initUserName();
+        initAutoStartSpeaker();
+        initLeaveConfirm();
+        initDebugMode();
+        initStatistics();
+        initFaceBeauty();
+        initFeedback();
+        initSoundFeedback();
+        initVideoResolution();
+        initVersion();
+        initAboutUs();
     }
 
-    @Override
-    public boolean onSupportNavigateUp() {
-        if (getSupportFragmentManager().popBackStackImmediate()) {
-            return true;
-        }
-        super.onSupportNavigateUp();
-        onBackPressed();
-        return true;
+    private void initUserName(){
+        TextView userNameTv = findViewById(R.id.tv_user_name_content);
+        String userName = SPUtils.getString(KEY_USER_NAME, "");
+        userNameTv.setText(userName);
     }
 
-    @Override
-    public boolean onPreferenceStartFragment(PreferenceFragmentCompat caller, Preference pref) {
-        // Instantiate the new Fragment
-        final Bundle args = pref.getExtras();
-        final Fragment fragment = getSupportFragmentManager().getFragmentFactory().instantiate(
-                getClassLoader(),
-                pref.getFragment());
-        if (fragment instanceof WebPageFragment) {
-            WebPageFragment webFragment = (WebPageFragment)fragment;
-            if (pref.getKey().equals("key_help")) {
-                webFragment.setWebLink("https://developer.pano.video/getting-started/intro/");
-            } else if (pref.getKey().equals("key_about_us")) {
-                webFragment.setWebLink("https://www.pano.video/about.html");
-            }
-        }
-        fragment.setArguments(args);
-        fragment.setTargetFragment(caller, 0);
-        // Replace the existing Fragment with the new Fragment
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.settings, fragment)
-                .addToBackStack(null)
-                .commit();
-        setTitle(pref.getTitle());
-        return true;
+    @SuppressLint ("UseSwitchCompatOrMaterialCode")
+    private void initAutoStartSpeaker(){
+        SwitchCompat autoStartSpeakerSwitch = findViewById(R.id.switch_auto_start_speaker);
+        autoStartSpeakerSwitch.setChecked(SPUtils.getBoolean(KEY_AUTO_START_SPEAKER,false));
+        autoStartSpeakerSwitch.setOnCheckedChangeListener((buttonView, isChecked) ->
+                SPUtils.put(KEY_AUTO_START_SPEAKER,isChecked)
+        );
     }
 
-    public static class HeaderFragment extends PreferenceFragmentCompat {
+    @SuppressLint ("UseSwitchCompatOrMaterialCode")
+    private void initLeaveConfirm(){
+        SwitchCompat leaveConfirmSwitch = findViewById(R.id.switch_leave_confirm);
+        leaveConfirmSwitch.setChecked(SPUtils.getBoolean(KEY_LEAVE_CONFIRM,false));
+        leaveConfirmSwitch.setOnCheckedChangeListener((buttonView, isChecked) ->
+                SPUtils.put(KEY_LEAVE_CONFIRM,isChecked)
+        );
+    }
 
-        @Override
-        public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-            setPreferencesFromResource(R.xml.header_preferences, rootKey);
+    @SuppressLint ("UseSwitchCompatOrMaterialCode")
+    private void initDebugMode(){
+        SwitchCompat debugModeSwitch = findViewById(R.id.switch_enable_debug_mode);
+        debugModeSwitch.setChecked(SPUtils.getBoolean(KEY_ENABLE_DEBUG_MODE,false));
+        debugModeSwitch.setOnCheckedChangeListener((buttonView, isChecked) ->{
+            if (isChecked) {
+                String msg = getResources().getString(R.string.msg_open_debug_mode);
+                new AlertDialog.Builder(this)
+                        .setMessage(msg)
+                        .setPositiveButton(R.string.title_button_ok, (dialog, which) -> {
+                            PanoRtcEngine.getIns().getPanoEngine().startAudioDump(MAX_AUDIO_DUMP_SIZE);
+                            SPUtils.put(KEY_ENABLE_DEBUG_MODE,true);
+                        })
+                        .setNegativeButton(R.string.title_button_cancel, (dialog, which) -> {
+                            debugModeSwitch.setChecked(false);
+                        })
+                        .create()
+                        .show();
+            }else{
+                PanoRtcEngine.getIns().getPanoEngine().stopAudioDump();
+            }
+        });
+    }
 
-            PanoApplication app = (PanoApplication) Utils.getApp();
+    private void initStatistics() {
+        findViewById(R.id.cl_statistics_container).setOnClickListener(v ->
+                StatisticsActivity.launch(this)
+        );
+    }
 
-            Preference verPref = findPreference("key_pref_version");
-            if (verPref != null) {
-                String app_ver = BuildConfig.VERSION_NAME;
-                String sdk_ver = app.getPanoEngine().getSdkVersion();
-                String panoVersion = app_ver + " (" + sdk_ver + ")";
-                verPref.setSummary(panoVersion);
+    private void initFaceBeauty(){
+        findViewById(R.id.cl_face_beauty_container).setOnClickListener(v ->
+                ContainerActivity.launch(SettingsActivity.this,FACE_BEAUTY_FRAGMENT,
+                        getString(R.string.title_face_beauty),"")
+        );
+    }
+
+    private void initFeedback(){
+        findViewById(R.id.cl_send_feedback_container).setOnClickListener( v ->
+                ContainerActivity.launch(SettingsActivity.this,FEED_BACK_FRAGMENT,
+                        getString(R.string.title_send_feedback),"")
+        );
+    }
+
+    private void initSoundFeedback(){
+        findViewById(R.id.cl_send_sound_feedback_container).setOnClickListener( v->
+                ContainerActivity.launch(SettingsActivity.this,SOUND_FEED_BACK_FRAGMENT,
+                        getString(R.string.title_send_sound_feedback),"")
+        );
+    }
+
+    private void initAboutUs(){
+        findViewById(R.id.cl_about_us_container).setOnClickListener( v->
+                ContainerActivity.launch(SettingsActivity.this,WEB_PAGE_FRAGMENT,
+                        getString(R.string.title_about_us),"https://www.pano.video/about.html")
+        );
+    }
+
+    private void initVideoResolution(){
+        RadioGroup videoResolutionGroup = findViewById(R.id.rg_video_resolution);
+        int resolutionId = SPUtils.getInt(KEY_VIDEO_RESOLUTION_ID, R.id.rb_video_360p);
+        videoResolutionGroup.check(resolutionId);
+
+        videoResolutionGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            int resolution = 1;
+            if(checkedId == R.id.rb_video_180p){
+                resolution = 1 ;
+            }else if(checkedId == R.id.rb_video_360p){
+                resolution = 2 ;
+            }else if(checkedId == R.id.rb_video_720p){
+                resolution = 3 ;
             }
 
-            SwitchPreference debugPref = findPreference("key_enable_debug_mode");
-            if (debugPref != null) {
-                debugPref.setOnPreferenceChangeListener((preference, newValue) -> {
-                    if ((Boolean)newValue) {
-                        String msg = getResources().getString(R.string.msg_open_debug_mode);
-                        new AlertDialog.Builder(getContext())
-                                .setMessage(msg)
-                                .setPositiveButton(R.string.title_button_ok, (dialog, which) -> {
-                                    app.getPanoEngine().startAudioDump(MAX_AUDIO_DUMP_SIZE);
-                                })
-                                .setNegativeButton(R.string.title_button_cancel, (dialog, which) -> {
-                                    debugPref.setChecked(false);
-                                })
-                                .create()
-                                .show();
-                    }else{
-                        app.getPanoEngine().stopAudioDump();
-                    }
-                    return true;
-                });
+            mPanoApp.updateVideoProfile(resolution);
+            int maxProfile = DeviceRatingTest.getIns()
+                    .updateProfileByDeviceRating(PanoRtcEngine.getIns().getPanoEngine().queryDeviceRating());
+            if(sIsDeviceRating && resolution > maxProfile){
+                DeviceRatingTest.getIns().showRatingToast(maxProfile);
             }
+            SPUtils.put(KEY_VIDEO_RESOLUTION_ID,checkedId);
+            SPUtils.put(KEY_VIDEO_SENDING_RESOLUTION,resolution);
+        });
+    }
 
-            ListPreference videoPref = findPreference("key_video_sending_resolution");
-            if (videoPref != null) {
-                videoPref.setOnPreferenceChangeListener((preference, newValue) -> {
-                    String profileStr = (String) newValue;
-                    int resolution = Integer.parseInt(profileStr);
-                    app.updateVideoProfile(Integer.parseInt(profileStr));
-                    int maxProfile = DeviceRatingTest.getIns().updateProfileByDeviceRating(app.getPanoEngine().queryDeviceRating());
-                    if(sIsDeviceRating && resolution > maxProfile){
-                        DeviceRatingTest.getIns().showRatingToast(maxProfile);
-                    }
-                    return true;
-                });
-            }
-
-            ListPreference langPref = findPreference("key_language");
-            if (langPref != null) {
-                langPref.setOnPreferenceChangeListener((preference, newValue) -> {
-                    String langStr = (String) newValue;
-                    app.updateLanguage(Integer.parseInt(langStr));
-                    return true;
-                });
-            }
-
-            ListPreference screenCaptureFpsPref = findPreference("key_screen_capture_fps");
-            if (screenCaptureFpsPref != null) {
-                screenCaptureFpsPref.setOnPreferenceChangeListener((preference, newValue) -> {
-                    app.getPanoEngine().setOption(Constants.PanoOptionType.ScreenOptimization,
-                            !"0".equals(newValue));
-                    return true;
-                });
-            }
-        }
+    private void initVersion(){
+        TextView versionTv = findViewById(R.id.tv_version_content);
+        String app_ver = BuildConfig.VERSION_NAME;
+        String sdk_ver = PanoRtcEngine.getIns().getPanoEngine().getSdkVersion();
+        String panoVersion = app_ver + " (" + sdk_ver + ")";
+        versionTv.setText(panoVersion);
     }
 
     public static void launch(Context context, boolean deviceRating) {
@@ -197,4 +205,5 @@ public class SettingsActivity extends AppCompatActivity implements
         intent.setClass(context, SettingsActivity.class);
         context.startActivity(intent);
     }
+
 }

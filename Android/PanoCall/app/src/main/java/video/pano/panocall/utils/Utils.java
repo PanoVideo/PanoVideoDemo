@@ -1,12 +1,13 @@
 package video.pano.panocall.utils;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.Application;
+import android.content.Context;
+import android.content.res.Resources;
 import android.util.Log;
+import android.view.WindowManager;
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.Lifecycle;
+import video.pano.panocall.info.Config;
 
 /**
  * <pre>
@@ -14,6 +15,8 @@ import androidx.lifecycle.Lifecycle;
  * </pre>
  */
 public final class Utils {
+
+    private static long lastClickTime = 0;
 
     @SuppressLint("StaticFieldLeak")
     private static Application sApp;
@@ -41,6 +44,13 @@ public final class Utils {
         sApp = app;
     }
 
+    public static void initConfig(){
+        if(sApp == null) return ;
+        Config.sScreenHeight = getScreenHeight();
+        Config.sScreenWidth = getScreenWidth();
+        Config.sStatusBarHeight = getStatusBarHeight();
+    }
+
     /**
      * Return the Application object.
      * <p>Main process get app by UtilsFileProvider,
@@ -55,4 +65,46 @@ public final class Utils {
             throw new NullPointerException("reflect failed.");
         }
     }
+
+    private static int getScreenWidth() {
+        WindowManager windowManager = (WindowManager) sApp.getSystemService(Context.WINDOW_SERVICE);
+        if(windowManager != null){
+            return getApp().getResources().getDisplayMetrics().widthPixels;
+        }
+        return -1 ;
+    }
+
+    private static int getScreenHeight() {
+        WindowManager windowManager = (WindowManager) sApp.getSystemService(Context.WINDOW_SERVICE);
+        if(windowManager != null){
+            return getApp().getResources().getDisplayMetrics().heightPixels;
+        }
+        return -1 ;
+    }
+
+    /**
+     * 获取staus bar的高度
+     *
+     * @return
+     */
+    private static int getStatusBarHeight() {
+        int result = 0;
+        final Resources resources = sApp.getResources();
+        int resourceId = resources.getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = resources.getDimensionPixelSize(resourceId);
+        }
+        return result;
+    }
+
+    public synchronized static boolean doubleClick() {
+        long time = System.currentTimeMillis();
+        long value = time - lastClickTime;
+        if (Math.abs(value) < 1000) {
+            return true;
+        }
+        lastClickTime = time;
+        return false;
+    }
+
 }

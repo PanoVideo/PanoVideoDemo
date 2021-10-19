@@ -7,12 +7,13 @@ public class AnnotationHelper {
     private PanoAnnotation mAnnotation;
     private boolean mAnnotationEnable;
     private boolean mIsAnnotationHost;
+    private long mAnnotationUserId ;
 
     private static class Holder {
         private static final AnnotationHelper INSTANCE = new AnnotationHelper();
     }
 
-    public static AnnotationHelper getInstance() {
+    public static AnnotationHelper getIns() {
         return Holder.INSTANCE;
     }
 
@@ -42,5 +43,13 @@ public class AnnotationHelper {
 
     public boolean annotationHost() {
         return mIsAnnotationHost;
+    }
+
+    public long getAnnotationUserId() {
+        return mAnnotationUserId;
+    }
+
+    public void setAnnotationUserId(long mAnnotationUserId) {
+        this.mAnnotationUserId = mAnnotationUserId;
     }
 }

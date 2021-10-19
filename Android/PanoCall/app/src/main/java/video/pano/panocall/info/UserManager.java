@@ -3,8 +3,10 @@ package video.pano.panocall.info;
 import android.util.LongSparseArray;
 
 import video.pano.panocall.model.UserInfo;
+import video.pano.panocall.utils.DeviceRatingTest;
 
 public class UserManager {
+
     private long mHostUserId ;
     private UserInfo mLocalUser;
     private LongSparseArray<UserInfo> mRemoteUsers = new LongSparseArray<>();
@@ -12,6 +14,19 @@ public class UserManager {
     public LongSparseArray<UserInfo> mVideoUsers = new LongSparseArray<>();
     public LongSparseArray<UserInfo> mScreenUsers = new LongSparseArray<>();
     public LongSparseArray<UserInfo> mWhiteboardUsers = new LongSparseArray<>();
+
+    private static UserManager ins;
+    private UserManager(){}
+
+    public static UserManager getIns() {
+
+        if (ins == null) {
+            synchronized (UserManager.class) {
+                ins = new UserManager();
+            }
+        }
+        return ins;
+    }
 
     public void setLocalUser(UserInfo user) {
         mLocalUser = user;

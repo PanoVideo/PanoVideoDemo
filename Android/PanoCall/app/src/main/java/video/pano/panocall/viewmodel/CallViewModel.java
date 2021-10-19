@@ -34,14 +34,15 @@ public class CallViewModel extends ViewModel{
     public boolean mAutoMuteAudio = false;
     public boolean mAutoStartCamera = true;
     public boolean mEnableDebugMode = false;
+    public boolean mShowMuteAudioToast = true;
 
     public WhiteboardState mWhiteboardState = new WhiteboardState();
 
     public Constants.VideoProfileType mLocalProfile = Constants.VideoProfileType.Standard;
 
-    public long mLargeViewUserId = 0;
+    public List<RtcAudioLevel> mRtcAudioLevels = new ArrayList<>();
 
-    private final UserManager mUserMgr = new UserManager();
+    public long mLargeViewUserId = 0;
 
     @Override
     protected void onCleared() {
@@ -52,7 +53,8 @@ public class CallViewModel extends ViewModel{
         mEventHandler = null;
         mTopHandler = null ;
         mAnnotationHandler = null ;
-        mUserMgr.clear();
+        UserManager.getIns().clear();
+        mRtcAudioLevels.clear();
         mIsRoomJoined = false;
         mIsFrontCamera = true;
         mEnableDebugMode = false;
@@ -79,24 +81,40 @@ public class CallViewModel extends ViewModel{
     }
 
     public UserManager getUserManager() {
-        return mUserMgr;
+        return UserManager.getIns();
     }
 
     public long getLocalUserId() {
-        UserInfo localUser = mUserMgr.getLocalUser();
+        UserInfo localUser = getUserManager().getLocalUser();
         return localUser != null ? localUser.userId : 0;
     }
 
     void addVideoUser(UserInfo user) {
         if (user.isVideoStarted()) {
-            mUserMgr.addVideoUser(user);
+            getUserManager().addVideoUser(user);
         }
     }
 
     void addScreenUser(UserInfo user) {
         if (user.isScreenStarted()) {
-            mUserMgr.addScreenUser(user);
+            getUserManager().addScreenUser(user);
         }
+    }
+
+    public List<RtcAudioLevel> getRtcAudioLevels() {
+        return mRtcAudioLevels;
+    }
+
+    public void clearRtcAudioLevels() {
+        mRtcAudioLevels.clear();
+    }
+
+    public boolean isShowMuteAudioToast() {
+        return mShowMuteAudioToast;
+    }
+
+    public void setShowMuteAudioToast(boolean isAudioMuted) {
+        mShowMuteAudioToast = isAudioMuted;
     }
 
     /**************  RtcEngineCallback  *************************/
@@ -120,42 +138,50 @@ public class CallViewModel extends ViewModel{
 
     public void onUserJoinIndication(long userId, String userName) {
         UserInfo user = new UserInfo(userId, userName);
-        mUserMgr.addRemoteUser(user);
+        getUserManager().addRemoteUser(user);
         if (mEventHandler != null) {
             mEventHandler.onUserJoinIndication(user);
         }
     }
 
     public void onUserLeaveIndication(long userId, Constants.UserLeaveReason reason) {
-        UserInfo user = mUserMgr.getRemoteUser(userId);
+        UserInfo user = getUserManager().getRemoteUser(userId);
         if (user != null) {
             user.setVideoStarted(false);
             user.setScreenStarted(false);
         }
-        mUserMgr.removeRemoteUser(userId);
-        mUserMgr.removeScreenUser(userId);
-        mUserMgr.removeVideoUser(userId);
+        getUserManager().removeRemoteUser(userId);
+        getUserManager().removeScreenUser(userId);
+        getUserManager().removeVideoUser(userId);
         if (mEventHandler != null) {
             mEventHandler.onUserLeaveIndication(user, reason);
         }
     }
 
     public void onUserAudioStart(long userId) {
-        UserInfo user = mUserMgr.getRemoteUser(userId);
+        UserInfo user = getUserManager().getRemoteUser(userId);
         if (user != null) {
-            user.setAudioStared(true);
+            user.setAudioMuted(false);
+
+            if (mEventHandler != null) {
+                mEventHandler.onUserAudioStart(userId);
+            }
         }
     }
 
     public void onUserAudioStop(long userId) {
-        UserInfo user = mUserMgr.getRemoteUser(userId);
+        UserInfo user = getUserManager().getRemoteUser(userId);
         if (user != null) {
-            user.setAudioStared(false);
+            user.setAudioMuted(true);
+
+            if (mEventHandler != null) {
+                mEventHandler.onUserAudioStop(userId);
+            }
         }
     }
 
     public void onUserVideoStart(long userId, Constants.VideoProfileType maxProfile) {
-        UserInfo user = mUserMgr.getRemoteUser(userId);
+        UserInfo user = getUserManager().getRemoteUser(userId);
         if (user != null) {
             user.maxProfile = maxProfile;
             user.setVideoStarted(true);
@@ -167,8 +193,8 @@ public class CallViewModel extends ViewModel{
     }
 
     public void onUserVideoStop(long userId) {
-        mUserMgr.removeVideoUser(userId);
-        UserInfo user = mUserMgr.getRemoteUser(userId);
+        getUserManager().removeVideoUser(userId);
+        UserInfo user = getUserManager().getRemoteUser(userId);
         if (user != null) {
             user.setVideoStarted(false);
             if (mEventHandler != null) {
@@ -178,7 +204,7 @@ public class CallViewModel extends ViewModel{
     }
 
     public void onUserAudioMute(long userId) {
-        UserInfo user = mUserMgr.getRemoteUser(userId);
+        UserInfo user = getUserManager().getRemoteUser(userId);
         if (user != null) {
             user.setAudioMuted(true);
             if (mEventHandler != null) {
@@ -188,7 +214,7 @@ public class CallViewModel extends ViewModel{
     }
 
     public void onUserAudioUnmute(long userId) {
-        UserInfo user = mUserMgr.getRemoteUser(userId);
+        UserInfo user = getUserManager().getRemoteUser(userId);
         if (user != null) {
             user.setAudioMuted(false);
             if (mEventHandler != null) {
@@ -198,33 +224,33 @@ public class CallViewModel extends ViewModel{
     }
 
     public void onUserVideoMute(long userId) {
-        UserInfo user = mUserMgr.getRemoteUser(userId);
+        UserInfo user = getUserManager().getRemoteUser(userId);
         if (user != null) {
             user.setVideoMuted(true);
         }
     }
 
     public void onUserVideoUnmute(long userId) {
-        UserInfo user = mUserMgr.getRemoteUser(userId);
+        UserInfo user = getUserManager().getRemoteUser(userId);
         if (user != null) {
             user.setVideoMuted(false);
         }
     }
 
     public void onUserScreenStart(long userId) {
-        UserInfo user = mUserMgr.getRemoteUser(userId);
+        UserInfo user = getUserManager().getRemoteUser(userId);
         if (user != null) {
             user.setScreenStarted(true);
             addScreenUser(user);
             if (mEventHandler != null) {
-                mEventHandler.onUserScreenStart(user);
+                mEventHandler.onUserScreenStart(userId);
             }
         }
     }
 
     public void onUserScreenStop(long userId) {
-        mUserMgr.removeScreenUser(userId);
-        UserInfo user = mUserMgr.getRemoteUser(userId);
+        getUserManager().removeScreenUser(userId);
+        UserInfo user = getUserManager().getRemoteUser(userId);
         if (user != null) {
             user.setScreenStarted(false);
             if (mEventHandler != null) {
@@ -234,14 +260,14 @@ public class CallViewModel extends ViewModel{
     }
 
     public void onUserScreenMute(long userId) {
-        UserInfo user = mUserMgr.getRemoteUser(userId);
+        UserInfo user = getUserManager().getRemoteUser(userId);
         if (user != null) {
             user.setScreenMuted(true);
         }
     }
 
     public void onUserScreenUnmute(long userId) {
-        UserInfo user = mUserMgr.getRemoteUser(userId);
+        UserInfo user = getUserManager().getRemoteUser(userId);
         if (user != null) {
             user.setScreenMuted(false);
         }
@@ -260,6 +286,7 @@ public class CallViewModel extends ViewModel{
             mEventHandler.onNetworkQuality(userId, quality);
         }
     }
+
     /**************  RtcEngineCallback  **************/
 
     /**************  RtcWhiteboard  **************/
@@ -288,16 +315,22 @@ public class CallViewModel extends ViewModel{
     }
 
     public void onUserJoined(long userId, String userName){
-        mUserMgr.addWhiteboardUser(new UserInfo(userId, userName));
+        getUserManager().addWhiteboardUser(new UserInfo(userId, userName));
         if(mEventHandler != null){
             mEventHandler.onUserJoined(userId, userName);
         }
     }
 
     public void onUserLeft(long userId) {
-        mUserMgr.removeWhiteboardUser(userId);
+        getUserManager().removeWhiteboardUser(userId);
         if(mEventHandler != null){
             mEventHandler.onUserLeft(userId);
+        }
+    }
+
+    public void onWhiteboardStart() {
+        if(mEventHandler != null){
+            mEventHandler.onWhiteboardStart();
         }
     }
 
@@ -327,6 +360,18 @@ public class CallViewModel extends ViewModel{
 
     /**************  RtcWhiteboard  **************/
 
+
+    /**************  RtcAudioIndication  **************/
+    public void onUserAudioLevel(RtcAudioLevel level) {
+        if(mEventHandler != null){
+            mEventHandler.onUserAudioLevel(level);
+        }
+    }
+    /**************  RtcAudioIndication  **************/
+
+
+
+
     /**************  RtcWhiteboard.Callback   **************/
     public void onVideoAnnotationStart(long userId, int streamId) {
         if(mEventHandler != null){
@@ -355,45 +400,21 @@ public class CallViewModel extends ViewModel{
     /**************  RtcWhiteboard.Callback   **************/
 
     /**************** Annotation ****************/
-    public void onAnnotationStart(){
+    public void onClickAnnotationStart(){
         if(mAnnotationHandler != null){
-            mAnnotationHandler.onAnnotationStart();
+            mAnnotationHandler.onClickAnnotationStart();
         }
     }
 
-    public void onAnnotationStop() {
+    public void onClickAnnotationStop() {
         if(mAnnotationHandler != null){
-            mAnnotationHandler.onAnnotationStop();
+            mAnnotationHandler.onClickAnnotationStop();
         }
     }
 
-    public void onClickPencil(boolean checked) {
+    public void onAnnotationToolsClick(){
         if(mAnnotationHandler != null){
-            mAnnotationHandler.onClickPencil(checked);
-        }
-    }
-
-    public void onClickArrow(boolean checked) {
-        if(mAnnotationHandler != null){
-            mAnnotationHandler.onClickArrow(checked);
-        }
-    }
-
-    public void onClickEraser(boolean checked) {
-        if(mAnnotationHandler != null){
-            mAnnotationHandler.onClickEraser(checked);
-        }
-    }
-
-    public void onProgressChange(int progress) {
-        if(mAnnotationHandler != null){
-            mAnnotationHandler.onProgressChange(progress);
-        }
-    }
-
-    public void onCheckedColor(int index, int colorId) {
-        if(mAnnotationHandler != null){
-            mAnnotationHandler.onCheckedColor(index,colorId);
+            mAnnotationHandler.onAnnotationToolsClick();
         }
     }
     /**************** Annotation ****************/

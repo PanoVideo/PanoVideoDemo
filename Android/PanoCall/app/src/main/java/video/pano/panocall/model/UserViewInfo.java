@@ -14,14 +14,16 @@ import video.pano.RendererCommon;
 
 // 用于保存用户视图信息，
 public class UserViewInfo {
+    private static final int MY_NAME_MAX_COUNT = 3 ;
+    private static final int USER_NAME_MAX_COUNT = 6 ;
+
     public long userId;
     public String userName;
     public RtcView rtcView;
     public TextView textView; // 打印用户ID信息
-    public ImageView imgView; // audio 状态图标
+    public ImageView audioImg; // audio 状态图标
     public ImageView headIcon;
     public ImageView signalIcon ;
-    public ImageView activeView ;
     public ConstraintLayout clView;
     public boolean isFree = true; // 此视图是否空闲
     public boolean isScreen = false; // 此视图是否正在显示桌面共享
@@ -34,21 +36,25 @@ public class UserViewInfo {
 
     public void initView(RtcView v, boolean isMediaOverla, TextView tv, ImageView img, ImageView headImg, ImageView signalImg, ConstraintLayout cl) {
         this.textView = tv;
-        this.imgView = img;
+        this.audioImg = img;
         this.clView = cl;
         this.headIcon = headImg;
         this.signalIcon = signalImg ;
-        this.rtcView = v;
-        this.rtcView.init(new RendererCommon.RendererEvents() {
-            @Override
-            public void onFirstFrameRendered() {
-            }
+        try{
+            this.rtcView = v;
+            this.rtcView.init(new RendererCommon.RendererEvents() {
+                @Override
+                public void onFirstFrameRendered() {
+                }
 
-            @Override
-            public void onFrameResolutionChanged(int i, int i1, int i2) {
-            }
-        });
-        this.rtcView.setZOrderMediaOverlay(isMediaOverla);
+                @Override
+                public void onFrameResolutionChanged(int i, int i1, int i2) {
+                }
+            });
+            this.rtcView.setZOrderMediaOverlay(isMediaOverla);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public void setVisible(boolean visible) {
@@ -65,8 +71,6 @@ public class UserViewInfo {
         if (clView != null) {
             clView.setVisibility(visible ? View.VISIBLE : View.INVISIBLE);
         }
-        textView.setVisibility(visible ? View.VISIBLE : View.GONE);
-        imgView.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
     public void setDefaultHeadVisible(boolean visible){
@@ -79,7 +83,20 @@ public class UserViewInfo {
         this.userId = userId;
         this.userName = userName;
         if (!TextUtils.isEmpty(userName)) {
-            textView.setText(isMySelf ? userName+"(Me)" : userName);
+            if(isMySelf){
+                if(userName.length() > MY_NAME_MAX_COUNT){
+                    userName = userName.substring(0,MY_NAME_MAX_COUNT)+"…(Me)";
+                }else{
+                    userName = userName+"…(Me)";
+                }
+            }else {
+                if(userName.length() > USER_NAME_MAX_COUNT){
+                    userName = userName.substring(0,USER_NAME_MAX_COUNT)+"…";
+                }else{
+                    userName = userName+"…";
+                }
+            }
+            textView.setText(userName);
         } else {
             textView.setText(String.valueOf(userId));
         }
@@ -97,11 +114,10 @@ public class UserViewInfo {
             rtcView = null;
         }
         textView = null;
-        imgView = null;
+        audioImg = null;
         isFree = true;
         isScreen = false;
         headIcon = null ;
-        activeView = null ;
         signalIcon = null ;
     }
 }

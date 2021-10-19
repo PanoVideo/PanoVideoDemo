@@ -1,26 +1,42 @@
 <resources>
     <string name="app_name">PanoVideoCall</string>
     <string name="action_settings">Settings</string>
+    <string name="cancel">Cancel</string>
 
     <string name="title_join_call">Join Call</string>
 
     <string name="title_activity_call">CallActivity</string>
+    <string name="title_activity_whiteboard">WhiteboardActivity</string>
     <!-- Strings used for fragments for navigation -->
     <string name="float_fragment_label">Float Fragment</string>
     <string name="grid_fragment_label">Grid Fragment</string>
     <string name="whiteboard_fragment_label">Whiteboard Fragment</string>
+    <string name="user_list_fragment_label">UserList Fragment</string>
     
     <string name="whiteboard_started_vision_share">%1$s has started vision share</string>
     <string name="whiteboard_stopped_vision_share">%1$s has stopped vision share</string>
 
     <string name="title_activity_room">RoomActivity</string>
-    <string name="title_room_id">Room number</string>
-    <string name="title_user_name">User name</string>
+    <string name="title_room_id">Room Number</string>
+    <string name="title_user_name">User Name</string>
+    <string name="title_room_id_hint">Input Room Number</string>
+    <string name="title_user_name_hint">Input User Name</string>
     <string name="title_start_channel">Start</string>
     <string name="title_join_channel">Join</string>
 
+    <string name="title_activity_verify">Input Phone Number</string>
+    <string name="title_verify_zone">+86</string>
+    <string name="title_verify_phone_num">Phone Number</string>
+    <string name="title_verify_code">Verification Code</string>
+    <string name="title_verify_phone_num_hint">Input Phone Number</string>
+    <string name="title_verify_code_hint">Input Verification Code</string>
+    <string name="title_verify_send_code">Get Code</string>
+
+
     <string name="title_button_ok">OK</string>
+    <string name="title_button_call_phone">Call up</string>
     <string name="title_button_cancel">Cancel</string>
+    <string name="title_button_send">Send</string>
 
     <!-- Strings used for call -->
     <string name="title_call_audio_muted">Unmute</string>
@@ -30,31 +46,59 @@
     <string name="title_call_wb_normal">Whiteboard</string>
     <string name="title_call_wb_closed">Whiteboard</string>
     <string name="title_call_share">Share</string>
+    <string name="title_call_user">User</string>
     <string name="title_call_more">More</string>
     <string name="title_call_settings">Settings</string>
+    <string name="title_call_user_list">User List(%1$d)</string>
 
     <string name="title_pano_page">https://pano.video</string>
     <string name="title_activity_settings">Settings</string>
-    <string name="title_button_close_whiteboard">close whiteboard</string>
+    <string name="title_button_close_whiteboard">Close</string>
 
     <!-- Preference Titles -->
-    <string name="title_call_duration">Call duration</string>
-    <string name="title_call_max_attendees">Max participants</string>
+    <string name="title_call_duration">Call Duration</string>
+    <string name="title_call_max_attendees">Max Participants</string>
     <string name="title_auto_mute_audio">Mute self when entering call</string>
-    <string name="title_auto_start_speaker">Use speaker when entering call</string>
+    <string name="title_auto_start_speaker">Use Speaker When Entering Call</string>
     <string name="title_auto_start_camera">Turn on camera when entering call</string>
-    <string name="title_leave_confirm">Confirm when leaving call</string>
+    <string name="title_leave_confirm">Confirm When Leaving Call</string>
     <string name="title_enable_device_rating">Automatically adjust the resolution according to the performance of the phone</string>
     <string name="title_screen_capture_fps">Screen capture frame rate</string>
-    <string name="title_video_sending_resolution">My resolution</string>
-    <string name="title_face_beauty">Beauty settings</string>
+    <string name="title_video_sending_resolution">My Resolution</string>
+    <string name="title_face_beauty">Beauty Settings</string>
+    <string name="title_statistics">Statistics Settings</string>
+    <string name="title_user_statistics">Video Statistics</string>
+    <string name="title_statistics_all">Overall</string>
+    <string name="title_statistics_audio">Audio</string>
+    <string name="title_statistics_video">Video</string>
+    <string name="title_statistics_screen_share">Screen</string>
+    <string name="title_statistics_send">Send</string>
+    <string name="title_statistics_receive">Receive</string>
+    <string name="title_statistics_item_name">Item Name</string>
+    <string name="title_statistics_bitrate">Bitrate</string>
+    <string name="title_statistics_lost_ratio">Lost Ratio</string>
+    <string name="title_statistics_round_trip_time">Round-trip Time</string>
+    <string name="title_statistics_resolution">Resolution</string>
+    <string name="title_statistics_frame_rate">Frame Rate</string>
+    <string name="title_statistics_bandwidth">Bandwidth</string>
+    <string name="title_statistics_network_type">Network Type</string>
+    <string name="title_statistics_bandwidth_usage">%1$dkb/s(Send)</string>
+    <string name="title_statistics_memory">Memory</string>
+    <string name="title_statistics_cpu_core">CPU %1$d - Core</string>
+    <string name="title_statistics_memory_size">Memory %1$d GB</string>
+    <string name="title_face_beauty_setting">Open settings</string>
     <string name="title_help">Help</string>
     <string name="title_about_us">About US</string>
     <string name="title_version">Version</string>
-    <string name="title_send_feedback">Send feedback</string>
-    <string name="title_enable_debug_mode">Debugging mode</string>
+    <string name="title_send_feedback">Send Feedback</string>
+    <string name="title_send_sound_feedback">Audio Log Upload</string>
+    <string name="title_enable_debug_mode">Debugging Mode</string>
     <string name="title_change_language">Language</string>
     <string name="title_user_name_edit">Change user name</string>
+    <string name="title_video_resolution_180p">180P</string>
+    <string name="title_video_resolution_360p">360P</string>
+    <string name="title_video_resolution_720p">720P</string>
+
 
     <string name="url_pano">https://pano.video/</string>
 
@@ -75,19 +119,34 @@
     <string name="title_feedback_type">Problem Type</string>
     <string name="title_feedback_desc">Description</string>
     <string name="title_feedback_upload_log">Upload Logs</string>
-    <string name="title_feedback_contact">Contact Details(optional)</string>
+    <string name="title_feedback_contact">Contact Details</string>
     <string name="title_update_dialog_ok">Update</string>
     <string name="title_update_dialog_cancel">Later</string>
 
-    <string name="hint_feedback_desc">Up to 300 characters</string>
-    <string name="hint_feedback_contact">Email or phone</string>
+    <string name="title_text_count_watch">Remaining %1$d characters</string>
+
+    <string name="hint_feedback_desc">Enter a description of the problem</string>
+    <string name="hint_feedback_contact">Email / phone</string>
 
     <string name="msg_feedback_desc_empty">Description cannot be empty</string>
     <string name="msg_feedback_report_done">Report submitted，Thanks for your feedback</string>
+    <string name="msg_verify_phonenum">Phone number cannot be empty</string>
+    <string name="msg_verify_code">Verification code cannot be empty</string>
+    <string name="msg_verify_code_sent">Verification code sent</string>
+    <string name="msg_verify_code_sent_fail">Failed to send verification code</string>
+    <string name="msg_verify_request_fail">Verification request failed</string>
+    <string name="msg_verify_request_error">Verification request error</string>
+    <string name="msg_verify_request_wrong">Wrong verification code</string>
+    <string name="msg_network_error">Network error</string>
     <string name="msg_call_exit_alert">Leave the call?</string>
     <string name="msg_call_left_alert">You have left the call, please click OK to return to the home page</string>
     <string name="msg_call_exit">Exit call</string>
     <string name="msg_call_ended">Call is end</string>
+    <string name="msg_update_new_version_ready">New version available</string>
+    <string name="msg_update_current_version">Current version</string>
+    <string name="msg_update_new_version">new version</string>
+    <string name="msg_update_download_fail">Failed to download apk package</string>
+    <string name="msg_update_install_fail">Failed to install apk package</string>
     <string name="msg_whiteboard_unavailable">Whiteboard service is unavailable</string>
     <string name="msg_permission_update">Please allow the permission requests</string>
     <string name="msg_permission_call">Please allow the permission requests</string>
@@ -99,13 +158,17 @@
     <string name="msg_mute_prompt">You are muted, please turn on the microphone and speak</string>
     <string name="msg_pin_video_tips">Double tap screen to cancel pin video</string>
     <string name="msg_exit_pin_video_tips">Exit pin video</string>
+    <string name="msg_join_alert">Room and Name cannot be empty</string>
+    <string name="msg_not_relevant_permissions">Video annotation is not activated yet.
+        please contact the sales team. Contact Number: 18957159506</string>
 
+    <string name="room_channel_failover">Connecting …</string>
     <!-- White board -->
-    <string name="title_wb_select">select</string>
+    <string name="title_wb_select">Select</string>
     <string name="title_wb_pencil">Pen</string>
-    <string name="title_wb_text">text</string>
-    <string name="title_wb_graphics">graphics</string>
-    <string name="title_wb_delete">delete</string>
+    <string name="title_wb_text">Text</string>
+    <string name="title_wb_graphics">Shape</string>
+    <string name="title_wb_delete">Delete</string>
     <string name="title_wb_next">Next Page</string>
     <string name="title_wb_prev">Prev Page</string>
     <string name="title_wb_add">Add Page</string>
@@ -116,9 +179,14 @@
     <string name="title_wb_default_wb">Default Doc</string>
     <string name="title_wb_default_doc">Doc %1$d</string>
 
+    <string name="title_choose_env_dialog">Choose ENV</string>
+
     <!-- Face Beauty -->
-    <string name="title_face_beauty_enable">Open beauty</string>
+    <string name="title_face_beauty_enable">Beauty</string>
     <string name="title_face_beauty_intensity">Beauty intensity</string>
+    <string name="title_advanced_face_beauty_enable">Advanced Beauty</string>
+    <string name="title_advanced_face_thinning_intensity">Cheek Thinning</string>
+    <string name="title_advanced_face_eye_enlarge_intensity">Eye Enlarging</string>
 
 
     <!-- app download -->

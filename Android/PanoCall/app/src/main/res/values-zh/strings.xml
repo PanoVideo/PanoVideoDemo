@@ -2,14 +2,17 @@
 <resources>
     <string name="app_name">PanoVideoCall</string>
     <string name="action_settings">设置</string>
+    <string name="cancel">取消</string>
 
     <string name="title_join_call">加入通话</string>
 
     <string name="title_activity_call">CallActivity</string>
+    <string name="title_activity_whiteboard">WhiteboardActivity</string>
     <!-- Strings used for fragments for navigation -->
     <string name="float_fragment_label">Float Fragment</string>
     <string name="grid_fragment_label">Grid Fragment</string>
     <string name="whiteboard_fragment_label">Whiteboard Fragment</string>
+    <string name="user_list_fragment_label">UserList Fragment</string>
 
     <string name="whiteboard_started_vision_share">%1$s开启了视角跟随</string>
     <string name="whiteboard_stopped_vision_share">%1$s关闭了视角跟随</string>
@@ -17,12 +20,25 @@
     <string name="title_activity_room">RoomActivity</string>
     <string name="title_room_id">房间号</string>
     <string name="title_user_name">用户名</string>
+    <string name="title_room_id_hint">请输入房间号</string>
+    <string name="title_user_name_hint">请输入用户名</string>
     <string name="title_start_channel">确认开始</string>
     <string name="title_join_channel">立即加入</string>
 
+    <string name="title_activity_verify">输入手机号</string>
+    <string name="title_verify_zone">+86</string>
+    <string name="title_verify_phone_num">手机号</string>
+    <string name="title_verify_code">验证码</string>
+    <string name="title_verify_phone_num_hint">请输入手机号</string>
+    <string name="title_verify_code_hint">请输入验证码</string>
+    <string name="title_verify_send_code">发送验证码</string>
+
+
     <string name="title_button_ok">确定</string>
+    <string name="title_button_call_phone">拨打电话</string>
     <string name="title_button_cancel">取消</string>
     <string name="title_button_close_whiteboard">收起白板</string>
+    <string name="title_button_send">确认发送</string>
 
     <!-- Strings used for call -->
     <string name="title_call_audio_muted">打开语音</string>
@@ -32,8 +48,10 @@
     <string name="title_call_wb_normal">关闭白板</string>
     <string name="title_call_wb_closed">打开白板</string>
     <string name="title_call_share">共享</string>
+    <string name="title_call_user">用户</string>
     <string name="title_call_more">更多</string>
     <string name="title_call_settings">设置</string>
+    <string name="title_call_user_list">用户列表（%1$d）</string>
 
     <string name="title_pano_page">https://pano.video</string>
     <string name="title_activity_settings">设置</string>
@@ -49,13 +67,41 @@
     <string name="title_screen_capture_fps">屏幕采集帧率</string>
     <string name="title_video_sending_resolution">我的分辨率</string>
     <string name="title_face_beauty">美颜</string>
+    <string name="title_statistics">统计</string>
+    <string name="title_user_statistics">大画面显示视频统计信息</string>
+    <string name="title_statistics_all">全体</string>
+    <string name="title_statistics_audio">音频</string>
+    <string name="title_statistics_video">视频</string>
+    <string name="title_statistics_screen_share">屏幕共享</string>
+    <string name="title_statistics_item_name">项目名</string>
+    <string name="title_statistics_send">发送</string>
+    <string name="title_statistics_receive">接收</string>
+    <string name="title_statistics_bitrate">流量 发送/接收</string>
+    <string name="title_statistics_lost_ratio">丢包率</string>
+    <string name="title_statistics_round_trip_time">延迟</string>
+    <string name="title_statistics_resolution">分辨率</string>
+    <string name="title_statistics_frame_rate">帧率</string>
+    <string name="title_statistics_bandwidth">带宽</string>
+    <string name="title_statistics_network_type">网络类型</string>
+    <string name="title_statistics_memory">内存</string>
+    <string name="title_statistics_cpu_core">CPU %1$d - Core</string>
+    <string name="title_statistics_memory_size">内存 %1$d GB</string>
+    <string name="title_statistics_bandwidth_usage">%1$dkb/s(发送)</string>
+    <string name="title_face_beauty_setting">点开设置</string>
     <string name="title_help">帮助中心</string>
     <string name="title_about_us">关于我们</string>
     <string name="title_version">版本号</string>
     <string name="title_send_feedback">故障上报</string>
-    <string name="title_enable_debug_mode">打开调试模式</string>
+    <string name="title_send_sound_feedback">音频故障日志上报</string>
+    <string name="title_enable_debug_mode">调试模式</string>
     <string name="title_change_language">语言</string>
     <string name="title_user_name_edit">更改用户名</string>
+    <string name="title_video_resolution_180p">180P</string>
+    <string name="title_video_resolution_360p">360P</string>
+    <string name="title_video_resolution_720p">720P</string>
+
+
+    <string name="room_channel_failover">正在重连 …</string>
 
     <string name="url_pano">https://pano.video/</string>
 
@@ -76,19 +122,34 @@
     <string name="title_feedback_type">问题类型</string>
     <string name="title_feedback_desc">问题描述</string>
     <string name="title_feedback_upload_log">上传日志</string>
-    <string name="title_feedback_contact">联系方式(选填)</string>
+    <string name="title_feedback_contact">联系方式</string>
     <string name="title_update_dialog_ok">立即更新</string>
     <string name="title_update_dialog_cancel">稍后更新</string>
 
-    <string name="hint_feedback_desc">最多输入300个字符</string>
-    <string name="hint_feedback_contact">邮箱地址或手机号码</string>
+    <string name="title_text_count_watch">剩余%1$d字</string>
+
+    <string name="hint_feedback_desc">请输入问题描述</string>
+    <string name="hint_feedback_contact">邮箱/手机号码</string>
 
     <string name="msg_feedback_desc_empty">问题描述不能为空</string>
     <string name="msg_feedback_report_done">报告已提交，谢谢反馈</string>
+    <string name="msg_verify_phonenum">手机号不能为空</string>
+    <string name="msg_verify_code">验证码不能为空</string>
+    <string name="msg_verify_code_sent">验证码已发送</string>
+    <string name="msg_verify_code_sent_fail">验证码发送失败</string>
+    <string name="msg_verify_request_fail">验证请求失败</string>
+    <string name="msg_verify_request_error">验证请求出错</string>
+    <string name="msg_verify_request_wrong">验证码不对</string>
+    <string name="msg_network_error">网络错误</string>
     <string name="msg_call_exit_alert">确定要离开通话吗？</string>
     <string name="msg_call_left_alert">你已离开通话，请点击确定回到首页</string>
     <string name="msg_call_exit">退出通话</string>
     <string name="msg_call_ended">通话已结束</string>
+    <string name="msg_update_new_version_ready">发现新版本</string>
+    <string name="msg_update_current_version">当前版本</string>
+    <string name="msg_update_new_version">更新版本</string>
+    <string name="msg_update_download_fail">下载更新包失败</string>
+    <string name="msg_update_install_fail">更新包安装失败</string>
     <string name="msg_whiteboard_unavailable">白板服务不可用</string>
     <string name="msg_permission_update">请允许后续对话框中的权限请求</string>
     <string name="msg_permission_call">请允许后续对话框中的权限请求</string>
@@ -100,6 +161,8 @@
     <string name="msg_mute_prompt">您已静音，请开启麦克风后发言</string>
     <string name="msg_pin_video_tips">双击取消固定视频</string>
     <string name="msg_exit_pin_video_tips">退出固定视频</string>
+    <string name="msg_join_alert">房间号和用户名不能为空</string>
+    <string name="msg_not_relevant_permissions">未开通视频标注功能，如需体验，请联系销售，联系电话：18957159506</string>
 
     <!-- White board -->
     <string name="title_wb_select">选择</string>
@@ -116,10 +179,14 @@
     <string name="title_wb_apply_show">申请演示</string>
     <string name="title_wb_default_wb">默认白板</string>
     <string name="title_wb_default_doc">文档 %1$d</string>
+    <string name="title_choose_env_dialog">Choose ENV</string>
 
     <!-- Face Beauty -->
-    <string name="title_face_beauty_enable">打开美颜</string>
+    <string name="title_face_beauty_enable">美颜</string>
     <string name="title_face_beauty_intensity">美颜度</string>
+    <string name="title_advanced_face_beauty_enable">高级美颜</string>
+    <string name="title_advanced_face_thinning_intensity">瘦脸</string>
+    <string name="title_advanced_face_eye_enlarge_intensity">大眼</string>
 
 
     <!-- app download -->

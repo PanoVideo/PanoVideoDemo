@@ -11,12 +11,20 @@
         android:label="@string/float_fragment_label"
         tools:layout="@layout/fragment_float">
 
+        <argument
+            android:name="key_grid_pos"
+            android:defaultValue="0"
+            app:argType="integer" />
+
         <action
             android:id="@+id/action_FloatFragment_to_GridFragment"
-            app:destination="@id/GridFragment" />
+            app:destination="@id/GridFragment"/>
         <action
             android:id="@+id/action_FloatFragment_to_WhiteboardFragment"
-            app:destination="@id/WhiteboardFragment" />
+            app:destination="@id/WhiteboardFragment"/>
+        <action
+            android:id="@+id/action_FloatFragment_to_UserListFragment"
+            app:destination="@id/UserListFragment"/>
     </fragment>
 
     <fragment
@@ -27,23 +35,41 @@
 
         <action
             android:id="@+id/action_GridFragment_to_FloatFragment"
-            app:destination="@id/FloatFragment" />
+            app:destination="@id/FloatFragment"/>
         <action
             android:id="@+id/action_GridFragment_to_WhiteboardFragment"
-            app:destination="@id/WhiteboardFragment" />
+            app:destination="@id/WhiteboardFragment"
+             />
+        <action
+            android:id="@+id/action_GridFragment_to_UserListFragment"
+            app:destination="@id/UserListFragment" />
+        <action
+            android:id="@+id/action_GridFragment_to_GridFragment"
+            app:destination="@id/GridFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/WhiteboardFragment"
         android:name="video.pano.panocall.fragment.WhiteboardFragment"
         android:label="@string/whiteboard_fragment_label"
-        tools:layout="@layout/whiteboard_old" >
+        tools:layout="@layout/fragment_whiteboard">
 
         <action
             android:id="@+id/action_WhiteboardFragment_to_FloatFragment"
             app:destination="@id/FloatFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/UserListFragment"
+        android:name="video.pano.panocall.fragment.UserListFragment"
+        android:label="@string/user_list_fragment_label"
+        tools:layout="@layout/fragment_user_list">
+
         <action
-            android:id="@+id/action_WhiteboardFragment_to_GridFragment"
+            android:id="@+id/action_UserListFragment_to_FloatFragment"
+            app:destination="@id/FloatFragment" />
+        <action
+            android:id="@+id/action_UserListFragment_to_GridFragment"
             app:destination="@id/GridFragment" />
     </fragment>
 </navigation>

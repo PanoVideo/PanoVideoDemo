@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 
 import video.pano.panocall.listener.OnBottomControlPanelListener;
 import video.pano.panocall.viewmodel.CallViewModel;
@@ -21,9 +22,8 @@ public class BottomControlPanelFragment extends Fragment {
 
     private CallViewModel mViewModel;
     private OnBottomControlPanelListener mListener;
-    private Button mBtnAudio;
-    private Button mBtnVideo;
-    private Button mBtnShare;
+    private TextView mBtnAudio;
+    private TextView mBtnVideo;
 
     public BottomControlPanelFragment() {
         // Required empty public constructor
@@ -75,8 +75,7 @@ public class BottomControlPanelFragment extends Fragment {
         });
         updateVideoButtonState();
 
-        mBtnShare = view.findViewById(R.id.btn_call_share);
-        mBtnShare.setOnClickListener(v -> {
+        view.findViewById(R.id.btn_call_share).setOnClickListener(v -> {
             if (mListener != null) {
                 mListener.onBCPanelShare();
             }
@@ -87,6 +86,17 @@ public class BottomControlPanelFragment extends Fragment {
                 mListener.onBCPanelMore();
             }
         });
+
+        view.findViewById(R.id.btn_call_user_list).setOnClickListener(v -> {
+            if (mListener != null) {
+                mListener.onBCPanelUserList();
+            }
+        });
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
     }
 
     @Override
