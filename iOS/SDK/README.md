@@ -1,5 +1,3 @@
 # PANO SDK （iOS）
 
-## 下载最新 PANO SDK
-
-[PanoRtc.framework](https://www.pano.video/download.html#sdk)
+如果开发者采用手工集成的方式，可以将 SDK 包放到此目录。

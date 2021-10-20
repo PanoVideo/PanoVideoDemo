@@ -7,7 +7,7 @@
 登录拍乐云 [控制台](https://console.pano.video/) ，进入应用管理页面创建一个新的应用，获得 AppID。AppID 用以区分不同的实时音视频应用。
 
 ## 3. 下载 Demo 源码
-拍乐云 Demo 源码托管在 [Github](https://github.com/PanoVideo) 上，用户可从相应的 Github 仓库上获取。
+此 Demo 源代码托管在 [GitHub](https://github.com/PanoVideo) 和 [Gitee](https://gitee.com/pano-video) 上，开发者可以自行克隆或下载。
 
 ## 4. 安装依赖
 cd 到 demo 目录，执行 `npm install` 或者 `yarn`

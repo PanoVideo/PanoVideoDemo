@@ -7,10 +7,10 @@
 登录拍乐云 [控制台](https://console.pano.video/) ，进入应用管理页面创建一个新的应用，获得 APPID，APPID 用以区分不同的实时音视频应用。
 
 ## 3. 下载 Demo 源码
-拍乐云Demo源代码托管在 [github](https://github.com/PanoVideo) 上，用户可从github上clone。
+此 Demo 源代码托管在 [GitHub](https://github.com/PanoVideo) 和 [Gitee](https://gitee.com/pano-video) 上，开发者可以自行克隆或下载。
 
-## 4. 下载 SDK
-拍乐云实时音视频 SDK 可从拍乐云 [下载页面](https://www.pano.video/download.html#sdk) 下载，并放置到 Demo 源码的 SDK 目录中。
+## 4. 导入 SDK
+请参考 [开发指南](https://developer.pano.video/quick-start/rtc/android/#%E5%AF%BC%E5%85%A5sdk) 的说明，自动或手工集成 SDK。
 
 ## 5. 生成临时token
 用户在创建应用获取到 APPID 后，还需要 token 才可以使用拍乐云实时音视频服务。对于 Demo 用户可在拍乐云控制台为应用 <a href="https://developer.pano.video/getting-started/firstapp/#14-%E7%94%9F%E6%88%90%E4%B8%B4%E6%97%B6token">生成临时token</a>。
