@@ -39,7 +39,6 @@ static NSString *inputUserId = @"";
     [self setButtonRoundedCorners:self.joinButton withRadius:5.0];
     self.autoMute.on = PanoCallClient.sharedInstance.autoMute;
     self.autoVideo.on = PanoCallClient.sharedInstance.autoVideo;
-    self.navigation.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(showPanoInfoAlert)];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -71,34 +70,6 @@ static NSString *inputUserId = @"";
         [self presentAlert:NSLocalizedString(@"joinAlert", nil)];
     }
 }
-
-- (void)showPanoInfoAlert {
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"请输入Pano配置信息" message:nil preferredStyle:UIAlertControllerStyleAlert];
-    [alert addTextFieldWithConfigurationHandler:nil];
-    [alert addTextFieldWithConfigurationHandler:nil];
-    [alert addTextFieldWithConfigurationHandler:nil];
-    [alert addTextFieldWithConfigurationHandler:nil];
-    UIAlertAction *comfirmAction = [UIAlertAction actionWithTitle:@"确认" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        inputUserId = alert.textFields[0].text;
-        NSString *rtcServer = alert.textFields[1].text;
-        NSString *token = alert.textFields[2].text;
-        NSString *appID = alert.textFields[3].text;
-        [PanoCallClient updatePanoConfigWithAppId:appID rtcServer:rtcServer token:token];
-    }];
-    comfirmAction.enabled = false;
-    [alert addAction:comfirmAction];
-    [alert addAction:[UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:nil]];
-    NSArray *placeholders = @[@"请输入UserId", @"请输入PanoServer", @"请输入Token",@"请输入AppID"];
-    for (NSInteger i=0; i<alert.textFields.count; i++) {
-        UITextField *textField = alert.textFields[i];
-        textField.placeholder = placeholders[i];
-        [textField addTarget:self action:@selector(textFielEditingChanged:) forControlEvents:UIControlEventEditingChanged];
-    }
-    [self presentViewController:alert animated:true completion:^{
-    }];
-}
-
-
 
 #pragma mark - Editing
 

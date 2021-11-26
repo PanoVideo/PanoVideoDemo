@@ -1018,7 +1018,6 @@ static NSString *kResolutionObserverKey = @"resolution";
     UIApplication.sharedApplication.idleTimerDisabled = YES;
     
     PanoCallClient.sharedInstance.channelDelegate = self;
-    [PanoCallClient.sharedInstance recordUsage];
     // fetch token and join channel
     PanoRtcChannelConfig * channelConfig = [[PanoRtcChannelConfig alloc] init];
     channelConfig.mode = kPanoChannelMeeting;

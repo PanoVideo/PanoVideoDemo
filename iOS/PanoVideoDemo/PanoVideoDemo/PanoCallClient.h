@@ -12,7 +12,6 @@
 #import "PanoConfig.h"
 
 extern NSString * _Nullable kDemoAppId;
-extern NSString * _Nullable kDemoPanoServer;
 extern NSString * _Nullable kDemoTempToken;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -51,15 +50,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (PanoResult)startAudioDump;
 - (PanoResult)stopAudioDump;
 
-- (BOOL)recordUsage;
-
-
 + (NSString *)productName;
 + (NSString *)productVersion;
-
-+ (void)updatePanoConfigWithAppId:(NSString *)appId
-                         rtcServer:(NSString *)server
-                             token:(NSString *)token;
 
 @end
 

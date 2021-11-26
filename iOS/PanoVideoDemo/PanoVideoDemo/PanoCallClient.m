@@ -16,12 +16,11 @@
 //https://developer.pano.video/getting-started/firstapp/#14-%E7%94%9F%E6%88%90%E4%B8%B4%E6%97%B6token
 NSString * kDemoAppId = <#T##请输入AppID，参考Pano开发者网站: String##String#>;
 NSString * kDemoTempToken = <#T##请输入Token，参考Pano开发者网站: String##String#>;
-NSString * kDemoPanoServer = @"api.pano.video";
 
 // Http Request
 static NSString * kHttpHeader = @"http";
 static NSString * kHttpsHeader = @"https";
-static NSString * kUrlUsageRecordApi = @"sirius/pvc";
+
 
 // Preference Keys
 static NSString * kUserUniqueIDKey = @"UUID";
@@ -221,47 +220,6 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
 
 - (PanoResult)stopAudioDump {
     return [_engineKit stopAudioDump];
-}
-
-#pragma mark - Http Request
-
-- (BOOL)recordUsage {
-    NSString * requestStr = [NSString stringWithFormat:@"%@://%@/%@", kHttpsHeader, kDemoPanoServer, kUrlUsageRecordApi];
-    NSURL *requestURL = [NSURL URLWithString:requestStr];
-    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:requestURL];
-    [request setValue:NSUUID.UUID.UUIDString forHTTPHeaderField:@"Tracking-Id"];
-    [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-    [request setValue:@"no-cache" forHTTPHeaderField:@"Cache-Control"];
-    request.HTTPMethod = @"POST";
-    NSMutableDictionary * dictBody = [NSMutableDictionary dictionaryWithCapacity:10];
-    [dictBody setValue:PanoCallClient.productName forKey:@"product"];
-    [dictBody setValue:UIDevice.currentDevice.systemName forKey:@"os"];
-    [dictBody setValue:UIDevice.currentDevice.systemVersion forKey:@"osver"];
-    [dictBody setValue:PanoRtcEngineKit.getSdkVersion forKey:@"sdkver"];
-    [dictBody setValue:kDemoAppId forKey:@"appId"];
-    [dictBody setValue:_roomId forKey:@"channelId"];
-    [dictBody setValue:[NSString stringWithFormat:@"%llu", _userId] forKey:@"userId"];
-    [dictBody setValue:_userName forKey:@"userName"];
-    [dictBody setValue:_uuid forKey:@"uuid"];
-    [dictBody setValue:@"13812345888" forKey:@"phone"];
-    NSError * error = nil;
-    request.HTTPBody = [NSJSONSerialization dataWithJSONObject:dictBody options:NSJSONWritingPrettyPrinted error:&error];
-    if (nil != error) {
-#if defined(DEBUG)
-        NSLog(@"[PanoCallClient recordUsage], Create request body fail, error: %@", error);
-#endif
-        return NO;
-    }
-
-    NSURLSession *session = [NSURLSession sharedSession];
-    NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-#if defined(DEBUG)
-        NSLog(@"[PanoCallClient recordUsage], Receive response: %ld, error: %@", (long)httpResponse.statusCode, error);
-#endif
-    }];
-    [dataTask resume];
-    return YES;
 }
 
 #pragma mark - PanoRtcEngineDelegate
@@ -485,7 +443,6 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
     
     PanoRtcEngineConfig * engineConfig = [[PanoRtcEngineConfig alloc] init];
     engineConfig.appId = kDemoAppId;
-    engineConfig.rtcServer = kDemoPanoServer;
     _engineKit = [PanoRtcEngineKit engineWithConfig:engineConfig delegate:self];
     engineConfig = nil;
     [PanoRtcEngineKit setLogLevel:kPanoLogInfo];
@@ -649,15 +606,6 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
     [self.reachability startNotifier];
 }
 
-+ (void)updatePanoConfigWithAppId:(NSString *)appId
-                         rtcServer:(NSString *)server
-                             token:(NSString *)token
-{
-    kDemoAppId = appId;
-    kDemoPanoServer = server;
-    kDemoTempToken = token;
-    [[PanoCallClient sharedInstance] createEngineKit];
-}
 
 @end
 
