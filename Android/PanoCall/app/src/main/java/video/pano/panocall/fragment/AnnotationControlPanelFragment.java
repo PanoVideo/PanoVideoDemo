@@ -1,9 +1,15 @@
 package video.pano.panocall.fragment;
 
+import static video.pano.panocall.info.Constant.FROM_GRAPHICS;
+import static video.pano.panocall.info.Constant.FROM_OTHER;
+import static video.pano.panocall.info.Constant.FROM_PENCIL;
+import static video.pano.panocall.info.Constant.FROM_TEXT;
+
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -19,12 +25,7 @@ import com.pano.rtc.api.PanoAnnotation;
 import video.pano.panocall.R;
 import video.pano.panocall.info.FillColor;
 import video.pano.panocall.utils.AnnotationHelper;
-import video.pano.panocall.viewmodel.CallViewModel;
-
-import static video.pano.panocall.info.Constant.FROM_GRAPHICS;
-import static video.pano.panocall.info.Constant.FROM_OTHER;
-import static video.pano.panocall.info.Constant.FROM_PENCIL;
-import static video.pano.panocall.info.Constant.FROM_TEXT;
+import video.pano.panocall.viewmodel.MeetingViewModel;
 
 public class AnnotationControlPanelFragment extends Fragment {
 
@@ -36,6 +37,8 @@ public class AnnotationControlPanelFragment extends Fragment {
     private RadioGroup mTextColorGroup;
     private RadioGroup mGraphicsColorGroup;
     private RadioGroup mGraphicsToolsGroup;
+//    private RadioGroup mBottomToolGroup;
+    private RadioButton mPencilRadio;
 
     private View mBottomPopupView;
     private View mPencilPopupView;
@@ -57,7 +60,7 @@ public class AnnotationControlPanelFragment extends Fragment {
     private int mGraphicsColorId = R.id.rb_graphics_color_black;
     private int mGraphicsToolsId = R.id.rb_graphics_line;
 
-    private CallViewModel mViewModel;
+    private MeetingViewModel mViewModel;
     private PanoAnnotation mAnnotation;
 
     public static AnnotationControlPanelFragment newInstance() {
@@ -75,8 +78,7 @@ public class AnnotationControlPanelFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mViewModel = new ViewModelProvider(getActivity()).get(CallViewModel.class);
-
+        initViewModel();
         initBottomGraphicsPopup(view);
         initBottomPencilPopup(view);
         initBottomTextPopup(view);
@@ -90,23 +92,45 @@ public class AnnotationControlPanelFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mAnnotation = AnnotationHelper.getIns().getAnnotation();
+        init();
+    }
+
+    private void initViewModel() {
+        mViewModel = new ViewModelProvider(getActivity()).get(MeetingViewModel.class);
+    }
+
+
+    private void init() {
+        mTvPencilInt.setText(String.valueOf(mLineWidth));
+        mPencilSeek.setProgress(mLineWidth);
+        mPencilColorGroup.check(mPencilColorId);
+
+        if(mAnnotation != null){
+            mAnnotation.setLineWidth(mLineWidth);
+            mAnnotation.setColor(mPencilFillColor.getValue());
+            mAnnotation.setToolType(Constants.WBToolType.Path);
+        }
     }
 
     private void initTopToolsBar(View rootView){
         rootView.findViewById(R.id.img_back).setOnClickListener( v ->{
             mViewModel.onClickAnnotationStop();
+//            reset();
         });
     }
-
+    
     private void initBottomToolsBar(View rootView) {
+//        mBottomToolGroup = rootView.findViewById(R.id.rg_bottom_toolbar);
+
+        mPencilRadio = rootView.findViewById(R.id.rb_toolbar_pencil);
+        mPencilRadio.setOnClickListener(v -> {
+            showOrHideOtherPopupView(FROM_PENCIL);
+            showOrHidePencilPopupView();
+        });
+
         rootView.findViewById(R.id.rb_toolbar_graphics).setOnClickListener(v -> {
             showOrHideOtherPopupView(FROM_GRAPHICS);
             showOrHideGraphicsPopupView();
-        });
-
-        rootView.findViewById(R.id.rb_toolbar_pencil).setOnClickListener(v -> {
-            showOrHideOtherPopupView(FROM_PENCIL);
-            showOrHidePencilPopupView();
         });
 
         rootView.findViewById(R.id.rb_toolbar_text).setOnClickListener(v -> {
@@ -116,20 +140,19 @@ public class AnnotationControlPanelFragment extends Fragment {
 
         rootView.findViewById(R.id.rb_toolbar_delete).setOnClickListener(v -> {
             showOrHideOtherPopupView(FROM_OTHER);
-            selectToolType(Constants.WBToolType.Eraser);
-            mViewModel.onAnnotationToolsClick();
+            selectToolType(Constants.WBToolType.Delete);
         });
 
         rootView.findViewById(R.id.rb_toolbar_select).setOnClickListener(v -> {
             showOrHideOtherPopupView(FROM_OTHER);
             selectToolType(Constants.WBToolType.Select);
-            mViewModel.onAnnotationToolsClick();
         });
 
         mBottomPopupView = rootView.findViewById(R.id.cl_bottom_toolbar_popup_view);
-        mBottomPopupView.setOnClickListener(v ->
-                showOrHideOtherPopupView(FROM_OTHER)
-        );
+        mBottomPopupView.setOnClickListener(v -> {
+            showOrHideOtherPopupView(FROM_OTHER);
+            mViewModel.onAnnotationToolsClick();
+        });
     }
 
     private void initBottomPencilPopup(View rootView) {
@@ -247,6 +270,8 @@ public class AnnotationControlPanelFragment extends Fragment {
                 selectToolType(Constants.WBToolType.Ellipse);
             }else if(checkedId == R.id.rb_hollow_square){
                 selectToolType(Constants.WBToolType.Rect);
+            }else{
+                selectToolType(Constants.WBToolType.Path);
             }
             mGraphicsToolsType = mToolType ;
             setColor(mGraphicsFillColor,mGraphicsColorId,FROM_GRAPHICS);
@@ -287,15 +312,14 @@ public class AnnotationControlPanelFragment extends Fragment {
             mTvPencilInt.setText(String.valueOf(mLineWidth));
             mPencilSeek.setProgress(mLineWidth);
             mPencilColorGroup.check(mPencilColorId);
-            selectToolType(Constants.WBToolType.Path);
 
+            mToolType = Constants.WBToolType.Path ;
             if(mAnnotation != null){
                 mAnnotation.setLineWidth(mLineWidth);
                 mAnnotation.setColor(mPencilFillColor.getValue());
                 mAnnotation.setToolType(mToolType);
             }
         }
-        mViewModel.onAnnotationToolsClick();
     }
 
     private void showOrHideTextPopupView() {
@@ -307,14 +331,13 @@ public class AnnotationControlPanelFragment extends Fragment {
             mTextSeek.setProgress(mFontSize);
             mTextColorGroup.check(mTextColorId);
 
-            selectToolType(Constants.WBToolType.Text);
+            mToolType = Constants.WBToolType.Text ;
             if(mAnnotation != null){
                 mAnnotation.setFontSize(mFontSize);
                 mAnnotation.setColor(mTextFillColor.getValue());
                 mAnnotation.setToolType(mToolType);
             }
         }
-        mViewModel.onAnnotationToolsClick();
     }
 
     private void showOrHideGraphicsPopupView() {
@@ -330,7 +353,6 @@ public class AnnotationControlPanelFragment extends Fragment {
             mGraphicsColorGroup.check(mGraphicsColorId);
             mGraphicsToolsGroup.check(mGraphicsToolsId);
         }
-        mViewModel.onAnnotationToolsClick();
     }
 
     private void selectToolType(Constants.WBToolType toolType) {

@@ -13,6 +13,7 @@ public class OnPanoTouchListener implements View.OnTouchListener {
         gestureDetector = new GestureDetector(c, new GestureListener());
     }
 
+    @Override
     public boolean onTouch(final View view, final MotionEvent motionEvent) {
         return gestureDetector.onTouchEvent(motionEvent);
     }

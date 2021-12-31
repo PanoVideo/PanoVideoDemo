@@ -71,7 +71,7 @@
     </LinearLayout>
 
     <video.pano.panocall.view.DragViewContainer
-        android:id="@+id/cl_small_view_righttop"
+        android:id="@+id/dc_small_view"
         android:layout_width="@dimen/small_view_width"
         android:layout_height="@dimen/small_view_height"
         android:layout_marginTop="16dp"
@@ -84,75 +84,7 @@
         app:dragMarginTop="120"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:visibility="visible">
-
-        <com.pano.rtc.api.RtcView
-            android:id="@+id/small_view_righttop"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="gone"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:visibility="visible" />
-
-        <ImageView
-            android:id="@+id/img_small_view_default_head"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@drawable/svg_icon_default_user"
-            android:visibility="visible"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:visibility="visible" />
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/call_item_text_bg"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:paddingStart="8dp"
-            android:paddingEnd="4dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
-
-            <TextView
-                android:id="@+id/tv_small_view_righttop_user"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:singleLine="true"
-                android:textColor="#DEDEDE"
-                android:textSize="10sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:text="James" />
-
-            <ImageView
-                android:id="@+id/img_small_view_righttop_audio"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:scaleType="centerCrop"
-                android:src="@drawable/svg_icon_small_audio_normal"
-                app:layout_constraintBottom_toBottomOf="@+id/tv_small_view_righttop_user"
-                app:layout_constraintStart_toEndOf="@+id/tv_small_view_righttop_user" />
-
-            <ImageView
-                android:id="@+id/img_small_view_righttop_signal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:scaleType="fitCenter"
-                android:src="@drawable/svg_icon_small_signal_good"
-                app:layout_constraintBottom_toBottomOf="@+id/img_small_view_righttop_audio"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/img_small_view_righttop_audio" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </video.pano.panocall.view.DragViewContainer>
+        tools:visibility="visible"/>
 
     <LinearLayout
         android:id="@+id/ll_bottom_toolbar"

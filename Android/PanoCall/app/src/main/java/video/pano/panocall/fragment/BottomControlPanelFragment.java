@@ -2,28 +2,26 @@ package video.pano.panocall.fragment;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.TextView;
-
-import video.pano.panocall.listener.OnBottomControlPanelListener;
-import video.pano.panocall.viewmodel.CallViewModel;
 import video.pano.panocall.R;
+import video.pano.panocall.listener.OnBottomEventListener;
+import video.pano.panocall.viewmodel.MeetingViewModel;
 
-public class BottomControlPanelFragment extends Fragment {
+public class BottomControlPanelFragment extends Fragment implements OnBottomEventListener {
 
-    private CallViewModel mViewModel;
-    private OnBottomControlPanelListener mListener;
+    private MeetingViewModel mViewModel;
     private TextView mBtnAudio;
     private TextView mBtnVideo;
+    private TextView mBtnCallShare;
 
     public BottomControlPanelFragment() {
         // Required empty public constructor
@@ -52,59 +50,57 @@ public class BottomControlPanelFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mViewModel = new ViewModelProvider(getActivity()).get(CallViewModel.class);
-
+        initViewModel();
         mBtnAudio = view.findViewById(R.id.btn_call_audio);
         mBtnAudio.setOnClickListener(v -> {
             mViewModel.mIsAudioMuted = !mViewModel.mIsAudioMuted;
             updateAudioButtonState();
-            if (mListener != null) {
-                mListener.onBCPanelAudio(mViewModel.mIsAudioMuted);
+            if(mViewModel != null){
+                mViewModel.onBCPanelAudio(mViewModel.mIsAudioMuted);
             }
         });
         updateAudioButtonState();
 
         mBtnVideo = view.findViewById(R.id.btn_call_video);
         mBtnVideo.setOnClickListener(v -> {
-            mViewModel.mIsVideoClosed = !mViewModel.mIsVideoClosed;
+            mViewModel.mAutoStartCamera = !mViewModel.mAutoStartCamera;
             updateVideoButtonState();
-            if (mListener != null) {
-                mListener.onBCPanelVideo(mViewModel.mIsVideoClosed);
+            if (mViewModel != null) {
+                mViewModel.onBCPanelVideo(mViewModel.mAutoStartCamera);
             }
-            mViewModel.onBCPanelVideo(mViewModel.mIsVideoClosed);
         });
         updateVideoButtonState();
 
-        view.findViewById(R.id.btn_call_share).setOnClickListener(v -> {
-            if (mListener != null) {
-                mListener.onBCPanelShare();
+        mBtnCallShare = view.findViewById(R.id.btn_call_share);
+        mBtnCallShare.setOnClickListener(v -> {
+            if (mViewModel != null) {
+                mViewModel.onBCPanelShare();
             }
+            updateCallShareButtonState();
         });
+        updateCallShareButtonState();
 
         view.findViewById(R.id.btn_call_more).setOnClickListener(v -> {
-            if (mListener != null) {
-                mListener.onBCPanelMore();
+            if (mViewModel != null) {
+                mViewModel.onBCPanelMore();
             }
         });
 
         view.findViewById(R.id.btn_call_user_list).setOnClickListener(v -> {
-            if (mListener != null) {
-                mListener.onBCPanelUserList();
+            if (mViewModel != null) {
+                mViewModel.onBCPanelUserList();
             }
         });
+    }
+
+    private void initViewModel() {
+        mViewModel = new ViewModelProvider(getActivity()).get(MeetingViewModel.class);
+        mViewModel.setOnBottomEventListener(this);
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-    }
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        if (context instanceof OnBottomControlPanelListener) {
-            mListener = (OnBottomControlPanelListener) context;
-        }
     }
 
     private void updateAudioButtonState() {
@@ -118,12 +114,42 @@ public class BottomControlPanelFragment extends Fragment {
     }
 
     private void updateVideoButtonState() {
-        if (mViewModel.mIsVideoClosed) {
-            mBtnVideo.setText(R.string.title_call_video_closed);
-            mBtnVideo.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.svg_icon_video_closed, 0, 0);
-        } else {
+        if (mViewModel.mAutoStartCamera) {
             mBtnVideo.setText(R.string.title_call_video_normal);
             mBtnVideo.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.svg_icon_video_normal, 0, 0);
+        } else {
+            mBtnVideo.setText(R.string.title_call_video_closed);
+            mBtnVideo.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.svg_icon_video_closed, 0, 0);
+        }
+    }
+
+    @Override
+    public void updateCallShareButtonState() {
+        if (mViewModel.mWhiteboardContentUpdate) {
+            mBtnCallShare.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.svg_icon_share_hint, 0, 0);
+        } else {
+            mBtnCallShare.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.svg_icon_share, 0, 0);
+        }
+    }
+
+    @Override
+    public void updateCallButtonState(boolean isPSTN){
+        if (isPSTN){
+            if (mViewModel.mIsAudioMuted){
+                mBtnAudio.setText(R.string.title_call_audio_muted);
+                mBtnAudio.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.svg_icon_audio_pstn_mute, 0, 0);
+            }else{
+                mBtnAudio.setText(R.string.title_call_audio_normal);
+                mBtnAudio.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.svg_icon_audio_pstn_normal, 0, 0);
+            }
+        }else{
+            if (mViewModel.mIsAudioMuted) {
+                mBtnAudio.setText(R.string.title_call_audio_muted);
+                mBtnAudio.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.svg_icon_audio_mute, 0, 0);
+            } else {
+                mBtnAudio.setText(R.string.title_call_audio_normal);
+                mBtnAudio.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.svg_icon_audio_normal, 0, 0);
+            }
         }
     }
 }

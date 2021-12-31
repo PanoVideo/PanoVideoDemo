@@ -10,6 +10,8 @@
 
     <include layout="@layout/widget_title_bar" />
 
+    <include layout="@layout/layout_fraud_tips" />
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -18,7 +20,7 @@
             android:id="@+id/cl_edit_container"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="12dp"
             android:background="@color/colorWhite"
             android:paddingStart="16dp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -41,24 +43,24 @@
                 android:id="@+id/edit_room_id"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:minHeight="25dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="16dp"
+                android:background="@null"
                 android:digits="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
                 android:ems="10"
                 android:focusable="true"
-                android:maxLength="20"
-                android:paddingEnd="16dp"
                 android:hint="@string/title_room_id_hint"
-                android:textColorHint="@color/color999999"
+                android:maxLength="20"
+                android:minHeight="25dp"
+                android:paddingEnd="16dp"
                 android:textColor="@color/color333333"
+                android:textColorHint="@color/color999999"
                 android:textCursorDrawable="@drawable/edit_input_cursor_bg"
-                android:background="@null"
                 android:textSize="14sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/tv_room_id"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:text="syncddsssdddss"/>
+                tools:text="syncddsssdddss" />
 
             <View
                 android:id="@+id/view_divider1"
@@ -87,19 +89,19 @@
                 android:id="@+id/edit_user_name"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:minHeight="25dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="11dp"
+                android:background="@null"
                 android:ems="10"
+                android:hint="@string/title_user_name_hint"
                 android:inputType="text"
+                android:maxLength="20"
+                android:minHeight="25dp"
                 android:paddingEnd="16dp"
                 android:textColor="@color/color333333"
-                android:hint="@string/title_user_name_hint"
                 android:textColorHint="@color/color999999"
                 android:textCursorDrawable="@drawable/edit_input_cursor_bg"
-                android:background="@null"
                 android:textSize="14sp"
-                android:maxLength="20"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/tv_user_name"
                 app:layout_constraintTop_toBottomOf="@+id/view_divider1"
@@ -148,7 +150,7 @@
             app:layout_constraintTop_toBottomOf="@+id/tv_join_room">
 
             <TextView
-                android:id="@+id/tv_audio_mute"
+                android:id="@+id/tv_audio_un_mute"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/title_auto_mute_audio"
@@ -156,11 +158,10 @@
                 android:textSize="14sp"
                 app:layout_constraintBottom_toTopOf="@+id/view_divider3"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:text="进入通话时静音" />
+                app:layout_constraintTop_toTopOf="parent" />
 
             <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/switch_audio_mute"
+                android:id="@+id/switch_audio_un_mute"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
@@ -179,7 +180,7 @@
                 android:background="@color/colorDDDDDD"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/switch_audio_mute" />
+                app:layout_constraintTop_toBottomOf="@+id/switch_audio_un_mute" />
 
             <TextView
                 android:id="@+id/tv_auto_start_camera"
@@ -188,10 +189,9 @@
                 android:text="@string/title_auto_start_camera"
                 android:textColor="@color/color333333"
                 android:textSize="14sp"
-                app:layout_constraintTop_toBottomOf="@+id/view_divider3"
                 app:layout_constraintBottom_toTopOf="@+id/view_divider4"
                 app:layout_constraintStart_toStartOf="parent"
-                tools:text="进入通话时打开摄像头" />
+                app:layout_constraintTop_toBottomOf="@+id/view_divider3" />
 
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/switch_auto_start_camera"
@@ -222,8 +222,8 @@
                 android:text="@string/title_face_beauty"
                 android:textColor="@color/color333333"
                 android:textSize="14sp"
-                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintBottom_toTopOf="@+id/view_divider5"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/view_divider4"
                 tools:text="美颜" />
 
@@ -231,28 +231,27 @@
                 android:id="@+id/tv_face_beauty_setting"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:textColor="@color/panoBlue"
-                android:text="@string/title_face_beauty_setting"
                 android:drawableEnd="@drawable/svg_icon_right_arrow"
                 android:drawablePadding="16dp"
-                android:paddingEnd="16dp"
                 android:paddingTop="12dp"
+                android:paddingEnd="16dp"
                 android:paddingBottom="12dp"
+                android:text="@string/title_face_beauty_setting"
+                android:textColor="@color/panoBlue"
+                android:textSize="14sp"
+                app:layout_constraintBottom_toTopOf="@+id/view_divider5"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/view_divider4"
-                app:layout_constraintBottom_toTopOf="@+id/view_divider5"
-                tools:text="点开设置"
-                />
+                tools:text="点开设置" />
 
             <View
                 android:id="@+id/view_divider5"
                 android:layout_width="0dp"
                 android:layout_height="1dp"
                 android:background="@color/colorDDDDDD"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"/>
+                app:layout_constraintStart_toStartOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -59,6 +59,14 @@ public class PanoWhiteboardCallback implements RtcWhiteboard.Callback {
     }
     @Override
     public void onContentUpdated() {
+        if(mListeners == null || mListeners.isEmpty()){
+            return ;
+        }
+        runOnUiThread(()-> {
+            for (RtcWhiteboard.Callback callback : mListeners) {
+                callback.onContentUpdated();
+            }
+        });
     }
 
     @Override
@@ -87,14 +95,6 @@ public class PanoWhiteboardCallback implements RtcWhiteboard.Callback {
 
     @Override
     public void onMessage(long userId, byte[] bytes) {
-        if(mListeners == null || mListeners.isEmpty()){
-            return ;
-        }
-        runOnUiThread(()-> {
-            for (RtcWhiteboard.Callback callback : mListeners) {
-                callback.onMessage(userId, bytes);
-            }
-        });
     }
 
     @Override

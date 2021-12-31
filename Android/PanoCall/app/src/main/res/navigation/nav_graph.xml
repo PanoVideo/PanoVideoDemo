@@ -3,13 +3,35 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/FloatFragment">
+    app:startDestination="@id/SpeakerFragment">
 
     <fragment
-        android:id="@+id/FloatFragment"
-        android:name="video.pano.panocall.fragment.FloatFragment"
-        android:label="@string/float_fragment_label"
-        tools:layout="@layout/fragment_float">
+        android:id="@+id/SpeakerFragment"
+        android:name="video.pano.panocall.fragment.SpeakerFragment"
+        android:label="@string/speaker_fragment_label"
+        tools:layout="@layout/fragment_speaker">
+
+        <argument
+            android:name="key_grid_pos"
+            android:defaultValue="0"
+            app:argType="integer" />
+
+
+        <action
+            android:id="@+id/action_SpeakerFragment_to_GalleryFragment"
+            app:destination="@id/GalleryFragment"/>
+        <action
+            android:id="@+id/action_SpeakerFragment_to_WhiteboardFragment"
+            app:destination="@id/WhiteboardFragment"/>
+        <action
+            android:id="@+id/action_SpeakerFragment_to_UserListFragment"
+            app:destination="@id/UserListFragment"/>
+    </fragment>
+    <fragment
+        android:id="@+id/GalleryFragment"
+        android:name="video.pano.panocall.fragment.GalleryFragment"
+        android:label="@string/gallery_fragment_label"
+        tools:layout="@layout/fragment_gallery">
 
         <argument
             android:name="key_grid_pos"
@@ -17,35 +39,18 @@
             app:argType="integer" />
 
         <action
-            android:id="@+id/action_FloatFragment_to_GridFragment"
-            app:destination="@id/GridFragment"/>
+            android:id="@+id/action_GalleryFragment_to_SpeakerFragment"
+            app:destination="@id/SpeakerFragment"/>
         <action
-            android:id="@+id/action_FloatFragment_to_WhiteboardFragment"
-            app:destination="@id/WhiteboardFragment"/>
-        <action
-            android:id="@+id/action_FloatFragment_to_UserListFragment"
-            app:destination="@id/UserListFragment"/>
-    </fragment>
-
-    <fragment
-        android:id="@+id/GridFragment"
-        android:name="video.pano.panocall.fragment.GridFragment"
-        android:label="@string/grid_fragment_label"
-        tools:layout="@layout/fragment_grid">
-
-        <action
-            android:id="@+id/action_GridFragment_to_FloatFragment"
-            app:destination="@id/FloatFragment"/>
-        <action
-            android:id="@+id/action_GridFragment_to_WhiteboardFragment"
+            android:id="@+id/action_GalleryFragment_to_WhiteboardFragment"
             app:destination="@id/WhiteboardFragment"
              />
         <action
-            android:id="@+id/action_GridFragment_to_UserListFragment"
+            android:id="@+id/action_GalleryFragment_to_UserListFragment"
             app:destination="@id/UserListFragment" />
         <action
-            android:id="@+id/action_GridFragment_to_GridFragment"
-            app:destination="@id/GridFragment" />
+            android:id="@+id/action_GalleryFragment_to_GalleryFragment"
+            app:destination="@id/GalleryFragment" />
     </fragment>
 
     <fragment
@@ -55,8 +60,8 @@
         tools:layout="@layout/fragment_whiteboard">
 
         <action
-            android:id="@+id/action_WhiteboardFragment_to_FloatFragment"
-            app:destination="@id/FloatFragment" />
+            android:id="@+id/action_WhiteboardFragment_to_SpeakerFragment"
+            app:destination="@id/SpeakerFragment" />
     </fragment>
 
     <fragment
@@ -66,10 +71,13 @@
         tools:layout="@layout/fragment_user_list">
 
         <action
-            android:id="@+id/action_UserListFragment_to_FloatFragment"
-            app:destination="@id/FloatFragment" />
+            android:id="@+id/action_UserListFragment_to_SpeakerFragment"
+            app:destination="@id/SpeakerFragment" />
         <action
-            android:id="@+id/action_UserListFragment_to_GridFragment"
-            app:destination="@id/GridFragment" />
+            android:id="@+id/action_UserListFragment_to_GalleryFragment"
+            app:destination="@id/GalleryFragment" />
+        <action
+            android:id="@+id/action_UserListFragment_to_WhiteboardFragment"
+            app:destination="@id/WhiteboardFragment" />
     </fragment>
 </navigation>

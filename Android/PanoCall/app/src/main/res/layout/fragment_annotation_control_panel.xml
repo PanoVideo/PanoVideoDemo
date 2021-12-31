@@ -78,6 +78,7 @@
             android:drawablePadding="5dp"
             android:gravity="center"
             android:text="@string/title_wb_pencil"
+            android:checked="true"
             android:textColor="@color/anno_bottom_toolbar_text_color" />
 
         <RadioButton

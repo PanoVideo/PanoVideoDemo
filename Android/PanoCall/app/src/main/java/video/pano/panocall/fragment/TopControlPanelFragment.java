@@ -11,17 +11,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import video.pano.panocall.R;
-import video.pano.panocall.listener.OnTopControlPanelListener;
-import video.pano.panocall.listener.PanoTopEventHandler;
-import video.pano.panocall.viewmodel.CallViewModel;
+import video.pano.panocall.listener.OnTopEventListener;
+import video.pano.panocall.viewmodel.MeetingViewModel;
 
 
-public class TopControlPanelFragment extends Fragment implements PanoTopEventHandler {
+public class TopControlPanelFragment extends Fragment implements OnTopEventListener {
 
     public static final String TAG = "TopControlPanelFragment";
     private static final String ARG_ROOM_ID = "arg_room_id";
@@ -29,8 +27,7 @@ public class TopControlPanelFragment extends Fragment implements PanoTopEventHan
     private static final long INTERVAL_TIME = 1000 ;
 
     private String mRoomId;
-    private OnTopControlPanelListener mListener;
-    private CallViewModel mViewModel;
+    private MeetingViewModel mViewModel;
     private CountDownTimer mCountDownTimer;
 
     private TextView mTvTime;
@@ -67,8 +64,7 @@ public class TopControlPanelFragment extends Fragment implements PanoTopEventHan
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mViewModel = new ViewModelProvider(getActivity()).get(CallViewModel.class);
-        mViewModel.seTopEventHandler(this);
+        initViewModel();
 
         TextView tvRoomId = view.findViewById(R.id.tv_call_room_id);
         tvRoomId.setText(mRoomId);
@@ -82,8 +78,8 @@ public class TopControlPanelFragment extends Fragment implements PanoTopEventHan
             } else {
                 btnAudioSpeaker.setImageResource(R.drawable.svg_icon_earpiece);
             }
-            if (mListener != null) {
-                mListener.onTCPanelAudio(mViewModel.mIsAudioSpeakerOpened);
+            if(mViewModel != null){
+                mViewModel.onTCPanelAudio(mViewModel.mIsAudioSpeakerOpened);
             }
         });
         if (mViewModel.mIsAudioSpeakerOpened) {
@@ -92,30 +88,27 @@ public class TopControlPanelFragment extends Fragment implements PanoTopEventHan
             btnAudioSpeaker.setImageResource(R.drawable.svg_icon_earpiece);
         }
         mBtnSwitchCamera = view.findViewById(R.id.btn_call_switch_camera);
-        mBtnSwitchCamera.setVisibility(mViewModel.mIsVideoClosed ? View.INVISIBLE : View.VISIBLE);
+        mBtnSwitchCamera.setVisibility(mViewModel.mAutoStartCamera ? View.VISIBLE : View.INVISIBLE);
         mBtnSwitchCamera.findViewById(R.id.btn_call_switch_camera).setOnClickListener(v -> {
-            if (mListener != null) {
-                mListener.onTCPanelSwitchCamera();
+            if(mViewModel != null){
+                mViewModel.onTCPanelSwitchCamera();
             }
         });
         view.findViewById(R.id.btn_call_exit).setOnClickListener(v -> {
-            if (mListener != null) {
-                mListener.onTCPanelExit();
+            if(mViewModel != null){
+                mViewModel.onTCPanelExit();
             }
         });
     }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+    private void initViewModel() {
+        mViewModel = new ViewModelProvider(getActivity()).get(MeetingViewModel.class);
+        mViewModel.setOnTopEventListener(this);
     }
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        if (context instanceof OnTopControlPanelListener) {
-            mListener = (OnTopControlPanelListener) context;
-        }
     }
 
     @Override
@@ -126,9 +119,11 @@ public class TopControlPanelFragment extends Fragment implements PanoTopEventHan
         }
         long countDownRemain = remain * 1000;
         mCountDownTimer = new CountDownTimer(countDownRemain, INTERVAL_TIME) {
+            @Override
             public void onTick(long millisUntilFinished) {
                 mTvTime.setText(tickToCountDownText(millisUntilFinished));
             }
+            @Override
             public void onFinish() {
                 mTvTime.setText(R.string.msg_call_ended);
             }
@@ -149,7 +144,5 @@ public class TopControlPanelFragment extends Fragment implements PanoTopEventHan
         min /= 60;
 
         return String.format("%02d:%02d:%02d", hour,min, sec);
-
     }
-
 }

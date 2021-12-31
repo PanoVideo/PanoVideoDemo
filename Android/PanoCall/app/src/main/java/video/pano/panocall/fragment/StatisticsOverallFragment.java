@@ -16,7 +16,7 @@ import com.pano.rtc.api.model.stats.RtcSystemStats;
 import com.pano.rtc.api.model.stats.RtcVideoSendStats;
 
 import video.pano.panocall.R;
-import video.pano.panocall.utils.NetUtils;
+import video.pano.panocall.net.NetUtils;
 import video.pano.panocall.utils.Utils;
 
 public class StatisticsOverallFragment extends StatisticsFragment {

@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import com.pano.rtc.api.RtcEngine;
 
 import video.pano.panocall.R;
+import video.pano.panocall.rtc.PanoRtcEngine;
 
 public class ScreenCaptureService extends Service {
 
@@ -29,7 +30,7 @@ public class ScreenCaptureService extends Service {
 
         createNotificationChannel();
 
-        RtcEngine.getInstance().startScreen();
+        PanoRtcEngine.getIns().getPanoEngine().startScreen();
 
         return super.onStartCommand(intent, flags, startId);
     }

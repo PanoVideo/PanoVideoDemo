@@ -11,6 +11,8 @@
     <!-- Strings used for fragments for navigation -->
     <string name="float_fragment_label">Float Fragment</string>
     <string name="grid_fragment_label">Grid Fragment</string>
+    <string name="gallery_fragment_label">Gallery Fragment</string>
+    <string name="speaker_fragment_label">Speaker Fragment</string>
     <string name="whiteboard_fragment_label">Whiteboard Fragment</string>
     <string name="user_list_fragment_label">UserList Fragment</string>
 
@@ -41,7 +43,7 @@
     <string name="title_button_send">确认发送</string>
 
     <!-- Strings used for call -->
-    <string name="title_call_audio_muted">打开语音</string>
+    <string name="title_call_audio_muted">取消静音</string>
     <string name="title_call_audio_normal">静音</string>
     <string name="title_call_video_normal">关闭视频</string>
     <string name="title_call_video_closed">打开视频</string>
@@ -59,13 +61,14 @@
     <!-- Preference Titles -->
     <string name="title_call_duration">单次通话时长</string>
     <string name="title_call_max_attendees">通话人数上限</string>
-    <string name="title_auto_mute_audio">进入通话时自动静音</string>
+    <string name="title_auto_mute_audio">开启麦克风</string>
     <string name="title_auto_start_speaker">进入通话时自动打开扬声器</string>
-    <string name="title_auto_start_camera">进入通话时自动打开摄像头</string>
+    <string name="title_auto_start_camera">开启摄像头</string>
     <string name="title_leave_confirm">离开通话时需要确认</string>
     <string name="title_enable_device_rating">根据手机性能自动调整分辨率</string>
     <string name="title_screen_capture_fps">屏幕采集帧率</string>
     <string name="title_video_sending_resolution">我的分辨率</string>
+    <string name="title_video_frame_rate">我的帧率</string>
     <string name="title_face_beauty">美颜</string>
     <string name="title_statistics">统计</string>
     <string name="title_user_statistics">大画面显示视频统计信息</string>
@@ -99,6 +102,19 @@
     <string name="title_video_resolution_180p">180P</string>
     <string name="title_video_resolution_360p">360P</string>
     <string name="title_video_resolution_720p">720P</string>
+    <string name="title_video_frame_rate_15fps">15fps</string>
+    <string name="title_video_frame_rate_30fps">30fps</string>
+    <string name="title_video_decode_type">解码器类型：%1$s</string>
+    <string name="title_video_encode_type">编码器类型：%1$s</string>
+    <string name="title_video_resolution_type">分辨率@帧率：%1$s</string>
+    <string name="title_video_bit_rate">码率：%1$s</string>
+    <string name="title_not_agree_policy">已阅读并同意</string>
+    <string name="title_data_policy">服务协议</string>
+    <string name="title_cookie_policy">隐私协议</string>
+    <string name="title_agree_btn">同意</string>
+    <string name="title_disagree_btn">不同意并退出</string>
+    <string name="title_connect_us">联系我们</string>
+    <string name="title_choose_email">请选择邮件类应用</string>
 
 
     <string name="room_channel_failover">正在重连 …</string>
@@ -162,7 +178,11 @@
     <string name="msg_pin_video_tips">双击取消固定视频</string>
     <string name="msg_exit_pin_video_tips">退出固定视频</string>
     <string name="msg_join_alert">房间号和用户名不能为空</string>
-    <string name="msg_not_relevant_permissions">未开通视频标注功能，如需体验，请联系销售，联系电话：18957159506</string>
+    <string name="msg_not_annotation_permissions">视频标注</string>
+    <string name="msg_not_screen_share_permissions">共享屏幕</string>
+    <string name="msg_policy_title">声明</string>
+    <string name="msg_policy_sub_title">欢迎来到PanoVideoCall。</string>
+    <string name="msg_fraud_tips">本产品仅用于拍乐云产品功能演示。注意个人信息保密，谨防诈骗。</string>
 
     <!-- White board -->
     <string name="title_wb_select">选择</string>
@@ -170,8 +190,8 @@
     <string name="title_wb_text">文字</string>
     <string name="title_wb_graphics">图形</string>
     <string name="title_wb_delete">删除</string>
-    <string name="title_wb_next">前一页</string>
-    <string name="title_wb_prev">后一页</string>
+    <string name="title_wb_next">后一页</string>
+    <string name="title_wb_prev">前一页</string>
     <string name="title_wb_add">增加页</string>
     <string name="title_wb_remove">删除当前页</string>
     <string name="title_wb_current_name">当前白板: </string>
@@ -200,11 +220,21 @@
     <string name="annotation_user_start">%1$s开启了标注！</string>
     <string name="annotation_user_stop">%1$s关闭了标注！</string>
 
-    <!-- Room Advanced Settings-->
-    <string name="action_advanced_settings">高级设置</string>
-    <string name="room_advanced_settings_title">请输入Pano配置信息</string>
-    <string name="room_advanced_settings_app_id">请输入AppID</string>
-    <string name="room_advanced_settings_app_server">请输入PanoServer</string>
-    <string name="room_advanced_settings_token">请输入Token</string>
-    <string name="room_advanced_settings_user_id">请输入UserId</string>
+    <!-- permission -->
+    <string name="pano_title_ask_again">权限申请</string>
+    <string name="pano_rationale_ask_again">
+        如果没有获取该权限，此应用程序的该功能可能无法正常运行。
+         请打开应用程序设置页面以修改应用程序权限。
+    </string>
+    <string name="permission_required_title">您的应用程序需要权限，否则您无法正常使用应用程序</string>
+    <string name="camera_permission_required_title">您的应用程序需要“摄像头”使用权限，否则您无法正常使用该功能</string>
+    <string name="phone_call_permission_required_title">您的应用程序需要“拨打电话”权限，否则您无法使用使用该功能</string>
+    <string name="extra_storage_permission_required_title">您的应用程序需要“存储空间”权限，否则您无法正常使用应用程序</string>
+    <string name="record_audio_permission_required_title">您的应用程序需要“录音”权限，否则您无法正常使用应用程序</string>
+
+    <!-- user list -->
+    <string name="title_call_operate">操作</string>
+    <string name="user_list_set_host_user_msg">确认将%1$s设置为主持人?</string>
+    <string name="user_list_host_btn_text">成为主持人</string>
+    <string name="user_list_host_text">主持人</string>
 </resources>

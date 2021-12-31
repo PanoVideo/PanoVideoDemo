@@ -3,9 +3,9 @@ package video.pano.panocall.rtc;
 import static video.pano.panocall.info.Config.APPID;
 import static video.pano.panocall.info.Config.PANO_SERVER;
 import static video.pano.panocall.info.Constant.KEY_SCREEN_CAPTURE_FPS;
+import static video.pano.panocall.info.Constant.KEY_VIDEO_FRAME_RATE;
 
 import com.pano.rtc.api.Constants;
-import com.pano.rtc.api.PanoAnnotationManager;
 import com.pano.rtc.api.RtcEngine;
 import com.pano.rtc.api.RtcEngineCallback;
 import com.pano.rtc.api.RtcEngineConfig;
@@ -13,11 +13,11 @@ import com.pano.rtc.api.RtcMediaStatsObserver;
 import com.pano.rtc.api.RtcMessageService;
 import com.pano.rtc.api.RtcWhiteboard;
 
-import video.pano.panocall.callback.PanoAnnotationCallback;
 import video.pano.panocall.callback.PanoEngineCallback;
 import video.pano.panocall.callback.PanoMediaStatsObserver;
 import video.pano.panocall.callback.PanoMessageCallback;
 import video.pano.panocall.callback.PanoWhiteboardCallback;
+import video.pano.panocall.utils.DeviceRatingTest;
 import video.pano.panocall.utils.SPUtils;
 import video.pano.panocall.utils.Utils;
 
@@ -29,7 +29,6 @@ public class PanoRtcEngine {
 
     private final PanoEngineCallback mRtcCallback = new PanoEngineCallback();
     private final PanoWhiteboardCallback mWhiteboardCallback = new PanoWhiteboardCallback();
-    private final PanoAnnotationCallback mAnnotationCallback = new PanoAnnotationCallback();
     private final PanoMessageCallback mMessageCallback = new PanoMessageCallback();
     private final PanoMediaStatsObserver mMediaStatsObserver = new PanoMediaStatsObserver();
 
@@ -60,15 +59,21 @@ public class PanoRtcEngine {
     private RtcEngine initEngine() {
         // 设置PANO媒体引擎的配置参数
         String screenOptMode = SPUtils.getString(KEY_SCREEN_CAPTURE_FPS, "0");
+        Constants.VideoFrameRateType frameRateType = DeviceRatingTest.getIns()
+                .getVideoFrameRateType(SPUtils.getInt(KEY_VIDEO_FRAME_RATE, 1));
         try {
             mRtcEngine = RtcEngine.create(getConfig());
-            mRtcEngine.getAnnotationMgr().setCallback(mAnnotationCallback);
             mRtcEngine.setOption(Constants.PanoOptionType.ScreenOptimization,
                     !"0".equals(screenOptMode));
-            mRtcEngine.setMediaStatsObserver(mMediaStatsObserver);
+            mRtcEngine.setOption(Constants.PanoOptionType.DisableAV1Encoding,true);
+            mRtcEngine.setVideoFrameRate(frameRateType);
             mRtcWhiteboard = mRtcEngine.getWhiteboard();
-            mRtcWhiteboard.setCallback(mWhiteboardCallback);
             mRtcMessageService = mRtcEngine.getMessageService();
+
+            mRtcWhiteboard.setCallback(mWhiteboardCallback);
+            mRtcWhiteboard.enableCursorPosSync(true);
+            mRtcWhiteboard.enableShowRemoteCursor(true);
+            mRtcEngine.setMediaStatsObserver(mMediaStatsObserver);
             mRtcMessageService.setCallback(mMessageCallback);
             return mRtcEngine ;
         } catch (Exception e) {
@@ -102,9 +107,6 @@ public class PanoRtcEngine {
     public void registerWhiteboardHandler(RtcWhiteboard.Callback handler) { mWhiteboardCallback.addListener(handler); }
     public void removeWhiteboardHandler(RtcWhiteboard.Callback handler) { mWhiteboardCallback.removeListener(handler); }
 
-    public void registerAnnotationCallback(PanoAnnotationManager.Callback handler){ mAnnotationCallback.addListener(handler); }
-    public void removeAnnotationCallback(PanoAnnotationManager.Callback handler){ mAnnotationCallback.removeListener(handler); }
-
     public void registerMessageCallback(RtcMessageService.Callback handler){ mMessageCallback.addListener(handler); }
     public void removeMessageCallback(RtcMessageService.Callback handler){ mMessageCallback.removeListener(handler); }
 
@@ -117,7 +119,9 @@ public class PanoRtcEngine {
     }
 
     public void clear(){
-        RtcEngine.destroy();
-        mRtcEngine = null ;
+        if(mRtcEngine != null){
+            mRtcEngine.destroy();
+            mRtcEngine = null ;
+        }
     }
 }

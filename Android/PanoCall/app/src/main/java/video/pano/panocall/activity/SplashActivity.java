@@ -9,7 +9,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import video.pano.panocall.R;
-import video.pano.panocall.utils.MiscUtils;
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -24,6 +23,7 @@ public class SplashActivity extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         jump2Main();
     }
+
 
     private void jump2Main(){
         mHandler.postDelayed(()->{

@@ -35,17 +35,14 @@
 
     <string-array name="more_settings">
         <item>Settings</item>
-        <item>Video Annotation</item>
     </string-array>
 
     <string-array name="share_settings">
         <item>Whiteboard Share</item>
-        <item>Screen Share(Off)</item>
     </string-array>
 
-    <string-array name="share_settings_screen_share_on">
-        <item>Whiteboard Share</item>
-        <item>Screen Share(On)</item>
+    <string-array name="operate_list">
+        <item>Set Host</item>
     </string-array>
 
 </resources>

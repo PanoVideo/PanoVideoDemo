@@ -35,6 +35,21 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:text="小贝" />
 
+    <TextView
+        android:id="@+id/tv_host"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:textSize="14sp"
+        android:textColor="@color/color333333"
+        android:visibility="gone"
+        android:text="@string/user_list_host_text"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/img_audio"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible"
+        />
+
     <ImageView
         android:id="@+id/img_audio"
         android:layout_width="wrap_content"

@@ -10,6 +10,8 @@
     <!-- Strings used for fragments for navigation -->
     <string name="float_fragment_label">Float Fragment</string>
     <string name="grid_fragment_label">Grid Fragment</string>
+    <string name="gallery_fragment_label">Gallery Fragment</string>
+    <string name="speaker_fragment_label">Speaker Fragment</string>
     <string name="whiteboard_fragment_label">Whiteboard Fragment</string>
     <string name="user_list_fragment_label">UserList Fragment</string>
     
@@ -58,13 +60,14 @@
     <!-- Preference Titles -->
     <string name="title_call_duration">Call Duration</string>
     <string name="title_call_max_attendees">Max Participants</string>
-    <string name="title_auto_mute_audio">Mute self when entering call</string>
+    <string name="title_auto_mute_audio">Turn on Mic</string>
     <string name="title_auto_start_speaker">Use Speaker When Entering Call</string>
-    <string name="title_auto_start_camera">Turn on camera when entering call</string>
+    <string name="title_auto_start_camera">Turn on My Video</string>
     <string name="title_leave_confirm">Confirm When Leaving Call</string>
     <string name="title_enable_device_rating">Automatically adjust the resolution according to the performance of the phone</string>
     <string name="title_screen_capture_fps">Screen capture frame rate</string>
     <string name="title_video_sending_resolution">My Resolution</string>
+    <string name="title_video_frame_rate">My Frame Rate</string>
     <string name="title_face_beauty">Beauty Settings</string>
     <string name="title_statistics">Statistics Settings</string>
     <string name="title_user_statistics">Video Statistics</string>
@@ -98,6 +101,20 @@
     <string name="title_video_resolution_180p">180P</string>
     <string name="title_video_resolution_360p">360P</string>
     <string name="title_video_resolution_720p">720P</string>
+    <string name="title_video_frame_rate_15fps">15fps</string>
+    <string name="title_video_frame_rate_30fps">30fps</string>
+    <string name="title_video_decode_type">Decode type：%1$s</string>
+    <string name="title_video_encode_type">Encode type：%1$s</string>
+    <string name="title_video_resolution_type">Resolution@Frame rate：%1$s</string>
+    <string name="title_video_bit_rate">Bit rate：%1$s</string>
+    <string name="title_not_agree_policy">I agree to the Terms </string>
+    <string name="title_data_policy">Data Policy</string>
+    <string name="title_cookie_policy">Cookie Policy</string>
+    <string name="title_agree_btn">Agree</string>
+    <string name="title_disagree_btn">Disagree and Exit</string>
+    <string name="title_connect_us">Connect US</string>
+    <string name="title_choose_email">Please select mail application</string>
+
 
 
     <string name="url_pano">https://pano.video/</string>
@@ -159,8 +176,11 @@
     <string name="msg_pin_video_tips">Double tap screen to cancel pin video</string>
     <string name="msg_exit_pin_video_tips">Exit pin video</string>
     <string name="msg_join_alert">Room and Name cannot be empty</string>
-    <string name="msg_not_relevant_permissions">Video annotation is not activated yet.
-        please contact the sales team. Contact Number: 18957159506</string>
+    <string name="msg_not_annotation_permissions">Video annotation</string>
+    <string name="msg_not_screen_share_permissions">Screen share</string>
+    <string name="msg_policy_title">Announcement</string>
+    <string name="msg_policy_sub_title">Welcome to PanoVideoCall.</string>
+    <string name="msg_fraud_tips">Fraudsters may use the demo for fraud. Privacy should be confidential when practical use.</string>
 
     <string name="room_channel_failover">Connecting …</string>
     <!-- White board -->
@@ -200,11 +220,21 @@
     <string name="annotation_user_start">%1$s has started annotation!</string>
     <string name="annotation_user_stop">%1$s has stopped annotation!</string>
 
-    <!-- Room Advanced Settings-->
-    <string name="action_advanced_settings">Advanced Setting</string>
-    <string name="room_advanced_settings_title">Please input Pano config</string>
-    <string name="room_advanced_settings_app_id">Please input AppID</string>
-    <string name="room_advanced_settings_app_server">Please input PanoServer</string>
-    <string name="room_advanced_settings_token">Please input Token</string>
-    <string name="room_advanced_settings_user_id">Please input UserId</string>
+    <!-- permission -->
+    <string name="pano_title_ask_again">Permissions Required</string>
+    <string name="pano_rationale_ask_again">
+        This app may not work correctly without the requested permissions.
+        Open the app settings screen to modify app permissions.
+    </string>
+    <string name="permission_required_title">Your application needs some permissions, otherwise you cannot use normally</string>
+    <string name="camera_permission_required_title">Your application needs "Camera" permission, otherwise you will not be able to use normally</string>
+    <string name="phone_call_permission_required_title">Your application needs "Call Phone" permission, otherwise you will not be able to use normally</string>
+    <string name="extra_storage_permission_required_title">Your application needs "Read/Write Extra Storage" permission, otherwise you cannot use normally</string>
+    <string name="record_audio_permission_required_title">Your application needs "Record Audio" permission, otherwise you cannot use normally</string>
+
+    <!-- user list -->
+    <string name="title_call_operate">Operate</string>
+    <string name="user_list_set_host_user_msg">Set %1$s as the host?</string>
+    <string name="user_list_host_btn_text">Become a host</string>
+    <string name="user_list_host_text">Host</string>
 </resources>

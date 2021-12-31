@@ -1,47 +1,38 @@
 package video.pano.panocall.fragment;
 
-import static android.Manifest.permission.CAMERA;
 import static video.pano.panocall.info.Constant.KEY_ENABLE_FACE_BEAUTY;
 import static video.pano.panocall.info.Constant.KEY_FACE_BEAUTY_INTENSITY;
 import static video.pano.panocall.info.Constant.KEY_VIDEO_SENDING_RESOLUTION;
 import static video.pano.panocall.info.Constant.PERMISSION_REQUEST_CODE;
 
-import android.app.AlertDialog;
-import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SwitchCompat;
-import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.Fragment;
 
 import com.pano.rtc.api.Constants;
 import com.pano.rtc.api.IVideoRender;
 import com.pano.rtc.api.RtcView;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import video.pano.panocall.PanoApplication;
+import pub.devrel.easypermissions.AppSettingsDialog;
+import pub.devrel.easypermissions.EasyPermissions;
 import video.pano.panocall.R;
-import video.pano.panocall.activity.MainActivity;
+import video.pano.panocall.info.Config;
 import video.pano.panocall.rtc.PanoRtcEngine;
 import video.pano.panocall.utils.DeviceRatingTest;
 import video.pano.panocall.utils.SPUtils;
 import video.pano.panocall.utils.Utils;
 
-
-public class FaceBeautyFragment extends BaseSettingFragment{
+public class FaceBeautyFragment extends Fragment implements EasyPermissions.PermissionCallbacks {
 
     private static final String TAG = "FaceBeautyFragment";
-
-    private static final String[] PERMISSIONS = {
-            CAMERA,
-    };
 
     private boolean mNeedSwitchCamera = false;
 
@@ -50,6 +41,7 @@ public class FaceBeautyFragment extends BaseSettingFragment{
     private float mIntensity;
     private SeekBar mSbIntensity;
     private SwitchCompat mSwFaceBeautify;
+    private boolean mIsPause;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -65,18 +57,22 @@ public class FaceBeautyFragment extends BaseSettingFragment{
         mRtcView = view.findViewById(R.id.face_beauty_view);
         mRtcView.setScalingType(IVideoRender.ScalingType.SCALE_ASPECT_FILL);
         mRtcView.setZOrderMediaOverlay(true);
-
+        getData();
         initFaceBeauty(view);
+        showCamera();
     }
 
-    private void updateFaceBeautyData(){
+    private void getData() {
         mEnabled = SPUtils.getBoolean(KEY_ENABLE_FACE_BEAUTY, false);
         mIntensity = SPUtils.getFloat(KEY_FACE_BEAUTY_INTENSITY, 0);
+    }
 
+    private void updateFaceBeautyData() {
         mSwFaceBeautify.setChecked(mEnabled);
         mSbIntensity.setEnabled(mEnabled);
         mSbIntensity.setProgress((int) (mIntensity * mSbIntensity.getMax()));
         PanoRtcEngine.getIns().getPanoEngine().setFaceBeautify(mEnabled);
+
         if (mEnabled) {
             PanoRtcEngine.getIns().getPanoEngine().setFaceBeautifyIntensity(mIntensity);
         }
@@ -85,20 +81,24 @@ public class FaceBeautyFragment extends BaseSettingFragment{
     @Override
     public void onResume() {
         super.onResume();
-        checkCameraPermission(getActivity());
+        if(mIsPause){
+            openCamera();
+            mIsPause = false ;
+        }
+        getData();
         updateFaceBeautyData();
     }
 
-    private void initFaceBeauty(View view){
-
+    private void initFaceBeauty(View view) {
         mSbIntensity = view.findViewById(R.id.seekBar_face_beauty_intensity);
         mSwFaceBeautify = view.findViewById(R.id.switch_face_beauty_enable);
 
         mSwFaceBeautify.setOnClickListener(v -> {
-            boolean enabled1 = mSwFaceBeautify.isChecked();
-            PanoRtcEngine.getIns().getPanoEngine().setFaceBeautify(enabled1);
-            mSbIntensity.setEnabled(enabled1);
-            SPUtils.put(KEY_ENABLE_FACE_BEAUTY, enabled1);
+            mEnabled = mSwFaceBeautify.isChecked();
+            PanoRtcEngine.getIns().getPanoEngine().setFaceBeautify(mEnabled);
+            mSbIntensity.setEnabled(mEnabled);
+
+            SPUtils.put(KEY_ENABLE_FACE_BEAUTY, mEnabled);
         });
         mSbIntensity.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -122,90 +122,54 @@ public class FaceBeautyFragment extends BaseSettingFragment{
     @Override
     public void onPause() {
         super.onPause();
-        PanoApplication app = (PanoApplication) Utils.getApp();
-        if (!app.mIsLocalVideoStarted) {
+        if (!Config.sIsLocalVideoStarted) {
             PanoRtcEngine.getIns().getPanoEngine().stopPreview();
         } else if (mNeedSwitchCamera) {
             PanoRtcEngine.getIns().getPanoEngine().switchCamera();
         }
         PanoRtcEngine.getIns().getPanoEngine().setLocalVideoRender(null);
+        mIsPause = true;
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case PERMISSION_REQUEST_CODE:
-                if (getUngrantedPermissions(getActivity()).size() == 0) {
-                    openCamera();
-                } else {
-                    Toast.makeText(getActivity(), "Some permissions are denied", Toast.LENGTH_LONG).show();
-                }
-                break;
-            default:
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
-    }
-
-    private void openCamera() {
-        PanoApplication app = (PanoApplication) Utils.getApp();
+    public void openCamera() {
         int resolution = SPUtils.getInt(KEY_VIDEO_SENDING_RESOLUTION, 2);
         Constants.VideoProfileType profile = DeviceRatingTest.getIns().getProfileType(resolution);
 
         mNeedSwitchCamera = false;
         PanoRtcEngine.getIns().getPanoEngine().setLocalVideoRender(mRtcView);
-        if (!app.mIsLocalVideoStarted) {
+        if (!Config.sIsLocalVideoStarted) {
             mRtcView.setMirror(true);
             PanoRtcEngine.getIns().getPanoEngine().startPreview(profile, true);
         } else {
-            if (!app.mIsFrontCamera) {
-                //app.getPanoEngine().switchCamera();
-                //mNeedSwitchCamera = true;
-            }
-            mRtcView.setMirror(app.mIsFrontCamera);
+            mRtcView.setMirror(Config.sIsFrontCamera);
         }
     }
 
-    private List<String> getUngrantedPermissions(Context context) {
-        List<String> ungranted = new ArrayList<>();
-        for (String permission : PERMISSIONS) {
-            if (!MainActivity.checkPermission(context, permission)) {
-                ungranted.add(permission);
-            }
+    public void showCamera() {
+        if (EasyPermissions.hasPermissions(Utils.getApp(), Config.FACE_BEAUTY_PERMISSION)) {
+            openCamera();
+        } else {
+            EasyPermissions.requestPermissions(this, getString(R.string.camera_permission_required_title),
+                    PERMISSION_REQUEST_CODE, Config.FACE_BEAUTY_PERMISSION);
         }
-        return ungranted;
     }
 
-    private void checkCameraPermission(Context context) {
-        List<String> ungranted = getUngrantedPermissions(context);
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        // 将结果转发给EasyPermissions
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
+    }
 
-        if (ungranted.size() != 0) {
+    @Override
+    public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
+    }
 
-            List<String> showRationale = new ArrayList<>();
-            for (String permission : ungranted) {
-                if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), permission)) {
-                    showRationale.add(permission);
-                }
-            }
-
-            if (showRationale.size() > 0) {
-                String msg = getResources().getString(R.string.msg_permission_update);
-                new AlertDialog.Builder(context)
-                        .setMessage(msg)
-                        .setPositiveButton("OK", (dialog, which) -> {
-                            ActivityCompat.requestPermissions(getActivity(),
-                                    ungranted.toArray(new String[0]),
-                                    PERMISSION_REQUEST_CODE);
-                        })
-                        .setNegativeButton("Cancel", null)
-                        .create()
-                        .show();
-            } else {
-                ActivityCompat.requestPermissions(getActivity(), ungranted.toArray(new String[0]), PERMISSION_REQUEST_CODE);
-            }
-
-            return;
+    @Override
+    public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
+        if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
+            new AppSettingsDialog.Builder(this).setTitle(R.string.pano_title_ask_again).setRationale(R.string.pano_rationale_ask_again)
+                    .build().show();
         }
-
-        openCamera();
     }
 }

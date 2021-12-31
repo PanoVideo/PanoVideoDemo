@@ -22,7 +22,7 @@ import video.pano.panocall.fragment.StatisticsScreenFragment;
 import video.pano.panocall.fragment.StatisticsVideoFragment;
 import video.pano.panocall.rtc.PanoRtcEngine;
 
-public class StatisticsActivity extends BaseSettingActivity implements RadioGroup.OnCheckedChangeListener{
+public class StatisticsActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener{
 
     private ViewPager2 mContentPager;
     private PagerChangeCallback mPagerChangeCallback;

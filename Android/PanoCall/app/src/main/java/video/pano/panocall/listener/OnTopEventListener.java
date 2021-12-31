@@ -1,6 +1,6 @@
 package video.pano.panocall.listener;
 
-public interface PanoTopEventHandler {
-    void onChannelCountDown(long remain);
+public interface OnTopEventListener {
     void onBCPanelVideo(boolean closed);
+    void onChannelCountDown(long remain);
 }

@@ -1,5 +1,16 @@
 package video.pano.panocall.fragment;
 
+import static video.pano.panocall.info.Constant.FROM_GRAPHICS;
+import static video.pano.panocall.info.Constant.FROM_OTHER;
+import static video.pano.panocall.info.Constant.FROM_PENCIL;
+import static video.pano.panocall.info.Constant.FROM_TEXT;
+import static video.pano.panocall.info.Constant.FROM_TOP;
+import static video.pano.panocall.info.Constant.KEY_SHARE_ANNOTATION_START;
+import static video.pano.panocall.info.Constant.KEY_USER_ID;
+import static video.pano.panocall.info.Constant.KEY_VIDEO_ANNOTATION_START;
+import static video.pano.panocall.rtc.MeetingViewFactory.TYPE_SMALL_VIEW;
+import static video.pano.panocall.utils.ScreenSensorUtils.DURATION;
+
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -11,62 +22,46 @@ import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
-import android.util.LongSparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.FragmentActivity;
-import androidx.navigation.NavController;
-import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.NavDestination;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.pano.rtc.api.Constants;
 import com.pano.rtc.api.PanoCoursePageView;
-import com.pano.rtc.api.RtcWbView;
 import com.pano.rtc.api.RtcWhiteboard;
-import com.pano.rtc.api.WBDocInfo;
 import com.pano.rtc.api.WBVisionConfig;
-
-import org.json.JSONObject;
 
 import java.util.List;
 
-import video.pano.panocall.PanoApplication;
 import video.pano.panocall.R;
 import video.pano.panocall.adapter.WBItemAdapter;
 import video.pano.panocall.info.Config;
 import video.pano.panocall.info.FillColor;
 import video.pano.panocall.info.UserManager;
+import video.pano.panocall.listener.OnWhiteboardEventListener;
 import video.pano.panocall.model.UserInfo;
-import video.pano.panocall.model.UserViewInfo;
+import video.pano.panocall.rtc.MeetingViewFactory;
+import video.pano.panocall.rtc.PanoRtcEngine;
 import video.pano.panocall.utils.AnnotationHelper;
 import video.pano.panocall.utils.ScreenSensorUtils;
 import video.pano.panocall.utils.Utils;
 
-import static video.pano.panocall.info.Constant.FROM_GRAPHICS;
-import static video.pano.panocall.info.Constant.FROM_OTHER;
-import static video.pano.panocall.info.Constant.FROM_PENCIL;
-import static video.pano.panocall.info.Constant.FROM_TEXT;
-import static video.pano.panocall.info.Constant.FROM_TOP;
-import static video.pano.panocall.info.Constant.KEY_GRID_POS;
-import static video.pano.panocall.info.Constant.KEY_USER_ID;
-import static video.pano.panocall.info.Constant.KEY_VIDEO_ANNOTATION_START;
-import static video.pano.panocall.info.Constant.MSG_KEY;
-import static video.pano.panocall.utils.ScreenSensorUtils.DURATION;
 
+public class WhiteboardFragment extends MeetingFragment implements OnWhiteboardEventListener {
 
-public class WhiteboardFragment extends CallFragment  {
-
-    private static final int RATION_9 = 900 ;
-    private static final int RATION_16 = 1600 ;
+    private static final int RATION_9 = 900;
+    private static final int RATION_16 = 1600;
 
     private RtcWhiteboard mRtcWhiteboard;
     private PanoCoursePageView mCoursePageView;
@@ -83,6 +78,7 @@ public class WhiteboardFragment extends CallFragment  {
     private RadioGroup mTextColorGroup;
     private RadioGroup mGraphicsColorGroup;
     private RadioGroup mGraphicsToolsGroup;
+    private RadioButton mPencilRadio;
 
     private WBItemAdapter mWbItemAdapter;
 
@@ -92,16 +88,14 @@ public class WhiteboardFragment extends CallFragment  {
     private View mGraphicsPopupView;
     private View mTextPopupView;
     private View mAdminView;
-    private View mAttendeeView;
 
     private final Resources mResources = Utils.getApp().getResources();
 
     private Constants.WBToolType mToolType = Constants.WBToolType.None;
-    private Constants.WBRoleType mRoleType = Constants.WBRoleType.Admin;
     private Constants.WBFillType mFillType = Constants.WBFillType.None;
 
-    private Constants.WBToolType mGraphicsToolsType = Constants.WBToolType.None ;
-    private Constants.WBFillType mGraphicsFillType = Constants.WBFillType.None ;
+    private Constants.WBToolType mGraphicsToolsType = Constants.WBToolType.None;
+    private Constants.WBFillType mGraphicsFillType = Constants.WBFillType.None;
 
     private FillColor mTextFillColor = FillColor.Black;
     private FillColor mPencilFillColor = FillColor.Black;
@@ -109,7 +103,6 @@ public class WhiteboardFragment extends CallFragment  {
 
     private int mLineWidth = 10;
     private int mFontSize = 36;
-    private long mLastTimeMillis = 0L ;
 
     private int mTextColorId = R.id.rb_text_color_black;
     private int mPencilColorId = R.id.rb_pencil_color_black;
@@ -120,8 +113,8 @@ public class WhiteboardFragment extends CallFragment  {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        if(mResources != null && mResources.getConfiguration() != null
-                && mResources.getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
+        if (mResources != null && mResources.getConfiguration() != null
+                && mResources.getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             return inflater.inflate(R.layout.fragment_whiteboard_land, container, false);
         }
         return inflater.inflate(R.layout.fragment_whiteboard, container, false);
@@ -131,18 +124,30 @@ public class WhiteboardFragment extends CallFragment  {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mRtcWhiteboard = mViewModel.rtcEngine().getWhiteboard();
-
+        initViewModel();
         initUserInfo();
         initViews(view);
+        init();
+        setupUserVideoView();
     }
 
     @Override
-    public void onConfigurationChanged(@NonNull Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
+    public void onDestroyView() {
+        super.onDestroyView();
+        if(mLocalMeetingView != null) getLifecycle().removeObserver(mLocalMeetingView);
+        mViewModel.setOnWhiteboardEventListener(null);
     }
 
-    private void initViews(View view){
+    @Override
+    protected void initViewModel(){
+        super.initViewModel();
+        mRtcWhiteboard = mViewModel.getPanoWhiteboard();
+        mViewModel.setOnWhiteboardEventListener(this);
+    }
+
+    private void initViews(View view) {
+        initMeetingView(view);
+
         initTopToolbarPopup(view);
         initBottomGraphicsPopup(view);
         initBottomPencilPopup(view);
@@ -157,54 +162,56 @@ public class WhiteboardFragment extends CallFragment  {
         initCoursePageView(view);
     }
 
-    private void initUserInfo() {
-        new Handler().postDelayed(()->{
-            if(mViewModel.getUserManager().getHostUserId() == 0L){
-                mRoleType = Constants.WBRoleType.Admin;
-                mRtcWhiteboard.setRoleType(Constants.WBRoleType.Admin);
-            }else{
-                mRoleType = Constants.WBRoleType.Attendee;
-            }
-        },1000);
+    private void init() {
+
+        mTvPencilInt.setText(String.valueOf(mLineWidth));
+        mPencilSeek.setProgress(mLineWidth);
+        mPencilColorGroup.check(mPencilColorId);
+
+        mRtcWhiteboard.setLineWidth(mLineWidth);
+
+        selectToolType(Constants.WBToolType.Path);
+        setColor(mPencilFillColor, mPencilColorId, FROM_PENCIL);
+
+        mPencilRadio.setChecked(true);
     }
 
-    private void initCoursePageView(View view){
-        mCoursePageView = view.findViewById(R.id.pano_course_page_view);
+    private void initUserInfo() {
+        if (UserManager.getIns().getHostId() == UserManager.getIns().getLocalUserId()) {
+            mRtcWhiteboard.setRoleType(Constants.WBRoleType.Admin);
+        }
+    }
 
-        RtcWbView webView = mCoursePageView.getAttachRtcWbView();
+    private void initCoursePageView(View view) {
+        mCoursePageView = view.findViewById(R.id.pano_course_page_view);
 
         WBVisionConfig config = new WBVisionConfig();
         config.height = RATION_9;
         config.width = RATION_16;
-        config.limited = true ;
+        config.limited = true;
         mRtcWhiteboard.initVision(config);
-        String curFileId = mRtcWhiteboard.getCurrentFileId();
-        WBDocInfo docInfo = mRtcWhiteboard.getFileInfo(curFileId);
-        if(docInfo.type == Constants.WBDocType.H5.getValue()){
-            webView.setTransparent(true);
-        }
+        mRtcWhiteboard.close();
+        mRtcWhiteboard.open(mCoursePageView);
 
-        mRtcWhiteboard.open(webView);
-
-        if(mResources != null
-                && mResources.getConfiguration() != null){
+        if (mResources != null
+                && mResources.getConfiguration() != null) {
             resize(mResources.getConfiguration().orientation);
         }
     }
 
-    private void resize(int orientation){
-        float scale = 0L ;
-        int pageHeight = 0 ;
-        int pageWidth = 0 ;
+    private void resize(int orientation) {
+        float scale = 0L;
+        int pageHeight = 0;
+        int pageWidth = 0;
 
-        if(orientation == Configuration.ORIENTATION_LANDSCAPE){
-            pageHeight = Config.sScreenWidth ;
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            pageHeight = Config.sScreenWidth;
             pageWidth = Config.sScreenWidth * RATION_16 / RATION_9;
             scale = (float) pageHeight / RATION_16;
-        }else if(orientation == Configuration.ORIENTATION_PORTRAIT){
-            pageWidth = Config.sScreenWidth  ;
-            pageHeight = Config.sScreenWidth * RATION_9 / RATION_16 ;
-            scale = (float)pageHeight / RATION_16;
+        } else if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+            pageWidth = Config.sScreenWidth;
+            pageHeight = Config.sScreenWidth * RATION_9 / RATION_16;
+            scale = (float) pageHeight / RATION_16;
         }
 
         ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) mCoursePageView.getLayoutParams();
@@ -241,10 +248,9 @@ public class WhiteboardFragment extends CallFragment  {
 
     private void initTopToolbarPopup(View rootView) {
         mTopPopupView = rootView.findViewById(R.id.cl_top_toolbar_popup_view);
-        mTopPopupView.setOnClickListener(v ->  showOrHideOtherPopupView(FROM_OTHER));
+        mTopPopupView.setOnClickListener(v -> showOrHideOtherPopupView(FROM_OTHER));
 
         mAdminView = rootView.findViewById(R.id.ll_wb_admin_view);
-        mAttendeeView = rootView.findViewById(R.id.ll_wb_attendee_view);
 
         mTvPageName = rootView.findViewById(R.id.tv_page_name);
         mTvPageSpeaker = rootView.findViewById(R.id.tv_page_speaker);
@@ -254,13 +260,8 @@ public class WhiteboardFragment extends CallFragment  {
         mWbItemAdapter = new WBItemAdapter(getContext());
         rvWbList.setAdapter(mWbItemAdapter);
 
-        mWbItemAdapter.setOnItemClickListener(wbDocId -> checkWbDoc(wbDocId,true));
+        mWbItemAdapter.setOnItemClickListener(wbDocId -> checkWbDoc(wbDocId, true));
 
-        rootView.findViewById(R.id.tv_page_apply_show).setOnClickListener(view1 -> {
-            mRtcWhiteboard.setRoleType(Constants.WBRoleType.Admin);
-            mAdminView.setVisibility(View.VISIBLE);
-            mAttendeeView.setVisibility(View.GONE);
-        });
         rootView.findViewById(R.id.tv_page_prev).setOnClickListener(view1 -> mRtcWhiteboard.prevPage());
         rootView.findViewById(R.id.tv_page_next).setOnClickListener(view1 -> mRtcWhiteboard.nextPage());
         rootView.findViewById(R.id.tv_page_add).setOnClickListener(view1 -> mRtcWhiteboard.addPage(true));
@@ -271,39 +272,40 @@ public class WhiteboardFragment extends CallFragment  {
     }
 
     private void initBottomToolsBar(View rootView) {
-        rootView.findViewById(R.id.img_orientation).setOnClickListener(v ->{
-            if(mResources == null) return ;
+        rootView.findViewById(R.id.img_orientation).setOnClickListener(v -> {
+            if (mResources == null) return;
 
             Configuration configuration = mResources.getConfiguration();
-            if(configuration == null) return;
+            if (configuration == null) return;
 
             FragmentActivity activity = getActivity();
-            if(activity == null || activity.isFinishing()) return ;
+            if (activity == null || activity.isFinishing()) return;
 
-            long currentTimeMillis = System.currentTimeMillis() ;
-            if(currentTimeMillis - ScreenSensorUtils.getIns().getLastTimeMillis() < DURATION){
-                return ;
+            long currentTimeMillis = System.currentTimeMillis();
+            if (currentTimeMillis - ScreenSensorUtils.getIns().getLastTimeMillis() < DURATION) {
+                return;
             }
 
-            if(configuration.orientation == Configuration.ORIENTATION_PORTRAIT){
+            if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
 //                ScreenSensorUtils.getIns().autoOrientation(false,ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                 activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                 ScreenSensorUtils.getIns().setLastTimeMillis(currentTimeMillis);
-            }else{
+            } else {
 //                ScreenSensorUtils.getIns().autoOrientation(false,ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
                 activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
                 ScreenSensorUtils.getIns().setLastTimeMillis(currentTimeMillis);
             }
         });
 
+        mPencilRadio = rootView.findViewById(R.id.rb_toolbar_pencil);
+        mPencilRadio.setOnClickListener(v -> {
+            showOrHideOtherPopupView(FROM_PENCIL);
+            showOrHidePencilPopupView();
+        });
+
         rootView.findViewById(R.id.rb_toolbar_graphics).setOnClickListener(v -> {
             showOrHideOtherPopupView(FROM_GRAPHICS);
             showOrHideGraphicsPopupView();
-        });
-
-        rootView.findViewById(R.id.rb_toolbar_pencil).setOnClickListener(v -> {
-            showOrHideOtherPopupView(FROM_PENCIL);
-            showOrHidePencilPopupView();
         });
 
         rootView.findViewById(R.id.rb_toolbar_text).setOnClickListener(v -> {
@@ -313,7 +315,7 @@ public class WhiteboardFragment extends CallFragment  {
 
         rootView.findViewById(R.id.rb_toolbar_delete).setOnClickListener(v -> {
             showOrHideOtherPopupView(FROM_OTHER);
-            selectToolType(Constants.WBToolType.Eraser);
+            selectToolType(Constants.WBToolType.Delete);
         });
 
         rootView.findViewById(R.id.rb_toolbar_select).setOnClickListener(v -> {
@@ -432,24 +434,24 @@ public class WhiteboardFragment extends CallFragment  {
         mGraphicsPopupView = rootView.findViewById(R.id.cl_wb_graphics_popup_view);
 
         mGraphicsToolsGroup = rootView.findViewById(R.id.radio_graphics_tools_group);
-        mGraphicsToolsGroup.setOnCheckedChangeListener((group,checkedId) -> {
+        mGraphicsToolsGroup.setOnCheckedChangeListener((group, checkedId) -> {
 
-            mGraphicsToolsId = checkedId ;
+            mGraphicsToolsId = checkedId;
 
-            if(checkedId == R.id.rb_graphics_line){
+            if (checkedId == R.id.rb_graphics_line) {
                 selectToolType(Constants.WBToolType.Line);
-            }else if(checkedId == R.id.rb_hollow_circle){
+            } else if (checkedId == R.id.rb_hollow_circle) {
                 selectToolType(Constants.WBToolType.Ellipse);
-            }else if(checkedId == R.id.rb_hollow_square){
+            } else if (checkedId == R.id.rb_hollow_square) {
                 selectToolType(Constants.WBToolType.Rect);
-            }else if(checkedId == R.id.rb_solid_circle){
+            } else if (checkedId == R.id.rb_solid_circle) {
                 selectToolType(Constants.WBToolType.Ellipse, Constants.WBFillType.Color);
-            }else if(checkedId == R.id.rb_solid_square){
+            } else if (checkedId == R.id.rb_solid_square) {
                 selectToolType(Constants.WBToolType.Rect, Constants.WBFillType.Color);
             }
             mGraphicsFillType = mFillType;
-            mGraphicsToolsType = mToolType ;
-            setColor(mGraphicsFillColor,mGraphicsColorId,FROM_GRAPHICS);
+            mGraphicsToolsType = mToolType;
+            setColor(mGraphicsFillColor, mGraphicsColorId, FROM_GRAPHICS);
         });
 
         mGraphicsColorGroup = rootView.findViewById(R.id.radio_graphics_color_group);
@@ -484,24 +486,7 @@ public class WhiteboardFragment extends CallFragment  {
         mTopPopupView.setVisibility(v);
 
         if (v == View.VISIBLE) {
-
-            String speakerName = "";
-            if (mRoleType == Constants.WBRoleType.Admin) {
-                UserInfo localUser = mViewModel.getUserManager().getLocalUser();
-                speakerName = localUser.getUserName();
-                mAdminView.setVisibility(View.VISIBLE);
-                mAttendeeView.setVisibility(View.GONE);
-            } else {
-                UserInfo adminUser = mViewModel.getUserManager()
-                        .getWhiteboardUser(mViewModel.getUserManager().getHostUserId());
-                speakerName = adminUser.getUserName();
-                mAttendeeView.setVisibility(View.VISIBLE);
-                mAdminView.setVisibility(View.GONE);
-            }
-
-            SpannableStringBuilder presenterBuilder = packageText(getString(R.string.title_wb_current_presenter),speakerName);
-            mTvPageSpeaker.setText(presenterBuilder);
-
+            checkAdminView();
             refreshWbList();
         }
     }
@@ -542,16 +527,16 @@ public class WhiteboardFragment extends CallFragment  {
         int v = mGraphicsPopupView.getVisibility() == View.GONE ? View.VISIBLE : View.GONE;
         mGraphicsPopupView.setVisibility(v);
         if (v == View.VISIBLE) {
-            mToolType = mGraphicsToolsType ;
-            mFillType = mGraphicsFillType ;
+            mToolType = mGraphicsToolsType;
+            mFillType = mGraphicsFillType;
 
             mGraphicsColorGroup.check(mGraphicsColorId);
             mGraphicsToolsGroup.check(mGraphicsToolsId);
 
             mRtcWhiteboard.setLineWidth(10);
 
-            selectToolType(mToolType,mFillType);
-            setColor(mGraphicsFillColor,mGraphicsColorId,FROM_GRAPHICS);
+            selectToolType(mToolType, mFillType);
+            setColor(mGraphicsFillColor, mGraphicsColorId, FROM_GRAPHICS);
         }
     }
 
@@ -560,16 +545,16 @@ public class WhiteboardFragment extends CallFragment  {
     }
 
     private void selectToolType(Constants.WBToolType toolType, Constants.WBFillType fillType) {
-        mFillType = fillType ;
+        mFillType = fillType;
         mToolType = toolType;
         mRtcWhiteboard.setToolType(toolType);
         mRtcWhiteboard.setFillType(fillType);
     }
-    
-    private void setColor(FillColor fillColor, int id, int from){
-        if(mFillType == Constants.WBFillType.Color){
+
+    private void setColor(FillColor fillColor, int id, int from) {
+        if (mFillType == Constants.WBFillType.Color) {
             mRtcWhiteboard.setFillColor(fillColor.getValue());
-        }else{
+        } else {
             mRtcWhiteboard.setForegroundColor(fillColor.getValue());
         }
         switch (from) {
@@ -626,85 +611,106 @@ public class WhiteboardFragment extends CallFragment  {
         }
     }
 
-    private void leaveWhiteboard(){
+    private void leaveWhiteboard() {
         Configuration configuration = mResources.getConfiguration();
-        if(configuration != null && configuration.orientation == Configuration.ORIENTATION_LANDSCAPE){
+        if (configuration != null) {
             FragmentActivity activity = getActivity();
-            if(activity != null && !activity.isFinishing()){
-                activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            if (activity != null && !activity.isFinishing()) {
+                activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
             }
         }
         showOrHideOtherPopupView(FROM_OTHER);
         mRtcWhiteboard.close();
-        if(UserManager.getIns().getRemoteSize() < 2){
-            NavHostFragment.findNavController(WhiteboardFragment.this).navigate(R.id.action_WhiteboardFragment_to_FloatFragment);
-        }else{
-            NavHostFragment.findNavController(WhiteboardFragment.this).navigateUp();
+        mViewModel.mWhiteboardContentUpdate = false;
+        mViewModel.mWhiteboardStart = false;
+
+        NavDestination currentDestination = mNavController.getCurrentDestination();
+        if(currentDestination == null){
+            return ;
+        }
+        if (currentDestination.getId() == R.id.WhiteboardFragment) {
+            mNavController.navigate(R.id.action_WhiteboardFragment_to_SpeakerFragment);
         }
     }
 
-    private SpannableStringBuilder packageText(String start , String end){
+    private SpannableStringBuilder packageText(String start, String end) {
         SpannableStringBuilder ssb = new SpannableStringBuilder();
 
         SpannableString key = new SpannableString(start);
-        key.setSpan(new ForegroundColorSpan(Color.parseColor("#999999")),0,key.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+        key.setSpan(new ForegroundColorSpan(Color.parseColor("#999999")), 0, key.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 
         SpannableString value = new SpannableString(end);
-        value.setSpan(new ForegroundColorSpan(Color.parseColor("#333333")),0,value.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+        value.setSpan(new ForegroundColorSpan(Color.parseColor("#333333")), 0, value.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 
         ssb.append(key).append("  ").append(value);
 
-        return ssb ;
+        return ssb;
     }
 
-    private void refreshWbList(){
+    private void refreshWbList() {
         String currentWBId = mRtcWhiteboard.getCurrentWhiteboardId();
         List<String> wbFiles = mRtcWhiteboard.enumerateFiles();
 
-        if(!TextUtils.isEmpty(currentWBId)){
+        if (!TextUtils.isEmpty(currentWBId)) {
             String docName = getString(R.string.title_wb_default_wb);
-            if(!currentWBId.contains("default")){
+            if (!currentWBId.contains("default")) {
                 int size = wbFiles.size();
-                for(int i = 0 ; i < size ; i ++){
-                    if(currentWBId.equals(wbFiles.get(i))){
+                for (int i = 0; i < size; i++) {
+                    if (currentWBId.equals(wbFiles.get(i))) {
                         int pageNum = i - 1;
-                        docName = getString(R.string.title_wb_default_doc,pageNum <=0 ? 1 : i);
+                        docName = getString(R.string.title_wb_default_doc, pageNum <= 0 ? 1 : i);
                     }
                 }
             }
-            SpannableStringBuilder pageNameBuilder = packageText(getString(R.string.title_wb_current_name),docName);
+            SpannableStringBuilder pageNameBuilder = packageText(getString(R.string.title_wb_current_name), docName);
             mTvPageName.setText(pageNameBuilder);
         }
 
-        mWbItemAdapter.setData(wbFiles,currentWBId);
+        mWbItemAdapter.setData(wbFiles, currentWBId);
     }
 
-    private void checkWbDoc(String checkWbId , boolean needSwitch){
-        if(TextUtils.isEmpty(checkWbId)) return ;
-        if(checkWbId.equals(mRtcWhiteboard.getCurrentFileId())){
-            return ;
+    private void checkWbDoc(String checkWbId, boolean needSwitch) {
+        if (TextUtils.isEmpty(checkWbId)) return;
+        if (checkWbId.equals(mRtcWhiteboard.getCurrentFileId())) {
+            return;
         }
 
         String docName = getString(R.string.title_wb_default_wb);
         List<String> wbFiles = mRtcWhiteboard.enumerateFiles();
 
-        if(!checkWbId.contains("default")){
+        if (!checkWbId.contains("default")) {
             int size = wbFiles.size();
-            for(int i = 0 ; i < size ; i ++){
-                if(checkWbId.equals(wbFiles.get(i))){
+            for (int i = 0; i < size; i++) {
+                if (checkWbId.equals(wbFiles.get(i))) {
                     int pageNum = i - 1;
-                    docName = getString(R.string.title_wb_default_doc,pageNum <=0 ? 1 : i);
+                    docName = getString(R.string.title_wb_default_doc, pageNum <= 0 ? 1 : i);
                 }
             }
         }
-        SpannableStringBuilder pageNameBuilder = packageText(getString(R.string.title_wb_current_name),docName);
+        SpannableStringBuilder pageNameBuilder = packageText(getString(R.string.title_wb_current_name), docName);
         mTvPageName.setText(pageNameBuilder);
 
         mWbItemAdapter.setCheckWbId(checkWbId);
-        if(needSwitch) mRtcWhiteboard.switchDoc(checkWbId);
+        if (needSwitch) mRtcWhiteboard.switchDoc(checkWbId);
     }
 
     // -------------------------- PANO Whiteboard Handler --------------------------
+
+    @Override
+    public void onCreateDoc(Constants.QResult result, String fileId) {
+        refreshWbList();
+    }
+
+    @Override
+    public void onSwitchDoc(Constants.QResult result, String fileId) {
+        checkWbDoc(fileId, false);
+    }
+
+    @Override
+    public void onDeleteDoc(Constants.QResult result, String fileId) {
+        refreshWbList();
+    }
+
     @Override
     public void onPageNumberChanged(int curPage, int totalPages) {
         setPageNum(curPage, totalPages);
@@ -717,64 +723,16 @@ public class WhiteboardFragment extends CallFragment  {
 
     @Override
     public void onRoleTypeChanged(Constants.WBRoleType newRole) {
-        mRoleType = newRole;
-        if(newRole == Constants.WBRoleType.Admin){
-            try{
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.put(MSG_KEY, mViewModel.getLocalUserId());
-                mRtcWhiteboard.broadcastMessage(jsonObject.toString().getBytes());
-
-                mAdminView.setVisibility(View.VISIBLE);
-                mAttendeeView.setVisibility(View.GONE);
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-        }else{
+        if (newRole == Constants.WBRoleType.Admin) {
+            mAdminView.setVisibility(View.VISIBLE);
+        } else {
             mAdminView.setVisibility(View.GONE);
-            mAttendeeView.setVisibility(View.VISIBLE);
-        }
-    }
-
-    @Override
-    public void onUserJoined(long userId, String userName) {
-        if(userId == mViewModel.getLocalUserId()){
-            return ;
-        }
-        if(mRoleType == Constants.WBRoleType.Admin){
-            try{
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.put(MSG_KEY, mViewModel.getLocalUserId());
-                mRtcWhiteboard.sendMessage(userId,jsonObject.toString().getBytes());
-            }catch (Exception e){
-                e.printStackTrace();
-            }
         }
     }
 
     @Override
     public void onWhiteboardStop() {
         leaveWhiteboard();
-    }
-
-    @Override
-    public void onDeleteDoc(Constants.QResult result, String fileId) {
-        if(result == Constants.QResult.OK){
-            refreshWbList();
-        }
-    }
-
-    @Override
-    public void onSwitchDoc(Constants.QResult result, String fileId) {
-        if(result == Constants.QResult.OK){
-            checkWbDoc(fileId,false);
-        }
-    }
-
-    @Override
-    public void onCreateDoc(Constants.QResult result, String fileId) {
-        if(result == Constants.QResult.OK){
-            refreshWbList();
-        }
     }
 
     // -------------------------- CallViewModel.CallEventHandler --------------------------
@@ -790,140 +748,187 @@ public class WhiteboardFragment extends CallFragment  {
 
     /***************************Indication Start*******************************************/
     @Override
-    public void onUserLeaveIndication(UserInfo user, Constants.UserLeaveReason reason) {
-        //Local View refresh
-        if (mUserViewArray[0].userId == user.userId) {
-            switchUserViewIndex();
-            //Remote View refresh
+    public void onUserJoinIndication(UserInfo user) {
+        if(mLocalMeetingView.isEmptyUserInfo()){
+            switchViewInfoData(mLocalMeetingView,user);
         }
     }
 
+    @Override
+    public void onUserLeaveIndication(UserInfo user) {
+        if (mLocalMeetingView.getUserId() == user.userId) {
+            setupUserVideoView();
+        }
+    }
+
+    @Override
+    public void onUserVideoStart(UserInfo user) {
+        if (mLocalMeetingView.isEmptyUserInfo()
+                || (mLocalMeetingView.checkUserInfo(user) && !user.isScreenStarted())) {
+            refreshViewInfo(mLocalMeetingView,user);
+            subscribeVideo(mLocalMeetingView);
+        }
+    }
+
+    @Override
+    public void onUserVideoStop(UserInfo user) {
+        // 取消订阅此用户视频
+        if(mLocalMeetingView.checkUserInfo(user) && !user.isScreenStarted()){
+            unSubscribeVideo(mLocalMeetingView);
+        }
+    }
+
+    @Override
+    public void onHostUserIdChanged(long hostId) {
+        checkAdminView();
+
+    }
     /***************************Indication End*******************************************/
+    /***************************Start/Stop LocalVideo*******************************************/
+
+    @Override
+    public void stopLocalVideo() {
+        UserInfo localUser = UserManager.getIns().getLocalUser();
+        if (mLocalMeetingView.checkUserInfo(localUser.userId)) {
+            unSubscribeVideo(mLocalMeetingView);
+        }
+    }
+
+    @Override
+    public void startLocalVideo() {
+        UserInfo localUser = UserManager.getIns().getLocalUser();
+        if (mLocalMeetingView.checkUserInfo(localUser.userId)) {
+            mLocalMeetingView.switchRtcVisible(true);
+            subscribeVideo(mLocalMeetingView);
+        }
+    }
+
+    /***************************Start/Stop LocalVideo*******************************************/
+
+    @Override
+    public void onNetworkQuality(long userId, Constants.QualityRating quality) {
+        if(mLocalMeetingView.checkUserInfo(userId)){
+            if (quality == Constants.QualityRating.Excellent || quality == Constants.QualityRating.Good) {
+                mLocalMeetingView.updateSignalImg(getSignalGoodResourceId(false));
+            } else if (quality == Constants.QualityRating.Poor) {
+                mLocalMeetingView.updateSignalImg(getSignalPoorResourceId(false));
+            } else {
+                mLocalMeetingView.updateSignalImg(getSignalLowResourceId(false));
+            }
+        }
+    }
 
     /******************************Annotation Start*********************************************/
     @Override
-    public void onVideoAnnotationStart(long userId, int streamId) {
-        NavController navController = NavHostFragment.findNavController(WhiteboardFragment.this);
-        Bundle bundle = new Bundle();
-        bundle.putLong(KEY_USER_ID,userId);
-        bundle.putBoolean(KEY_VIDEO_ANNOTATION_START,true);
-        navController.navigate(R.id.action_WhiteboardFragment_to_FloatFragment,bundle);
+    public void onVideoAnnotationStart(long userId, int streamIds) {
+        mViewModel.mWhiteboardContentUpdate = false;
+        mViewModel.mWhiteboardStart = false;
+
+        NavDestination currentDestination = mNavController.getCurrentDestination();
+        if(currentDestination == null){
+            return ;
+        }
+        if (currentDestination.getId() == R.id.WhiteboardFragment) {
+            Bundle bundle = new Bundle();
+            bundle.putLong(KEY_USER_ID,userId);
+            bundle.putBoolean(KEY_VIDEO_ANNOTATION_START,true);
+            mNavController.navigate(R.id.action_WhiteboardFragment_to_SpeakerFragment,bundle);
+        }
     }
+
+    @Override
+    public void onShareAnnotationStart(long userId) {
+        mViewModel.mWhiteboardContentUpdate = false;
+        mViewModel.mWhiteboardStart = false;
+
+        NavDestination currentDestination = mNavController.getCurrentDestination();
+        if(currentDestination == null){
+            return ;
+        }
+        if (currentDestination.getId() == R.id.WhiteboardFragment) {
+            Bundle bundle = new Bundle();
+            bundle.putLong(KEY_USER_ID,userId);
+            bundle.putBoolean(KEY_SHARE_ANNOTATION_START,true);
+            mNavController.navigate(R.id.action_WhiteboardFragment_to_SpeakerFragment,bundle);
+        }
+    }
+
     /******************************Annotation End*********************************************/
 
-    private void switchUserViewIndex() {
-        clearViewRender(mUserViewArray[0]);
-        UserInfo localUser = mViewModel.getUserManager().getLocalUser();
-        subscribeLocalVideo(mUserViewArray[0], localUser);
-        updateUserAudioState(0);
+    private void checkAdminView(){
+        String speakerName = "";
+        long hostId = UserManager.getIns().getHostId();
+        if(UserManager.getIns().getLocalUserId() == hostId){
+            UserInfo localUser = UserManager.getIns().getLocalUser();
+            speakerName = localUser.getUserName();
+            mAdminView.setVisibility(View.VISIBLE);
+        }else{
+            UserInfo adminUser = UserManager.getIns()
+                    .getRemoteUser(UserManager.getIns().getHostId());
+            if(adminUser != null){
+                speakerName = adminUser.getUserName();
+            }
+            mAdminView.setVisibility(View.GONE);
+        }
+
+        SpannableStringBuilder presenterBuilder = packageText(getString(R.string.title_wb_current_presenter), speakerName);
+        mTvPageSpeaker.setText(presenterBuilder);
     }
 
-    private void subscribeLocalVideo(UserViewInfo userViewInfo, UserInfo userInfo) {
-        userViewInfo.setUser(userInfo.userId, userInfo.userName,mViewModel.getUserManager().isMySelf(userInfo.userId));
-        userViewInfo.setVisible(true);
-        userViewInfo.isFree = false;
-        userViewInfo.isScreen = false;
-        userViewInfo.isSubscribed = false;
-        updateLocalVideoRender(userViewInfo.rtcView, 0,true);
-    }
-
-    private void clearViewRender(UserViewInfo userViewInfo) {
-        if (userViewInfo == null) {
+    @Override
+    public void updateUserAudioState(UserInfo userInfo) {
+        if (userInfo == null || mLocalMeetingView == null) {
             return;
         }
-        UserInfo localUser = mViewModel.getUserManager().getLocalUser();
-        if (userViewInfo.userId == localUser.userId) {
-            clearLocalVideoRender();
-        } else if (userViewInfo.isScreen) {
-            clearRemoteScreenRender(userViewInfo.userId);
-        } else {
-            clearRemoteVideoRender(userViewInfo.userId);
+        if (mLocalMeetingView.checkUserInfo(userInfo)) {
+            int largeAudioResource = -1;
+            if (userInfo.isPSTNAudioType()) {
+                largeAudioResource = userInfo.isAudioMuted() ? getAudioMutePSTNResourceId(false) : getAudioNormalPSTNResourceId(false);
+            } else {
+                largeAudioResource = userInfo.isAudioMuted() ? getAudioMutedResourceId(false) : getAudioNormalResourceId(false);
+            }
+            mLocalMeetingView.updateAudioImg(largeAudioResource);
         }
     }
 
-    // video view
-    @Override
-    void setupUserViewArray() {
-        // 初始化宫格视图数组，目前支持四宫格
-        initUserViewArray(1);
-
-        View view = getView();
-        if (view != null) {
-            // 配置视图1参数, 此视图一般用于显示本地用户视频
-            mUserViewArray[0].initView(
-                    view.findViewById(R.id.small_view_righttop),
-                    true,
-                    view.findViewById(R.id.tv_small_view_righttop_user),
-                    view.findViewById(R.id.img_small_view_righttop_audio),
-                    view.findViewById(R.id.img_small_view_default_head),
-                    view.findViewById(R.id.img_small_view_righttop_signal),
-                    view.findViewById(R.id.cl_small_view_righttop));
-
-        }
-        initUserVideoView();
+    private void initMeetingView(View view) {
+        ViewGroup smallViewContainer = view.findViewById(R.id.dc_small_view);
+        mLocalMeetingView = MeetingViewFactory.createMeetingViewInfo(getContext(), TYPE_SMALL_VIEW);
+        smallViewContainer.removeAllViews();
+        smallViewContainer.addView(mLocalMeetingView.getInfoView());
+        mLocalMeetingView.setParentView(smallViewContainer);
+        getLifecycle().addObserver(mLocalMeetingView);
     }
 
-    private void initUserVideoView() {
-        UserInfo localUser = mViewModel.getUserManager().getLocalUser();
+    private void setupUserVideoView() {
+        boolean flag = false;
+        UserInfo userInfo = null;
 
-        int count = mUserViewCount;
-
-        // 3. add video user
-        int videoCount = mViewModel.getUserManager().getVideoSize();
-        for(int i=0; i<videoCount && count>0; i++){
-            UserInfo user = mViewModel.getUserManager().getVideoUsers().valueAt(i);
-            if (user.isVideoStarted()) {
-                setupUserVideoView(user);
-                --count;
+        if (!UserManager.getIns().isVideoEmpty()) {
+            userInfo = UserManager.getIns().getVideoUsers().valueAt(0);
+            if (userInfo != null && userInfo.isVideoStarted()) {
+                flag = true;
             }
         }
-        // 4. add non-video user
-        if (count > 0) {
-            LongSparseArray<UserInfo> remoteUsers = mViewModel.getUserManager().getRemoteUsers();
-            int userCount = remoteUsers.size();
-            for(int i=0; i<userCount && count>0; i++){
-                UserInfo user = remoteUsers.valueAt(i);
-                if (getIndexForNotFreeUser(user.userId) == -1) {
-                    setupUserView(user);
-                    --count;
+
+        if (!flag) {
+            if (!UserManager.getIns().isRemoteEmpty()) {
+                userInfo = UserManager.getIns().getRemoteUsers().valueAt(0);
+                if (userInfo != null) {
+                    flag = true;
                 }
             }
         }
-        // 5. add myself
-        if(count > 0){
-            mUserViewArray[0].isFree = !localUser.isVideoStarted();
-            mUserViewArray[0].setUser(localUser.userId, localUser.userName,mViewModel.getUserManager().isMySelf(localUser.userId));
-            if (localUser.isVideoStarted()) {
-                mUserViewArray[0].setVisible(true);
-            } else {
-                mUserViewArray[0].setDefaultHeadVisible(true);
-                mUserViewArray[0].setUserVisible(true);
-            }
-            updateLocalVideoRender(mUserViewArray[0].rtcView, 0);
-            updateUserAudioState(0);
+        if (!flag) {
+            userInfo = UserManager.getIns().getLocalUser();
         }
-    }
-
-    @Override
-    int getIndexForFreeRemoteUser(UserInfo user) {
-        int viewIndex = getIndexForUser(user.userId);
-        if (viewIndex != -1) {
-            return viewIndex;
+        if(userInfo != null){
+            refreshViewInfo(mLocalMeetingView,userInfo);
+        }else{
+            mLocalMeetingView.setInfoViewVisible(false);
         }
-        // 尝试找到一个空闲的视图
-        // try to find a free view
-        for (int i=0; i < mUserViewCount; i++) {
-            if (mUserViewArray[i].isFree) {
-                viewIndex = i;
-                break;
-            }
-        }
-        if (viewIndex != -1) {
-            mUserViewArray[viewIndex].isFree = true;
-            mUserViewArray[viewIndex].isScreen = false;
-            mUserViewArray[viewIndex].isSubscribed = false;
-        }
-        return viewIndex;
+        subscribeVideo(mLocalMeetingView);
+        updateUserAudioState(userInfo);
     }
 
 }

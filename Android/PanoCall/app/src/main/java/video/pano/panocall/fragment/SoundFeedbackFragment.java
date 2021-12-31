@@ -18,6 +18,7 @@ import org.json.JSONObject;
 
 import video.pano.panocall.PanoApplication;
 import video.pano.panocall.R;
+import video.pano.panocall.info.Config;
 import video.pano.panocall.info.UserManager;
 import video.pano.panocall.model.UserInfo;
 import video.pano.panocall.rtc.PanoRtcEngine;
@@ -29,7 +30,7 @@ import static video.pano.panocall.info.Constant.KEY_SOUND_FEEDBACK_TYPE;
 import static video.pano.panocall.info.Constant.VALUE_SOUND_FEEDBACK_COMMAND_STARTDUMP;
 import static video.pano.panocall.info.Constant.VALUE_SOUND_FEEDBACK_TYPE_COMMAND;
 
-public class SoundFeedbackFragment extends BaseSettingFragment {
+public class SoundFeedbackFragment extends Fragment {
 
     private static final int kMaxDescriptionLength = 300;
 
@@ -90,10 +91,6 @@ public class SoundFeedbackFragment extends BaseSettingFragment {
     private void doFeedback(String desc) {
         if (desc.length() > kMaxDescriptionLength) {
             desc = desc.substring(0, kMaxDescriptionLength);
-        }
-        PanoApplication app = (PanoApplication) Utils.getApp();
-        if (app.mFeedbackRoomId == null || app.mFeedbackRoomId.isEmpty()) {
-            return;
         }
         try{
             JSONObject jsonObject = new JSONObject();

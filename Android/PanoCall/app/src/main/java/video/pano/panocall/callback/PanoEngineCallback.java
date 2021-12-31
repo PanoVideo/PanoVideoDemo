@@ -23,6 +23,7 @@ public class PanoEngineCallback implements RtcEngineCallback {
     }
 
     // -------------------------- RTC Engine Callbacks --------------------------
+    @Override
     public void onChannelJoinConfirm(Constants.QResult result) {
         Log.i(TAG, "onChannelJoinConfirm result: " + result);
         if(mListeners == null || mListeners.isEmpty()){
@@ -35,6 +36,7 @@ public class PanoEngineCallback implements RtcEngineCallback {
         });
     }
 
+    @Override
     public void onChannelLeaveIndication(Constants.QResult result) {
         if(mListeners == null || mListeners.isEmpty()){
             return ;
@@ -45,6 +47,8 @@ public class PanoEngineCallback implements RtcEngineCallback {
             }
         });
     }
+
+    @Override
     public void onChannelCountDown(long remain) {
         if(mListeners == null || mListeners.isEmpty()){
             return ;
@@ -55,6 +59,8 @@ public class PanoEngineCallback implements RtcEngineCallback {
             }
         });
     }
+
+    @Override
     public void onUserJoinIndication(long userId, String userName) {
         Log.i(TAG, "onUserJoinIndication userId: " + userId+" , userName : "+userName);
         if(mListeners == null || mListeners.isEmpty()){
@@ -66,6 +72,8 @@ public class PanoEngineCallback implements RtcEngineCallback {
             }
         });
     }
+
+    @Override
     public void onUserLeaveIndication(long userId, Constants.UserLeaveReason reason) {
         if(mListeners == null || mListeners.isEmpty()){
             return ;
@@ -76,6 +84,8 @@ public class PanoEngineCallback implements RtcEngineCallback {
             }
         });
     }
+
+    @Override
     public void onUserAudioStart(long userId) {
         if(mListeners == null || mListeners.isEmpty()){
             return ;
@@ -86,6 +96,8 @@ public class PanoEngineCallback implements RtcEngineCallback {
             }
         });
     }
+
+    @Override
     public void onUserAudioStop(long userId) {
         if(mListeners == null || mListeners.isEmpty()){
             return ;
@@ -96,6 +108,8 @@ public class PanoEngineCallback implements RtcEngineCallback {
             }
         });
     }
+
+    @Override
     public void onUserAudioSubscribe(long userId, Constants.MediaSubscribeResult result) {
         if(mListeners == null || mListeners.isEmpty()){
             return ;
@@ -106,6 +120,8 @@ public class PanoEngineCallback implements RtcEngineCallback {
             }
         });
     }
+
+    @Override
     public void onUserVideoStart(long userId, Constants.VideoProfileType maxProfile) {
         Log.i(TAG, "onUserVideoStart userId: " + userId+" , maxProfile : "+maxProfile);
         if(mListeners == null || mListeners.isEmpty()){
@@ -117,6 +133,8 @@ public class PanoEngineCallback implements RtcEngineCallback {
             }
         });
     }
+
+    @Override
     public void onUserVideoStop(long userId) {
         if(mListeners == null || mListeners.isEmpty()){
             return ;
@@ -127,6 +145,8 @@ public class PanoEngineCallback implements RtcEngineCallback {
             }
         });
     }
+
+    @Override
     public void onUserVideoSubscribe(long userId, Constants.MediaSubscribeResult result) {
         Log.i(TAG, "onUserVideoSubscribe userId: " + userId+" , result : "+result);
         if(mListeners == null || mListeners.isEmpty()){
@@ -160,6 +180,8 @@ public class PanoEngineCallback implements RtcEngineCallback {
             }
         });
     }
+
+    @Override
     public void onUserVideoMute(long userId) {
         if(mListeners == null || mListeners.isEmpty()){
             return ;
@@ -170,6 +192,8 @@ public class PanoEngineCallback implements RtcEngineCallback {
             }
         });
     }
+
+    @Override
     public void onUserVideoUnmute(long userId) {
         if(mListeners == null || mListeners.isEmpty()){
             return ;
@@ -181,6 +205,7 @@ public class PanoEngineCallback implements RtcEngineCallback {
         });
     }
 
+    @Override
     public void onUserScreenStart(long userId) {
         if(mListeners == null || mListeners.isEmpty()){
             return ;
@@ -191,6 +216,8 @@ public class PanoEngineCallback implements RtcEngineCallback {
             }
         });
     }
+
+    @Override
     public void onUserScreenStop(long userId) {
         if(mListeners == null || mListeners.isEmpty()){
             return ;
@@ -201,6 +228,8 @@ public class PanoEngineCallback implements RtcEngineCallback {
             }
         });
     }
+
+    @Override
     public void onUserScreenSubscribe(long userId, Constants.MediaSubscribeResult result) {
         if(mListeners == null || mListeners.isEmpty()){
             return ;
@@ -211,6 +240,8 @@ public class PanoEngineCallback implements RtcEngineCallback {
             }
         });
     }
+
+    @Override
     public void onUserScreenMute(long userId) {
         if(mListeners == null || mListeners.isEmpty()){
             return ;
@@ -221,6 +252,8 @@ public class PanoEngineCallback implements RtcEngineCallback {
             }
         });
     }
+
+    @Override
     public void onUserScreenUnmute(long userId) {
         if(mListeners == null || mListeners.isEmpty()){
             return ;
@@ -380,4 +413,15 @@ public class PanoEngineCallback implements RtcEngineCallback {
         });
     }
 
+    @Override
+    public void onUserAudioCallTypeChanged(long userId, Constants.AudioCallType type) {
+        if(mListeners == null || mListeners.isEmpty()){
+            return ;
+        }
+        runOnUiThread(()-> {
+            for (RtcEngineCallback callback : mListeners) {
+                callback.onUserAudioCallTypeChanged(userId, type);
+            }
+        });
+    }
 }

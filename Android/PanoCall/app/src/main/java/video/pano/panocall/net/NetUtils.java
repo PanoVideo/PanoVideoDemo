@@ -1,8 +1,11 @@
-package video.pano.panocall.utils;
+package video.pano.panocall.net;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.telephony.TelephonyManager;
+
+import androidx.annotation.RequiresPermission;
 
 public class NetUtils {
 
@@ -58,4 +61,23 @@ public class NetUtils {
         return false;
     }
 
+    /**
+     * 判断是否wifi连接
+     *
+     * @param context context
+     * @return true/false
+     */
+    public static synchronized boolean isWifiConnected(Context context) {
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager != null) {
+            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+            if (networkInfo != null) {
+                int networkInfoType = networkInfo.getType();
+                if (networkInfoType == ConnectivityManager.TYPE_WIFI || networkInfoType == ConnectivityManager.TYPE_ETHERNET) {
+                    return networkInfo.isConnected();
+                }
+            }
+        }
+        return false;
+    }
 }

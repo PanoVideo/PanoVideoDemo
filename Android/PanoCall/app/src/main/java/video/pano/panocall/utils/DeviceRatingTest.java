@@ -70,4 +70,15 @@ public class DeviceRatingTest {
                 return Constants.VideoProfileType.Standard;
         }
     }
+
+    public Constants.VideoFrameRateType getVideoFrameRateType(int frameRateType) {
+        switch (frameRateType) {
+            case 0:
+                return Constants.VideoFrameRateType.Low;
+            case 1:
+            default:
+                return Constants.VideoFrameRateType.Standard;
+        }
+    }
+
 }

@@ -1,5 +1,7 @@
 package video.pano.panocall.fragment;
 
+import static video.pano.panocall.info.Constant.KEY_APP_UUID;
+
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -22,10 +24,11 @@ import com.pano.rtc.api.RtcEngine;
 import video.pano.panocall.PanoApplication;
 import video.pano.panocall.R;
 import video.pano.panocall.rtc.PanoRtcEngine;
+import video.pano.panocall.utils.SPUtils;
 import video.pano.panocall.utils.Utils;
 
 
-public class FeedbackFragment extends BaseSettingFragment {
+public class FeedbackFragment extends Fragment {
     private static final int kMaxDescriptionLength = 300;
     private static final int kMaxContactLength = 100;
 
@@ -38,6 +41,7 @@ public class FeedbackFragment extends BaseSettingFragment {
         return inflater.inflate(R.layout.fragment_feedback, container, false);
     }
 
+    @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
@@ -108,7 +112,6 @@ public class FeedbackFragment extends BaseSettingFragment {
         if (contact.length() > kMaxContactLength) {
             contact = contact.substring(0, kMaxContactLength);
         }
-        PanoApplication app = (PanoApplication) Utils.getApp();
         RtcEngine.FeedbackInfo info = new RtcEngine.FeedbackInfo();
         switch (type) {
             case 1:
@@ -130,7 +133,7 @@ public class FeedbackFragment extends BaseSettingFragment {
         info.productName = "PanoVideoCall";
         info.description = desc;
         info.contact = contact;
-        info.extraInfo = app.getAppUuid();
+        info.extraInfo = SPUtils.getString(KEY_APP_UUID, "");
         info.uploadLogs = enableUploadLog;
         PanoRtcEngine.getIns().getPanoEngine().sendFeedback(info);
         Toast.makeText(getActivity(), R.string.msg_feedback_report_done, Toast.LENGTH_LONG).show();

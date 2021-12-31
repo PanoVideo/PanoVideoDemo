@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fraud_tips_view"
+    android:background="@color/colorWhite"
+    android:layout_marginTop="10dp"
+    android:padding="16dp">
+
+    <ImageView
+        android:id="@+id/warning_img"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/svg_icon_fraud_warning"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/close_img"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingEnd="5dp"
+        android:paddingStart="5dp"
+        android:paddingBottom="5dp"
+        android:src="@drawable/svg_icon_fraud_close"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="13dp"
+        android:layout_marginEnd="40dp"
+        android:textSize="14sp"
+        android:textColor="@color/color333333"
+        android:lineSpacingExtra="5dp"
+        app:layout_constraintStart_toEndOf="@+id/warning_img"
+        app:layout_constraintEnd_toStartOf="@+id/close_img"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:text="@string/msg_fraud_tips"
+        />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

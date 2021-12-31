@@ -8,10 +8,11 @@ import static video.pano.panocall.info.Constant.KEY_DEVICE_RATING;
 import static video.pano.panocall.info.Constant.KEY_ENABLE_DEBUG_MODE;
 import static video.pano.panocall.info.Constant.KEY_LEAVE_CONFIRM;
 import static video.pano.panocall.info.Constant.KEY_USER_NAME;
+import static video.pano.panocall.info.Constant.KEY_VIDEO_FRAME_RATE;
+import static video.pano.panocall.info.Constant.KEY_VIDEO_FRAME_RATE_ID;
 import static video.pano.panocall.info.Constant.KEY_VIDEO_RESOLUTION_ID;
 import static video.pano.panocall.info.Constant.KEY_VIDEO_SENDING_RESOLUTION;
 import static video.pano.panocall.info.Constant.SOUND_FEED_BACK_FRAGMENT;
-import static video.pano.panocall.info.Constant.WEB_PAGE_FRAGMENT;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -24,6 +25,7 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 
 import video.pano.panocall.BuildConfig;
@@ -34,11 +36,12 @@ import video.pano.panocall.utils.DeviceRatingTest;
 import video.pano.panocall.utils.SPUtils;
 import video.pano.panocall.utils.Utils;
 
-public class SettingsActivity extends BaseSettingActivity{
+public class SettingsActivity extends AppCompatActivity {
 
-    private static boolean sIsDeviceRating;
+    private boolean mIsDeviceRating;
 
     private PanoApplication mPanoApp;
+    private int mCount = 0 ;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -52,7 +55,7 @@ public class SettingsActivity extends BaseSettingActivity{
 
     private void initData() {
         Intent intent = getIntent();
-        sIsDeviceRating = intent.getBooleanExtra(KEY_DEVICE_RATING, false);
+        mIsDeviceRating = intent.getBooleanExtra(KEY_DEVICE_RATING, false);
         mPanoApp = (PanoApplication) Utils.getApp();
     }
 
@@ -79,8 +82,8 @@ public class SettingsActivity extends BaseSettingActivity{
         initFeedback();
         initSoundFeedback();
         initVideoResolution();
+        initVideoFrameRate();
         initVersion();
-        initAboutUs();
     }
 
     private void initUserName(){
@@ -92,7 +95,7 @@ public class SettingsActivity extends BaseSettingActivity{
     @SuppressLint ("UseSwitchCompatOrMaterialCode")
     private void initAutoStartSpeaker(){
         SwitchCompat autoStartSpeakerSwitch = findViewById(R.id.switch_auto_start_speaker);
-        autoStartSpeakerSwitch.setChecked(SPUtils.getBoolean(KEY_AUTO_START_SPEAKER,false));
+        autoStartSpeakerSwitch.setChecked(SPUtils.getBoolean(KEY_AUTO_START_SPEAKER,true));
         autoStartSpeakerSwitch.setOnCheckedChangeListener((buttonView, isChecked) ->
                 SPUtils.put(KEY_AUTO_START_SPEAKER,isChecked)
         );
@@ -101,7 +104,7 @@ public class SettingsActivity extends BaseSettingActivity{
     @SuppressLint ("UseSwitchCompatOrMaterialCode")
     private void initLeaveConfirm(){
         SwitchCompat leaveConfirmSwitch = findViewById(R.id.switch_leave_confirm);
-        leaveConfirmSwitch.setChecked(SPUtils.getBoolean(KEY_LEAVE_CONFIRM,false));
+        leaveConfirmSwitch.setChecked(SPUtils.getBoolean(KEY_LEAVE_CONFIRM,true));
         leaveConfirmSwitch.setOnCheckedChangeListener((buttonView, isChecked) ->
                 SPUtils.put(KEY_LEAVE_CONFIRM,isChecked)
         );
@@ -132,37 +135,38 @@ public class SettingsActivity extends BaseSettingActivity{
     }
 
     private void initStatistics() {
-        findViewById(R.id.cl_statistics_container).setOnClickListener(v ->
-                StatisticsActivity.launch(this)
-        );
+        findViewById(R.id.cl_statistics_container).setOnClickListener(v -> {
+            if(!Utils.doubleClick()){
+                StatisticsActivity.launch(this);
+            }
+        });
     }
 
     private void initFaceBeauty(){
-        findViewById(R.id.cl_face_beauty_container).setOnClickListener(v ->
-                ContainerActivity.launch(SettingsActivity.this,FACE_BEAUTY_FRAGMENT,
-                        getString(R.string.title_face_beauty),"")
-        );
+        findViewById(R.id.cl_face_beauty_container).setOnClickListener(v -> {
+            if(!Utils.doubleClick()){
+                ContainerActivity.launch(SettingsActivity.this, FACE_BEAUTY_FRAGMENT,
+                        getString(R.string.title_face_beauty), "");
+            }
+        });
     }
 
     private void initFeedback(){
-        findViewById(R.id.cl_send_feedback_container).setOnClickListener( v ->
-                ContainerActivity.launch(SettingsActivity.this,FEED_BACK_FRAGMENT,
-                        getString(R.string.title_send_feedback),"")
-        );
+        findViewById(R.id.cl_send_feedback_container).setOnClickListener( v -> {
+            if(!Utils.doubleClick()){
+                ContainerActivity.launch(SettingsActivity.this, FEED_BACK_FRAGMENT,
+                        getString(R.string.title_send_feedback), "");
+            }
+        });
     }
 
     private void initSoundFeedback(){
-        findViewById(R.id.cl_send_sound_feedback_container).setOnClickListener( v->
-                ContainerActivity.launch(SettingsActivity.this,SOUND_FEED_BACK_FRAGMENT,
-                        getString(R.string.title_send_sound_feedback),"")
-        );
-    }
-
-    private void initAboutUs(){
-        findViewById(R.id.cl_about_us_container).setOnClickListener( v->
-                ContainerActivity.launch(SettingsActivity.this,WEB_PAGE_FRAGMENT,
-                        getString(R.string.title_about_us),"https://www.pano.video/about.html")
-        );
+        findViewById(R.id.cl_send_sound_feedback_container).setOnClickListener( v-> {
+            if(!Utils.doubleClick()){
+                ContainerActivity.launch(SettingsActivity.this, SOUND_FEED_BACK_FRAGMENT,
+                        getString(R.string.title_send_sound_feedback), "");
+            }
+        });
     }
 
     private void initVideoResolution(){
@@ -171,7 +175,7 @@ public class SettingsActivity extends BaseSettingActivity{
         videoResolutionGroup.check(resolutionId);
 
         videoResolutionGroup.setOnCheckedChangeListener((group, checkedId) -> {
-            int resolution = 1;
+            int resolution = 2;
             if(checkedId == R.id.rb_video_180p){
                 resolution = 1 ;
             }else if(checkedId == R.id.rb_video_360p){
@@ -183,11 +187,30 @@ public class SettingsActivity extends BaseSettingActivity{
             mPanoApp.updateVideoProfile(resolution);
             int maxProfile = DeviceRatingTest.getIns()
                     .updateProfileByDeviceRating(PanoRtcEngine.getIns().getPanoEngine().queryDeviceRating());
-            if(sIsDeviceRating && resolution > maxProfile){
+            if(mIsDeviceRating && resolution > maxProfile){
                 DeviceRatingTest.getIns().showRatingToast(maxProfile);
             }
             SPUtils.put(KEY_VIDEO_RESOLUTION_ID,checkedId);
             SPUtils.put(KEY_VIDEO_SENDING_RESOLUTION,resolution);
+        });
+    }
+
+    private void initVideoFrameRate(){
+        RadioGroup frameRateGroup = findViewById(R.id.rg_frame_rate);
+        int resolutionId = SPUtils.getInt(KEY_VIDEO_FRAME_RATE_ID, R.id.rb_frame_rate_30fps);
+        frameRateGroup.check(resolutionId);
+
+        frameRateGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            int frameRate = 1 ;
+            if(checkedId == R.id.rb_frame_rate_15fps){
+                frameRate = 0 ;
+            }else if(checkedId == R.id.rb_frame_rate_30fps){
+                frameRate = 1 ;
+            }
+
+            mPanoApp.updateVideoFrameRateType(frameRate);
+            SPUtils.put(KEY_VIDEO_FRAME_RATE_ID,checkedId);
+            SPUtils.put(KEY_VIDEO_FRAME_RATE,frameRate);
         });
     }
 

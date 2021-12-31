@@ -35,17 +35,14 @@
 
     <string-array name="more_settings">
         <item>设置</item>
-        <item>视频标注</item>
     </string-array>
 
     <string-array name="share_settings">
         <item>共享白板</item>
-        <item>共享屏幕（已关闭）</item>
     </string-array>
 
-    <string-array name="share_settings_screen_share_on">
-        <item>共享白板</item>
-        <item>共享屏幕（已开启）</item>
+    <string-array name="operate_list">
+        <item>设为主持人</item>
     </string-array>
 
 </resources>

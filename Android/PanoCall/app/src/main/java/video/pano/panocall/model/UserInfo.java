@@ -1,22 +1,17 @@
 package video.pano.panocall.model;
 
-import com.pano.rtc.api.Constants;
+import java.util.Objects;
 
 public class UserInfo {
 
     public long userId = 0;
     public String userName = "";
 
-    public boolean audioStarted = false;
-    public boolean videoMuted = false;
-    public boolean screenMuted = false;
-
     public boolean audioMuted = true;
     public boolean videoStarted = false;
-
     public boolean screenStarted = false;
-
-    public Constants.VideoProfileType maxProfile = Constants.VideoProfileType.HD720P;
+    public boolean pstnAudioType = false;
+    public boolean mirror;
 
     public UserInfo(long userId, String userName) {
         this.userId = userId;
@@ -35,6 +30,14 @@ public class UserInfo {
         screenStarted = started;
     }
 
+    public boolean isMirror() {
+        return mirror;
+    }
+
+    public void setMirror(boolean mirror) {
+        this.mirror = mirror;
+    }
+
     public boolean isAudioMuted() {
         return audioMuted;
     }
@@ -51,29 +54,24 @@ public class UserInfo {
         return userName;
     }
 
-    public void setScreenMuted(boolean muted) {
-        screenMuted = muted;
+    public boolean isPSTNAudioType() {
+        return pstnAudioType;
     }
 
-    public void setVideoMuted(boolean muted) {
-        videoMuted = muted;
+    public void setPSTNAudioType(boolean pstnAudioType) {
+        this.pstnAudioType = pstnAudioType;
     }
 
-    public void setAudioStared(boolean started) {
-        audioStarted = started;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UserInfo userInfo = (UserInfo) o;
+        return userId == userInfo.userId;
     }
 
-    public boolean isAudioStarted() {
-        return audioStarted;
+    @Override
+    public int hashCode() {
+        return Objects.hash(userId);
     }
-
-    public boolean isVideoMuted() {
-        return videoMuted;
-    }
-
-    public boolean isScreenMuted() {
-        return screenMuted;
-    }
-
-
 }

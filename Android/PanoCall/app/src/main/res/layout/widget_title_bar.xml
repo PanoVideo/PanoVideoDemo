@@ -51,6 +51,7 @@
         />
 
     <View
+        android:id="@+id/divider"
         android:layout_width="0dp"
         android:layout_height="1px"
         app:layout_constraintStart_toStartOf="parent"

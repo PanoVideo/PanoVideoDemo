@@ -1,11 +1,10 @@
 package video.pano.panocall.activity;
 
-import static video.pano.panocall.info.Config.APPID;
 import static video.pano.panocall.info.Config.APP_TOKEN;
-import static video.pano.panocall.info.Config.PANO_SERVER;
 import static video.pano.panocall.info.Config.USER_ID;
 import static video.pano.panocall.info.Constant.FACE_BEAUTY_FRAGMENT;
-import static video.pano.panocall.info.Constant.KEY_AUTO_MUTE_AUDIO;
+import static video.pano.panocall.info.Constant.KEY_APP_UUID;
+import static video.pano.panocall.info.Constant.KEY_AUDIO_UM_MUTE;
 import static video.pano.panocall.info.Constant.KEY_AUTO_START_CAMERA;
 import static video.pano.panocall.info.Constant.KEY_ROOM_ID;
 import static video.pano.panocall.info.Constant.KEY_USER_NAME;
@@ -13,15 +12,10 @@ import static video.pano.panocall.info.Constant.PERMISSION_RTC_REQUEST_CODE;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -32,36 +26,39 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
-import androidx.core.app.ActivityCompat;
 
 import com.pano.rtc.api.RtcEngine;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
+import pub.devrel.easypermissions.AppSettingsDialog;
+import pub.devrel.easypermissions.EasyPermissions;
 import video.pano.panocall.PanoApplication;
 import video.pano.panocall.R;
+import video.pano.panocall.info.Config;
 import video.pano.panocall.rtc.PanoRtcEngine;
 import video.pano.panocall.utils.SPUtils;
 import video.pano.panocall.utils.Utils;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks {
+
+    private static final String TAG = "MainActivity";
 
     private EditText mEditRoomId;
     private EditText mEditUserName;
     private ProgressBar mPBarIndicator;
-
     private long mLocalUserId;
-    private String mLocalRoomId;
-    private String mLocalUserName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        createUUID();
         initTitleView();
+        initFraudView();
 
         mEditRoomId = findViewById(R.id.edit_room_id);
         mPBarIndicator = findViewById(R.id.pbar_room_indicator);
@@ -71,72 +68,64 @@ public class MainActivity extends AppCompatActivity {
         ensureLeaveRtcRoom();
     }
 
+    private void createUUID() {
+        String appUuid = SPUtils.getString(KEY_APP_UUID, "");
+        if (TextUtils.isEmpty(appUuid)) {
+            UUID uuid = UUID.randomUUID();
+            appUuid = uuid.toString().replace("-", "");
+            SPUtils.put(KEY_APP_UUID, appUuid);
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+    }
+
     private void initTitleView() {
         TextView titleView = findViewById(R.id.tv_title);
         ImageView rightIcon = findViewById(R.id.iv_right_icon);
-        ImageView leftIcon = findViewById(R.id.iv_left_icon);
 
         titleView.setText(R.string.title_join_call);
 
         rightIcon.setVisibility(View.VISIBLE);
         rightIcon.setImageResource(R.drawable.svg_icon_setting);
         rightIcon.setOnClickListener(view -> {
-            if(!Utils.doubleClick()){
+            if (!Utils.doubleClick()) {
                 SettingsActivity.launch(MainActivity.this, false);
             }
         });
+    }
 
-        leftIcon.setVisibility(View.VISIBLE);
-        leftIcon.setImageResource(R.drawable.svg_icon_advanced_settings);
-        leftIcon.setOnClickListener(view -> {
-            View customView = LayoutInflater.from(this).inflate(R.layout.layout_room_advanced_setting_dialog, null);
-            EditText appId = customView.findViewById(R.id.app_id);
-            appId.setText(APPID);
-            EditText appServer = customView.findViewById(R.id.app_server);
-            appServer.setText(PANO_SERVER);
-            EditText token = customView.findViewById(R.id.token);
-            token.setText(APP_TOKEN);
-            EditText userId = customView.findViewById(R.id.user_id);
-            userId.setText(USER_ID);
-
-            Dialog dialog = new AlertDialog.Builder(this)
-                    .setTitle(R.string.room_advanced_settings_title)
-                    .setView(customView)
-                    .setPositiveButton(R.string.title_button_ok, (dialog1, which) -> {
-                        APPID = appId.getText().toString();
-                        PANO_SERVER = appServer.getText().toString();
-                        APP_TOKEN = token.getText().toString();
-                        USER_ID = userId.getText().toString();
-                        PanoRtcEngine.getIns().refresh();
-                    })
-                    .setNegativeButton(R.string.title_button_cancel, null)
-                    .create();
-            dialog.show();
+    private void initFraudView() {
+        View fraudTipsView = findViewById(R.id.fraud_tips_view);
+        findViewById(R.id.close_img).setOnClickListener(v -> {
+            fraudTipsView.setVisibility(View.GONE);
         });
     }
 
-    @SuppressLint ("UseSwitchCompatOrMaterialCode")
-    private void setupViews(){
+    @SuppressLint("UseSwitchCompatOrMaterialCode")
+    private void setupViews() {
 
         findViewById(R.id.tv_join_room).setOnClickListener(view -> {
-            doJoinRoom();
+            checkRtcPermission();
         });
 
         findViewById(R.id.tv_face_beauty_setting).setOnClickListener(v ->
-            ContainerActivity.launch(MainActivity.this,FACE_BEAUTY_FRAGMENT,
-                    getString(R.string.title_face_beauty),"")
+                ContainerActivity.launch(MainActivity.this, FACE_BEAUTY_FRAGMENT,
+                        getString(R.string.title_face_beauty), "")
         );
 
-        SwitchCompat audioMuteSwitch = findViewById(R.id.switch_audio_mute);
-        audioMuteSwitch.setChecked(SPUtils.getBoolean(KEY_AUTO_MUTE_AUDIO,false));
-        audioMuteSwitch.setOnCheckedChangeListener((buttonView, isChecked) ->
-                SPUtils.put(KEY_AUTO_MUTE_AUDIO,isChecked)
+        SwitchCompat audioUnMuteSwitch = findViewById(R.id.switch_audio_un_mute);
+        audioUnMuteSwitch.setChecked(SPUtils.getBoolean(KEY_AUDIO_UM_MUTE, true));
+        audioUnMuteSwitch.setOnCheckedChangeListener((buttonView, isChecked) ->
+                SPUtils.put(KEY_AUDIO_UM_MUTE, isChecked)
         );
 
         SwitchCompat autoStartCameraSwitch = findViewById(R.id.switch_auto_start_camera);
-        autoStartCameraSwitch.setChecked(SPUtils.getBoolean(KEY_AUTO_START_CAMERA,true));
+        autoStartCameraSwitch.setChecked(SPUtils.getBoolean(KEY_AUTO_START_CAMERA, true));
         autoStartCameraSwitch.setOnCheckedChangeListener((buttonView, isChecked) ->
-                SPUtils.put(KEY_AUTO_START_CAMERA,isChecked)
+                SPUtils.put(KEY_AUTO_START_CAMERA, isChecked)
 
         );
 
@@ -145,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
         if (!TextUtils.isEmpty(userName)) {
             mEditUserName.setText(userName);
         }
-        if(!TextUtils.isEmpty(roomId)){
+        if (!TextUtils.isEmpty(roomId)) {
             mEditRoomId.setText(roomId);
         }
     }
@@ -153,8 +142,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(resultCode == RESULT_OK){
-            checkPermissions();
+        if (resultCode == RESULT_OK) {
+            checkRtcPermission();
         }
     }
 
@@ -166,33 +155,19 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case PERMISSION_RTC_REQUEST_CODE:
-                if (RtcEngine.checkPermission(this).size() == 0) {
-                    startPanoCall();
-                } else {
-                    Toast.makeText(MainActivity.this, "Some permissions are denied", Toast.LENGTH_LONG).show();
-                }
-                break;
-            default:
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 
     private void doJoinRoom() {
-        mLocalRoomId = mEditRoomId.getText().toString();
-        mLocalUserName = mEditUserName.getText().toString();
-
-        if(TextUtils.isEmpty(mLocalRoomId) || TextUtils.isEmpty(mLocalUserName)){
-            Toast.makeText(this,R.string.msg_join_alert,Toast.LENGTH_LONG).show();
-            return ;
+        String roomId = mEditRoomId.getText().toString();
+        String userName = mEditUserName.getText().toString();
+        if (TextUtils.isEmpty(roomId) || TextUtils.isEmpty(userName)) {
+            Toast.makeText(this, R.string.msg_join_alert, Toast.LENGTH_LONG).show();
+            return;
         }
-        checkPermissions();
-    }
 
-    private void startPanoCall() {
-        SPUtils.put(KEY_USER_NAME, mLocalUserName);
-        SPUtils.put(KEY_ROOM_ID, mLocalRoomId);
+        SPUtils.put(KEY_USER_NAME, userName);
+        SPUtils.put(KEY_ROOM_ID, roomId);
 
         if (!TextUtils.isEmpty(USER_ID)) {
             mLocalUserId = Long.parseLong(USER_ID);
@@ -200,82 +175,50 @@ public class MainActivity extends AppCompatActivity {
             mLocalUserId = 10000 + new Random().nextInt(5000);
         }
 
-        if (TextUtils.isEmpty(APP_TOKEN)) {
-            Toast.makeText(MainActivity.this, "Token is empty", Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        if (TextUtils.isEmpty(APPID)) {
-            Toast.makeText(MainActivity.this, "AppId is empty", Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        if (TextUtils.isEmpty(PANO_SERVER)) {
-            Toast.makeText(MainActivity.this, "AppServer is empty", Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        CallActivity.launch(this, APP_TOKEN, mLocalRoomId, mLocalUserId, mLocalUserName);
+        MeetingActivity.launch(this, APP_TOKEN, roomId, mLocalUserId, userName);
     }
 
     // 确保离开房间。在某些case下房间未离开但是UI回到了主界面
     void ensureLeaveRtcRoom() {
-        PanoApplication app = (PanoApplication)getApplication();
         Log.w(PanoApplication.TAG, "The room is not left when back to main page");
         RtcEngine rtcEngine = PanoRtcEngine.getIns().getPanoEngine();
-        if(rtcEngine != null){
-            rtcEngine.stopVideo();
-            rtcEngine.stopPreview();
-            rtcEngine.stopAudio();
+        if (rtcEngine != null) {
             rtcEngine.leaveChannel();
         }
-        app.mIsLocalVideoStarted = false;
+        Config.sIsLocalVideoStarted = false;
     }
 
-    private void checkPermissions() {
-        final List<String> missed = RtcEngine.checkPermission(this);
-        if (missed.size() != 0) {
-
-            List<String> showRationale = new ArrayList<>();
-            for (String permission : missed) {
-                if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
-                    showRationale.add(permission);
-                }
-            }
-
-            if (showRationale.size() > 0) {
-                String msg = getResources().getString(R.string.msg_permission_call);
-                new AlertDialog.Builder(MainActivity.this)
-                        .setMessage(msg)
-                        .setPositiveButton("OK", (dialog, which) -> {
-                            ActivityCompat.requestPermissions(this,
-                                    missed.toArray(new String[0]),
-                                    PERMISSION_RTC_REQUEST_CODE);
-                        })
-                        .setNegativeButton("Cancel", null)
-                        .create()
-                        .show();
-            } else {
-                ActivityCompat.requestPermissions(this, missed.toArray(new String[0]), PERMISSION_RTC_REQUEST_CODE);
-            }
-
-            return;
-        }
-        startPanoCall();
-    }
-
-    public static void launch(Activity activity){
-        Intent intent = new Intent(activity,MainActivity.class);
+    public static void launch(Activity activity) {
+        Intent intent = new Intent(activity, MainActivity.class);
         activity.startActivity(intent);
     }
 
-    public static boolean checkPermission(Context context, String permission) {
-        return context.checkPermission(permission,
-                android.os.Process.myPid(),
-                android.os.Process.myUid()) ==
-                PackageManager.PERMISSION_GRANTED;
+    private void checkRtcPermission() {
+        if (EasyPermissions.hasPermissions(Utils.getApp(), Config.RTC_PERMISSIONS)) {
+            doJoinRoom();
+        } else {
+            EasyPermissions.requestPermissions(this, getString(R.string.pano_title_ask_again),
+                    PERMISSION_RTC_REQUEST_CODE, Config.RTC_PERMISSIONS);
+        }
     }
 
 
+    @Override
+    public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
+        if(requestCode != PERMISSION_RTC_REQUEST_CODE) return ;
 
+        if(perms.size() == Config.RTC_PERMISSIONS.length){
+            doJoinRoom();
+        }
+    }
+
+    @Override
+    public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
+        if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
+            new AppSettingsDialog.Builder(this).setTitle(R.string.pano_title_ask_again).setRationale(R.string.pano_rationale_ask_again)
+                    .build().show();
+        } else {
+            Toast.makeText(this, R.string.permission_required_title, Toast.LENGTH_SHORT).show();
+        }
+    }
 }
