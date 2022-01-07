@@ -65,8 +65,7 @@ import {
   ChannelMode,
   kChannelServiceMedia,
   AudioAecType,
-  QResult,
-  VideoScalingMode
+  QResult
 } from '@pano.video/panortc-electron-sdk';
 
 export default {
@@ -154,7 +153,7 @@ export default {
             userId: userId
           },
           () => {
-            console.log('panorts whiteboard join seccess!');
+            console.log('panorts whiteboard join successful.');
             this.onJoinChannelSuccess();
           },
           statusCode => {

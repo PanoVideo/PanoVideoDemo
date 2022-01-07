@@ -3,12 +3,12 @@
   "version": "1.0.1",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
+    "serve": "vue-cli-service serve --open",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@pano.video/panortc": "1.4.0-1",
+    "@pano.video/panortc": ">=1.4.9",
     "axios": "^0.21.1",
     "core-js": "^3.6.5",
     "vant": "^2.12.25",

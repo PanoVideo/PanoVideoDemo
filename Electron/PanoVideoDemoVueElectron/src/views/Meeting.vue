@@ -288,7 +288,7 @@ export default {
     },
     onExit() {
       this.$msgbox
-        .confirm('确认退出会议', '提示')
+        .confirm('确认退出会议？', '提示')
         .then(this.leaveChannel)
         .catch(e => console.error(e));
     },

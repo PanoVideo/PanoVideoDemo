@@ -14,7 +14,6 @@
 
 <script>
 import { mapMutations, mapState } from 'vuex';
-import axios from 'axios';
 import { RtcEngine, Constants } from '@pano.video/panortc';
 import Join from '@/components/Join.vue';
 import Call from '@/components/Call.vue';
@@ -50,9 +49,7 @@ export default {
     window.removeEventListener('hidepage', this.destroySDK);
   },
   methods: {
-    ...mapMutations([
-      'updateUserStatus',
-    ]),
+    ...mapMutations(['updateUserStatus']),
     initSDK() {
       // 1. 创建SDK实例，可以传递appId，也可以在join传递，join时传递的会覆盖实例化时传递的
       window.panoSDK = new RtcEngine();
@@ -161,30 +158,30 @@ export default {
     },
     joinChannel(info) {
       this.$store.commit('startJoinLoading');
+      /* Please refer to Glossary to understand the meaning of App ID, Channel ID, Token, User ID, and User Name:
+       请参考 名词解释 了解 App ID、Channel ID、Token、User ID、User Name 的含义：
+       https://developer.pano.video/getting-started/terms/
+
+       You can use temporary token for temporary testing:
+       可以使用 临时token 来进行临时测试：
+       https://developer.pano.video/getting-started/firstapp/#14-%E7%94%9F%E6%88%90%E4%B8%B4%E6%97%B6token
+    */
       // 2.1 设置自己的appId
-      const appId = '';
+      const appId = %%'Your appId'%%;
       // 2.1 加入会议需要传递userId，需要频道内唯一，这里为了演示，采用了随机生成
       const userId = `${Math.round(Math.random() * 100000)}`;
-      // 2.2 获取token，需要开发接口，参考文档：https://developer.pano.video/restful/authtoken/
-      const tokenUrl = '/rtc/get-token';
-      axios.post(tokenUrl, {
+      window.panoSDK.joinChannel({
         appId,
-        channelId: `token=version:02;userId:${userId};channelId:${info.channelId}`,
+        channelId: info.channelId,
         userId,
-      }).then((res) => {
-        window.panoSDK.joinChannel({
-          appId,
-          channelId: info.channelId,
-          userId,
-          token: res.data,
-          userName: info.userName,
-          channelMode: Constants.ChannelMode.TYPE_MEETING, // 会议模式
-          subscribeAudioAll: true, // 自动订阅音频
-        });
-        this.$store.commit('updateUser', {
-          ...info,
-          userId,
-        });
+        token: %%'Your Token'%%,
+        userName: info.userName,
+        channelMode: Constants.ChannelMode.TYPE_MEETING, // 会议模式
+        subscribeAudioAll: true, // 自动订阅音频
+      });
+      this.$store.commit('updateUser', {
+        ...info,
+        userId,
       });
     },
     channelCountDownCallback(data) {
