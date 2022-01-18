@@ -19,20 +19,29 @@ NS_ASSUME_NONNULL_BEGIN
 @class PanoAnnotationTool;
 
 typedef NSString* PanoAnnotationToolKey;
-extern PanoAnnotationToolKey PanoToolKeyColor;
-extern PanoAnnotationToolKey PanoToolKeyLineWidth;
-extern PanoAnnotationToolKey PanoToolKeyFontSize;
-extern PanoAnnotationToolKey PanoToolKeyFill;
+extern PanoAnnotationToolKey PanoToolKeyColor;     ///< 颜色
+extern PanoAnnotationToolKey PanoToolKeyLineWidth; ///< 线宽
+extern PanoAnnotationToolKey PanoToolKeyFontSize; ///< 字体大小
+extern PanoAnnotationToolKey PanoToolKeyFill;     ///< 是否填充
 
+
+/**
+ 标注工具栏的回调，默认会把 PanoAnnotationToolOption 转换成 PanoWBToolType,
+  不能抓换的通过 ```annotationToolDidChoosed``` 回调
+ */
 @protocol PanoAnnotationToolDelegate <NSObject>
 
 @required
 - (void)annotationToolDidChooseType:(PanoWBToolType)type
                            options:(NSDictionary<PanoAnnotationToolKey, id> *)options;
+@optional
+- (void)annotationToolDidChoosed:(PanoAnnotationToolOption)option;
 
 @end
 
-
+/**
+ 标注工具类
+ */
 @interface PanoAnnotationTool : NSObject
 
 @property (strong, nonatomic, readonly) PanoAnnotationToolView* annotationTool;
@@ -55,6 +64,9 @@ extern PanoAnnotationToolKey PanoToolKeyFill;
 
 - (BOOL)isVisible;
 
+- (void)showToolInstruction;
+
+- (void)hideToolInstruction;
 @end
 
 NS_ASSUME_NONNULL_END

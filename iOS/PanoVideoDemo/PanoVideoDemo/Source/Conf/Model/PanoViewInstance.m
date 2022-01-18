@@ -2,12 +2,12 @@
 //  PanoViewInstance.m
 //  PanoVideoDemo
 //
+//  
 //  Copyright © 2020 Pano. All rights reserved.
 //
 
 #import "PanoViewInstance.h"
-#import "PanoUserService.h"
-#import "PanoServiceManager.h"
+#import "PanoCallClient.h"
 
 @implementation PanoViewInstance
 
@@ -20,7 +20,7 @@
 }
 
 - (PanoUserInfo *)user {
-    return [[PanoServiceManager serviceWithType:PanoUserServiceType] findUserWithId:_userId];
+    return [PanoCallClient.shared.userMgr findUserWithId:_userId];
 }
 
 - (NSString *)description {
@@ -56,6 +56,16 @@
 
 @implementation PanoAnnotationItem
 
+- (instancetype)initWithUserId:(UInt64)userId
+                          type:(PanoViewInstanceType)type
+                      streamId:(SInt32)streamId {
+    self = [self initWithUserId:userId type:type];
+    if (self) {
+        self.streamId = streamId;
+    }
+    return self;
+}
+
 - (instancetype)initWithUserId:(UInt64)userId type:(PanoViewInstanceType)type {
     self = [super init];
     if (self) {
@@ -71,4 +81,5 @@
     }
     return self.type == ((PanoAnnotationItem *)object).type && (self.userId == ((PanoAnnotationItem *)object).userId);
 }
+
 @end

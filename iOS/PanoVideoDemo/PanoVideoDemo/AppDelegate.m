@@ -2,10 +2,12 @@
 //  AppDelegate.m
 //  PanoVideoDemo
 //
+//  
 //  Copyright © 2020 Pano. All rights reserved.
 //
 
 #import "AppDelegate.h"
+#import "PanoLog.h"
 
 @interface AppDelegate ()
 
@@ -19,11 +21,10 @@
     if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
         NSLog(@"Ignore signal(SIGPIPE) failed!");
     }
+    [PanoLog logIntial];
     // Display lauch screen with 2 seconds.
-    [NSThread sleepForTimeInterval:2.0];
     return YES;
 }
-
 
 #pragma mark - UISceneSession lifecycle
 
@@ -37,7 +38,8 @@
 - (UIViewController*)topViewController {
     return [self topViewControllerWithRootViewController:[UIApplication sharedApplication].keyWindow.rootViewController];
 }
-- (UIViewController*)topViewControllerWithRootViewController:(UIViewController*)rootViewController {
+
+-(UIViewController*)topViewControllerWithRootViewController:(UIViewController*)rootViewController {
     if ([rootViewController isKindOfClass:[UITabBarController class]]) {
         UITabBarController* tabBarController = (UITabBarController*)rootViewController;
         return [self topViewControllerWithRootViewController:tabBarController.selectedViewController];
@@ -51,4 +53,5 @@
         return rootViewController;
     }
 }
+
 @end

@@ -2,18 +2,15 @@
 //  PanoPoolView.m
 //  PanoVideoDemo
 //
+//  
 //  Copyright © 2020 Pano. All rights reserved.
 //
 
 #import "PanoPoolView.h"
-#import "PanoServiceManager.h"
 #import "PanoPoolService.h"
-#import "PanoUserService.h"
-#import "PanoVideoService.h"
 #import "PanoVideoView.h"
 #import "PanoDesktopView.h"
 #import "PanoCallClient.h"
-
 #import "PanoPoolFullScreenLayout.h"
 #import "PanoPoolFloatLayout.h"
 #import "PanoPoolFourAvgLayout.h"
@@ -60,7 +57,7 @@
 }
 
 - (void)initService {
-    _poolService = [PanoServiceManager serviceWithType:PanoPoolServiceType];
+    _poolService = PanoCallClient.shared.pool;
     _poolService.delegate = self;
     [_poolService start];
     _prevMedias = [NSMutableArray array];
@@ -93,14 +90,14 @@
 }
 
 - (void)updateVideoRenderConfig:(id __nullable)config {
-    PanoUserService *userService = [PanoServiceManager serviceWithType:PanoUserServiceType];
-    PanoVideoService *videoService = [PanoServiceManager serviceWithType:PanoVideoServiceType];
+    UIView *videoView = nil;
     for (PanoVideoView *view in self.contentView.subviews) {
-        if (view.instance.userId == [userService me].userId && view.instance.type == PanoViewInstance_Video) {
-            [videoService updateMyVideoWithView:view.contentView config:config];
+        if (view.instance.userId == [PanoCallClient.shared.userMgr me].userId && view.instance.type == PanoViewInstance_Video) {
+            videoView = view.contentView;
             break;
         }
     }
+    [PanoCallClient.shared.video updateMyVideoWithView:videoView config:config];
 }
 
 - (void)updateMediaLayout:(NSDictionary<PanoMediaInfoKey,id> *)info {
@@ -115,7 +112,7 @@
     [_poolService stopRender];
     [_prevMedias removeAllObjects];
     for (PanoBaseMediaView *media in self.contentView.subviews) {
-//        if (media.instance.userId == PanoCallClient.sharedInstance.userId) {
+//        if (media.instance.userId == PanoCallClient.shared.userId) {
 //            continue;
 //        }
         [media stop];
@@ -136,6 +133,8 @@
     if (page == nil) {
         return;
     }
+    
+    _mainUserId = page.instances.firstObject.userId;
     
     if ([self.delegate respondsToSelector:@selector(onPageIndexChanged:numbersOfIndexs:)]) {
         [self.delegate onPageIndexChanged:_poolService.currentIndex numbersOfIndexs:_poolService.numbersOfIndexs];
@@ -378,87 +377,7 @@
 }
 
 - (void)dealloc {
-    NSLog(@"dealloc");
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-}
-
-#pragma mark -- PanoAnnotationDelegate
-
-- (void)onAnnotationStart:(PanoAnnotationItem *)item {
-    if (item.userId == PanoCallClient.sharedInstance.userId &&
-        item.type == PanoViewInstance_Video) {
-        // 如果是开启自己的标注，关闭镜像
-        PanoRtcRenderConfig * renderConfig = [[PanoRtcRenderConfig alloc] init];
-        renderConfig.profileType = PanoCallClient.sharedInstance.videoProfile;
-        renderConfig.scalingMode = kPanoScalingFit;
-        renderConfig.mirror = false;
-        [self updateVideoRenderConfig:renderConfig];
-        [self startAnnotation];
-    } else {
-        [_delegate onAnnotationStart:item];
-    }
-}
-
-- (void)onAnnotationStop:(PanoAnnotationItem *)item {
-    PanoAnnotationService *annotationService = [PanoAnnotationService new];
-    [annotationService stopAnnotationWithItem:item];
-    [_delegate onAnnotationStop:item];
-    if (item.userId == PanoCallClient.sharedInstance.userId &&
-        item.type == PanoViewInstance_Video) {
-        [self updateVideoRenderConfig:nil];
-    }
-}
-
-- (void)startAnnotation {
-    // 关闭手势
-    [self.gestureRecognizers enumerateObjectsUsingBlock:^(__kindof UIGestureRecognizer * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        obj.enabled = false;
-    }];
-    [_poolService startAnnotation];
-    PanoAnnotationItem *item = _poolService.activeAnnotation;
-    if (item != nil) {
-        PanoAnnotationService *annotationService = [PanoAnnotationService new];
-        item.view = [self mediaViewWithAnnotationItem:item];
-        [annotationService startAnnotationWithItem:item];
-        [[annotationService rtcAnnotationWithItem:item] setToolType:_toolType];
-    }
-}
-
-- (PanoBaseMediaView *)mediaViewWithAnnotationItem:(PanoAnnotationItem *)item {
-    for (PanoBaseMediaView *view in self.contentView.subviews) {
-        UInt64 userId = view.instance.userId;
-        BOOL isShare = view.instance.type == PanoViewInstance_Desktop && item.type == PanoViewInstance_Desktop;
-        BOOL isVideo = view.instance.type == PanoViewInstance_Video && item.type == PanoViewInstance_Video;
-        if (item.userId == userId && (isShare || isVideo)) {
-            return view;
-        }
-    }
-    return nil;
-}
-
-- (void)stopAnnotation {
-    [self.gestureRecognizers enumerateObjectsUsingBlock:^(__kindof UIGestureRecognizer * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        obj.enabled = true;
-    }];
-    [_poolService stopAnnotation];
-}
-
-- (void)setAnnotationToolType:(enum PanoWBToolType)type {
-    _toolType = type;
-    PanoAnnotationItem *item = _poolService.activeAnnotation;
-    if (item) {
-        PanoRtcAnnotation *rtcAnnotation = [_poolService.annotationService rtcAnnotationWithItem:item];
-        [rtcAnnotation setToolType:type];
-    }
-}
-
-- (PanoRtcAnnotation *)activeAnnotation {
-    PanoAnnotationItem *item = _poolService.activeAnnotation;
-    if (item) {
-        PanoRtcAnnotation *rtcAnnotation = [_poolService.annotationService rtcAnnotationWithItem:item];
-        return rtcAnnotation;
-    }
-    return nil;
 }
 
 @end

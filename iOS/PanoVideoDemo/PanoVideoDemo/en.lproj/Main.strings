@@ -34,6 +34,8 @@
 /* Class = "UILabel"; text = "离开通话时需要确认"; ObjectID = "A1z-dJ-y1D"; */
 "EkS-AX-HII.text" = "Confirm When Leaving Call";
 
+"gyU-oO-Uox.text" = "Frame";
+
 /* Class = "UILabel"; text = "100%"; ObjectID = "B0B-9k-fLd"; */
 "B0B-9k-fLd.text" = "100%";
 
@@ -86,7 +88,9 @@
 "Lh6-wr-Uai.text" = "Countdown";
 
 /* Class = "UIButton"; normalTitle = "打开白板"; ObjectID = "LmE-Px-QYP"; */
-"LmE-Px-QYP.normalTitle" = "Whiteboard";
+"LmE-Px-QYP.normalTitle" = "Share";
+
+"3eF-2U-UoP.normalTitle" = "Close";
 
 /* Class = "UILabel"; text = "进入通话时打开扬声器"; ObjectID = "MaA-ms-yzn"; */
 "MaA-ms-yzn.text" = "Use Speaker When Joining Call";
@@ -203,6 +207,8 @@
 
 "XNv-ua-1gt.text" = "Statistics";
 
+"Tin-kW-DDK.text" = "Video Statistics";
+
 "lAc-ic-utF.normalTitle" = "Users";
 
 "doB-Yo-rhP.text" = "Audio Log Upload";
@@ -211,10 +217,13 @@
 
 "NrP-Vq-sat.normalTitle" = "Send";
 
+"By3-9c-y78.text" = "CodecType: -\nResolution@Frame: -\nBitRate: -";
 
 "hBf-66-qKd.text" = "Room ID";
 "qZ8-Vl-YZt.text" = "Name";
-"hzh-ro-RXo.text" = "Mute When Joining Call";
-"N7J-UT-Tm8.text" = "Open Video When Joining Call";
+"hzh-ro-RXo.text" = "Turn on My Mic";
+"N7J-UT-Tm8.text" = "Turn on My Video";
 "G5c-BS-4Sp.text" = "Beautify Intensity";
 "Igd-Kp-x8w.normalTitle" = "Set";
+
+"uAe-Y3-pvV.text" = "Fraudsters may use the demo for fraud. Privacy should be confidential when practical use.";

@@ -2,6 +2,7 @@
 //  PanoBaseService.m
 //  PanoVideoDemo
 //
+//  
 //  Copyright © 2020 Pano. All rights reserved.
 //
 
@@ -34,6 +35,10 @@
     return _delegates;
 }
 
+- (NSUInteger)delegatesCount {
+    return self.delegates.count;
+}
+
 - (void)addDelegate:(id)delegate {
     [self.delegates addDelegate:delegate delegateQueue:dispatch_get_main_queue()];
 }
@@ -60,7 +65,7 @@
 }
 
 - (void)dealloc {
-    NSLog(@"self->%@",self);
+    NSLog(@"dealloc: %@", self);
     [self removeAllDelegates];
 }
 @end

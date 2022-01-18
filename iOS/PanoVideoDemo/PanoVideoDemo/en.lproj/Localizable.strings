@@ -1,7 +1,8 @@
 /* 
   Localizable.strings
-  PanoVideoDemo
+  PanoCall
 
+  
   Copyright © 2020 Pano. All rights reserved.
 */
 
@@ -121,3 +122,40 @@
 "'%@'开启了视角跟随" = "'%@' has started vision share";
 "'%@'关闭了视觉跟随" = "'%@' has stopped vision share";
 "您已静音，请开启麦克风后发言" = "You are muted, please turn on the microphone and speak";
+"解码器类型: -\n分辨率@帧率: -\n码率: -" = "CodecType: -\nResolution@Frame: -\nBitRate: -";
+"分辨率@帧率: " = "Resolution@Frame: ";
+"解码器类型: " = "CodecType: ";
+"未知" = "Unkown";
+"编码器类型: " = "EnCodecType: ";
+"码率: " = "BitRate: ";
+"正在重连..." = "Reconnecting...";
+"共享白板" = "Whiteboard";
+"收起白板" = "Close";
+"选择" = "Select";
+"画笔" = "Pen";
+"文字" = "Text";
+"图形" = "Shape";
+"删除" = "Delete";
+
+"Call" = "Call";
+"OpenVideoAnnotation" = "Video Annotation";
+"OpenShareScren" = "Screen Share";
+"ContactCustomer" = "Please contact customer service Xiaopai, Phone/WeChat: 18989880717";
+
+"成为主持人" = "Become a host";
+
+"主持人" = "Host";
+
+"确认将%@设置为主持人？" = "Set %@ as the host?";
+
+"确认" = "confirm";
+
+"设为主持人" = "Set the host";
+"返回主会场" = "Return to main session";
+"离开会议" = "Leave Meeting";
+"主持人邀请你加入%@" = "The host invites you to join %@";
+"同意" = "OK";
+"拒绝" = "Cancel";
+"您已加入%@" = "Joined %@";
+"您将自动返回主会场" = "You will back to the main session automatically";
+"分组讨论将在%zd秒后结束" = "The discussion group will end in %zd seconds";

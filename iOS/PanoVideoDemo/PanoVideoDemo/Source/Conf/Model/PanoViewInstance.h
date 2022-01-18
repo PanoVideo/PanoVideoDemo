@@ -2,6 +2,7 @@
 //  PanoViewInstance.h
 //  PanoVideoDemo
 //
+//  
 //  Copyright © 2020 Pano. All rights reserved.
 //
 
@@ -69,8 +70,12 @@ typedef enum PanoViewInstanceType PanoAnnotationType;
 
 @property (nonatomic, assign) PanoAnnotationType type;
 
-- (instancetype)initWithUserId:(UInt64)userId type:(PanoViewInstanceType)type;
+- (instancetype)initWithUserId:(UInt64)userId
+                          type:(PanoViewInstanceType)type;
 
+- (instancetype)initWithUserId:(UInt64)userId
+                          type:(PanoViewInstanceType)type
+                      streamId:(SInt32)streamId;
 @end
 
 NS_ASSUME_NONNULL_END

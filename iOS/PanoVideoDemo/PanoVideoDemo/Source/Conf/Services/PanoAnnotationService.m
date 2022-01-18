@@ -2,19 +2,27 @@
 //  PanoAnnotationService.m
 //  PanoVideoDemo
 //
-
+//  
 //  Copyright © 2021 Pano. All rights reserved.
 //
 
 #import "PanoAnnotationService.h"
 #import "PanoCallClient.h"
-#import "PanoUserService.h"
-#import "PanoServiceManager.h"
+#import "NSArray+Extension.h"
 
 @interface PanoAnnotationService ()
+/// 所有的桌面批注/视频批注
+@property (strong, nonatomic) NSMutableArray<PanoAnnotationItem *> *annotations;
 @end
 
 @implementation PanoAnnotationService
+
+- (NSMutableArray<PanoAnnotationItem *> *)annotations {
+    if (!_annotations) {
+        _annotations = [NSMutableArray array];
+    }
+    return _annotations;
+}
 
 #pragma mark -- Public Methods
 - (void)startAnnotationWithItem:(PanoAnnotationItem *)item {
@@ -29,9 +37,9 @@
         return;
     }
     if (item.type == PanoViewInstance_Desktop) {
-        [PanoCallClient.sharedInstance.engineKit updateScreenScaling:item.userId withRatio:kPanoScalingFitRatio];
+        [PanoCallClient.shared.engineKit updateScreenScaling:item.userId withRatio:kPanoScalingFitRatio];
     }
-    [PanoCallClient.sharedInstance.engineKit updateScreenScaling:item.userId withRatio:kPanoScalingFitRatio];
+    [PanoCallClient.shared.engineKit updateScreenScaling:item.userId withRatio:kPanoScalingFitRatio];
     NSLog(@"res = %zd", res);
 }
 
@@ -63,7 +71,7 @@
 }
 
 - (PanoRtcAnnotation *)rtcAnnotationWithItem:(PanoAnnotationItem *)item {
-    PanoRtcAnnotationManager *annotationMgr =  PanoCallClient.sharedInstance.engineKit.annotationManager;
+    PanoRtcAnnotationManager *annotationMgr =  PanoCallClient.shared.engineKit.annotationManager;
     PanoRtcAnnotation *annotation = nil;
     if (item.type == PanoViewInstance_Video) {
         annotation = [annotationMgr videoAnnotation:item.userId stream:item.streamId];
@@ -80,47 +88,52 @@
     return [self rtcAnnotationWithItem:item];
 }
 
+- (NSArray<PanoAnnotationItem *> *)allAnnotations {
+    return [NSArray arrayWithArray:self.annotations];
+}
+
+- (PanoAnnotationItem *)lastAnnotation {
+    return self.annotations.lastObject;
+}
+
 #pragma mark -- PanoRtcAnnotationManagerDelegate
 - (void)onShareAnnotationStart:(UInt64)userId {
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        PanoUserService *userService = [PanoServiceManager serviceWithType:PanoUserServiceType];
-        if (![userService findUserWithId:userId]) {
-            return;
-        }
-        PanoAnnotationItem *item = [PanoAnnotationItem new];
-        item.userId = userId;
-        item.type = PanoViewInstance_Desktop;
-        if ([self.delegate respondsToSelector:@selector(onAnnotationStart:)]) {
-            [self.delegate onAnnotationStart:item];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        PanoAnnotationItem *item = [[PanoAnnotationItem alloc] initWithUserId:userId type:PanoViewInstance_Desktop];
+        [self.annotations addObject:item];
+        // 如果当前用户没有加入RTC，不需要往上层回调，等待加入RTC后在回调
+        if ([PanoCallClient.shared.userMgr findUserWithId:userId]) {
+            if ([self.delegate respondsToSelector:@selector(onAnnotationStart:)]) {
+                [self.delegate onAnnotationStart:item];
+            }
         }
     });
 }
 
+
 - (void)onShareAnnotationStop:(UInt64)userId {
     dispatch_async(dispatch_get_main_queue(), ^{
         NSLog(@"onShareAnnotationStop %llu",userId);
-        if ([self.delegate respondsToSelector:@selector(onAnnotationStop:)]) {
-            PanoAnnotationItem *item = [PanoAnnotationItem new];
-            item.userId = userId;
-            item.type = PanoViewInstance_Desktop;
-            [self.delegate onAnnotationStop:item];
+        PanoAnnotationItem *item = [[PanoAnnotationItem alloc] initWithUserId:userId type:PanoViewInstance_Desktop];
+        NSUInteger index = [self.annotations indexOfObject:item];
+        if (index != NSNotFound) {
+            [self.annotations removeObjectAtIndex:index];
+            if ([self.delegate respondsToSelector:@selector(onAnnotationStop:)]) {
+                [self.delegate onAnnotationStop:item];
+            }
         }
     });
 }
 
 - (void)onVideoAnnotationStart:(UInt64)userId stream:(SInt32)streamId {
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_async(dispatch_get_main_queue(), ^{
         NSLog(@"onVideoAnnotationStart %llu",userId);
-        PanoUserService *userService = [PanoServiceManager serviceWithType:PanoUserServiceType];
-        if (![userService findUserWithId:userId]) {
-            return;
-        }
-        PanoAnnotationItem *item = [PanoAnnotationItem new];
-        item.userId = userId;
-        item.streamId = streamId;
-        item.type = PanoViewInstance_Video;
-        if ([self.delegate respondsToSelector:@selector(onAnnotationStart:)]) {
-            [self.delegate onAnnotationStart:item];
+        PanoAnnotationItem *item = [[PanoAnnotationItem alloc] initWithUserId:userId type:PanoViewInstance_Video streamId:streamId];
+        [self.annotations addObject:item];
+        if ([PanoCallClient.shared.userMgr findUserWithId:userId]) {
+            if ([self.delegate respondsToSelector:@selector(onAnnotationStart:)]) {
+                [self.delegate onAnnotationStart:item];
+            }
         }
     });
 }
@@ -128,14 +141,48 @@
 - (void)onVideoAnnotationStop:(UInt64)userId stream:(SInt32)streamId {
     dispatch_async(dispatch_get_main_queue(), ^{
         NSLog(@"onVideoAnnotationStop %llu",userId);
-        if ([self.delegate respondsToSelector:@selector(onAnnotationStop:)]) {
-            PanoAnnotationItem *item = [PanoAnnotationItem new];
-            item.userId = userId;
-            item.streamId = streamId;
-            item.type = PanoViewInstance_Video;
-            [self.delegate onAnnotationStop:item];
+        PanoAnnotationItem *item = [[PanoAnnotationItem alloc] initWithUserId:userId type:PanoViewInstance_Video streamId:streamId];
+        NSUInteger index = [self.annotations indexOfObject:item];
+        if (index != NSNotFound) {
+            [self.annotations removeObjectAtIndex:index];
+            if ([self.delegate respondsToSelector:@selector(onAnnotationStop:)]) {
+                [self.delegate onAnnotationStop:item];
+            }
         }
     });
+}
+
+
+
+@end
+
+
+@implementation PanoAnnotationService (User)
+
+#pragma mark -- PanoUserDelegate
+- (void)onUserAdded:(PanoUserInfo *)user {
+    for (PanoAnnotationItem *item in self.annotations) {
+        if (item.userId == user.userId) {
+            // 如果发现当前用户开启了标注，需要回调App
+            if ([self.delegate respondsToSelector:@selector(onAnnotationStart:)]) {
+                [self.delegate onAnnotationStart:item];
+            }
+            break;
+        }
+    }
+}
+
+- (void)onUserRemoved:(PanoUserInfo *)user {
+    [self.annotations removeObjectWithPredicate:^BOOL(PanoAnnotationItem * _Nonnull item, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (item.userId == user.userId) {
+            // 如果发现当前用户关闭了标注，需要回调App
+            if ([self.delegate respondsToSelector:@selector(onAnnotationStop:)]) {
+                [self.delegate onAnnotationStop:item];
+            }
+            return true;
+        };
+        return false;
+    }];
 }
 
 @end

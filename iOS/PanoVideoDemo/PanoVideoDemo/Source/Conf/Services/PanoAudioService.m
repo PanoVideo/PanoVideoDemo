@@ -2,27 +2,26 @@
 //  PanoAudioService.m
 //  PanoVideoDemo
 //
+//  
 //  Copyright © 2020 Pano. All rights reserved.
 //
 
 #import "PanoAudioService.h"
 #import "PanoCallClient.h"
-#import "PanoServiceManager.h"
-#import "PanoUserService.h"
 
 @implementation PanoAudioService
 
 - (BOOL)muteAudio:(BOOL)mute {
-    PanoResult result = -1;
+    PanoResult result = kPanoResultFailed;
     if (mute) {
-        result = [PanoCallClient.sharedInstance.engineKit muteAudio];
+        result = [PanoCallClient.shared.engineKit muteAudio];
         if (result == kPanoResultOK) {
-            [[PanoServiceManager serviceWithType:PanoUserServiceType] onUserAudioMute:PanoCallClient.sharedInstance.userId];
+            [PanoCallClient.shared.userMgr onUserAudioMute:PanoCallClient.shared.userId];
         }
     } else {
-        result = [PanoCallClient.sharedInstance.engineKit unmuteAudio];
+        result = [PanoCallClient.shared.engineKit unmuteAudio];
         if (result == kPanoResultOK) {
-            [[PanoServiceManager serviceWithType:PanoUserServiceType] onUserAudioUnmute:PanoCallClient.sharedInstance.userId];
+            [PanoCallClient.shared.userMgr onUserAudioUnmute:PanoCallClient.shared.userId];
         }
     }
     return  result == kPanoResultOK;
@@ -31,14 +30,14 @@
 - (BOOL)switchAudioEnable:(BOOL)enable {
     PanoResult result = -1;
     if (enable) {
-        result = [PanoCallClient.sharedInstance.engineKit startAudio];
+        result = [PanoCallClient.shared.engineKit startAudio];
         if (result == kPanoResultOK) {
-            [[PanoServiceManager serviceWithType:PanoUserServiceType] onUserAudioStart:PanoCallClient.sharedInstance.userId];
+            [PanoCallClient.shared.userMgr onUserAudioStart:PanoCallClient.shared.userId];
         }
     } else {
-        result = [PanoCallClient.sharedInstance.engineKit stopAudio];
+        result = [PanoCallClient.shared.engineKit stopAudio];
         if (result == kPanoResultOK) {
-            [[PanoServiceManager serviceWithType:PanoUserServiceType] onUserAudioStop:PanoCallClient.sharedInstance.userId];
+            [PanoCallClient.shared.userMgr onUserAudioStop:PanoCallClient.shared.userId];
         }
     }
     return  result == kPanoResultOK;

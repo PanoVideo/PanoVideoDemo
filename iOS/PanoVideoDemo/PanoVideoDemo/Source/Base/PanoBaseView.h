@@ -2,6 +2,7 @@
 //  PanoBaseView.h
 //  PanoVideoDemo
 //
+//  
 //  Copyright © 2020 Pano. All rights reserved.
 //
 
@@ -12,6 +13,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// View 基类
 @interface PanoBaseView : UIView
 
 - (void)initViews;

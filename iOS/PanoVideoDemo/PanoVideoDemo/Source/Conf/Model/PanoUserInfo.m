@@ -2,10 +2,12 @@
 //  PanoUserInfo.m
 //  PanoVideoDemo
 //
+//  
 //  Copyright © 2020 Pano. All rights reserved.
 //
 
 #import "PanoUserInfo.h"
+#import "PanoCallClient.h"
 
 @implementation PanoUserInfo
 
@@ -44,4 +46,22 @@
     NSLog(@"forUndefinedKey: %@", key);
 }
 
+- (BOOL)isVoip {
+    return self.audioCallType == kPanoAudioCallTypeVoIP;
+}
+
+- (BOOL)isAudioMuted {
+    return self.audioStatus != PanoUserAudio_Unmute;
+}
+
+- (BOOL)isVideoMuted {
+    return self.videoStaus != PanoUserVideo_Unmute;
+}
+
+- (PanoUserRole)role {
+    if (_userId == PanoCallClient.shared.userMgr.hostId) {
+        return PanoUserRole_Host;
+    }
+    return PanoUserRole_None;
+}
 @end

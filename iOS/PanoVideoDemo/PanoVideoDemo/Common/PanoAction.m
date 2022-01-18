@@ -2,7 +2,7 @@
 //  PanoAction.m
 //  PanoVideoDemo
 //
-
+//  
 //  Copyright © 2021 Pano. All rights reserved.
 //
 
@@ -26,6 +26,7 @@
         self.imgIcon = image;
         self.title = title;
         self.selectedIcon = selectedImage;
+        self.flex = 1;
     }
     return self;
 }

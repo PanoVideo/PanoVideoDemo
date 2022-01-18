@@ -20,6 +20,9 @@ PanoAnnotationToolKey PanoToolKeyFill = @"PanoToolKeyFill";
 @property (assign, nonatomic) NSUInteger annotationLineWidth;
 @property (assign, nonatomic) PanoWBToolType currentWBType;
 @property (assign, nonatomic) PanoShapeType shapeType;
+@property (assign, nonatomic) CGFloat totalFlexValue;
+@property (assign, nonatomic) BOOL isShowingInstruction;
+@property (assign, nonatomic) PanoAnnotationToolOption selectedOption;
 @end
 
 @implementation PanoAnnotationTool
@@ -27,46 +30,78 @@ PanoAnnotationToolKey PanoToolKeyFill = @"PanoToolKeyFill";
 - (instancetype)initWithView:(UIView *)parentView toolOption:(PanoAnnotationToolOption)option {
     self = [super init];
     if (self) {
+        _isShowingInstruction = true;
         _currentWBType = kPanoWBToolPath;
         _shapeType = PanoShapeLine;
         _option = option;
         _parentView = parentView;
-        _fontSizeRange = PanoMakeRange(1, 20);
+        _fontSizeRange = PanoMakeRange(10, 96);
         _lineWidthRange = PanoMakeRange(1, 20);
-        [self initAnnotationTool];
+        [self initAnnotationTool:_isShowingInstruction];
+        _annotationTool.hidden = true;
+        _selectedOption = PanoAnnotationToolPath;
     }
     return self;
 }
 
-- (void)initAnnotationTool {
+- (void)showToolInstruction {
+    _isShowingInstruction = true;
+    [self initAnnotationTool:_isShowingInstruction];
+    [self updateAnnotationTool];
+}
+
+- (void)hideToolInstruction {
+    _isShowingInstruction = false;
+    [self initAnnotationTool:_isShowingInstruction];
+    [self updateAnnotationTool];
+}
+
+- (void)updateAnnotationTool {
+    _annotationTool.selectedIndex = firstBitFlag(_selectedOption);
+}
+
+- (void)initAnnotationTool:(BOOL)showInstruction {
     __weak typeof(self) weakSelf = self;
     NSMutableArray<UIImage *> *normalImages = [NSMutableArray array];
     NSMutableArray<UIImage *> *selectedImages = [NSMutableArray array];
-    for (NSString *code in @[@"\U0000e793", @"\U0000e791", @"\U0000e794", @"\U0000e795", @"\U0000e790"]) {
+    for (NSString *code in @[@"\U0000e793", @"\U0000e791", @"\U0000e794", @"\U0000e795", @"\U0000e790", @"\U0000e77d", @"\U0000e77f"]) {
         UIImage *normalImage = [UIImage imageWithIconFontSize:36 text:code color:appMainColor()];
         UIImage *selectedImage = [UIImage imageWithIconFontSize:36 text:code color:appHighlightedColor()];
         [normalImages addObject:normalImage];
         [selectedImages addObject:selectedImage];
     }
-    PanoAction *selectAction = [[PanoAction alloc] initWithTitle:NSLocalizedString(@"选择", nil) imgIcon:normalImages[0] selectedIcon:selectedImages[0] handler:^(PanoAction * _Nonnull action) {
+    PanoAction *selectAction = [[PanoAction alloc] initWithTitle:showInstruction ? NSLocalizedString(@"选择", nil): nil imgIcon:normalImages[0] selectedIcon:selectedImages[0] handler:^(PanoAction * _Nonnull action) {
         [weakSelf didChooseAnnotationTool:kPanoWBToolSelect options:@{}];
         [weakSelf.penView dismiss];
     }];
-    PanoAction *pathAction = [[PanoAction alloc] initWithTitle:NSLocalizedString(@"画笔", nil) imgIcon:normalImages[1] selectedIcon:selectedImages[1] handler:^(PanoAction * _Nonnull action) {
+    PanoAction *pathAction = [[PanoAction alloc] initWithTitle:showInstruction ? NSLocalizedString(@"画笔", nil) : nil imgIcon:normalImages[1] selectedIcon:selectedImages[1] handler:^(PanoAction * _Nonnull action) {
         [weakSelf didChooseAnnotationTool:kPanoWBToolPath options:@{}];
         [weakSelf toggleAnnotationPenView: PanoAnnotationToolPath ];
     }];
-    PanoAction *textAction = [[PanoAction alloc] initWithTitle:NSLocalizedString(@"文字", nil) imgIcon:normalImages[2] selectedIcon:selectedImages[2] handler:^(PanoAction * _Nonnull action) {
+    PanoAction *textAction = [[PanoAction alloc] initWithTitle:showInstruction ? NSLocalizedString(@"文字", nil) : nil imgIcon:normalImages[2] selectedIcon:selectedImages[2] handler:^(PanoAction * _Nonnull action) {
         [weakSelf didChooseAnnotationTool:kPanoWBToolText options:@{}];
         [weakSelf toggleAnnotationPenView: PanoAnnotationToolText];
     }];
-    PanoAction *shapeAction = [[PanoAction alloc] initWithTitle:NSLocalizedString(@"图形", nil) imgIcon:normalImages[3] selectedIcon:selectedImages[3] handler:^(PanoAction * _Nonnull action) {
+    PanoAction *shapeAction = [[PanoAction alloc] initWithTitle:showInstruction ? NSLocalizedString(@"图形", nil) : nil imgIcon:normalImages[3] selectedIcon:selectedImages[3] handler:^(PanoAction * _Nonnull action) {
         [weakSelf didChooseAnnotationTool:[self wbTool:weakSelf.shapeType] options:@{}];
         [weakSelf toggleAnnotationPenView:PanoAnnotationToolShape];
     }];
-    PanoAction *brushAction = [[PanoAction alloc] initWithTitle:NSLocalizedString(@"删除", nil) imgIcon:normalImages[4] selectedIcon:selectedImages[4] handler:^(PanoAction * _Nonnull action) {
-        [weakSelf didChooseAnnotationTool:kPanoWBToolEraser options:@{}];
+    PanoAction *brushAction = [[PanoAction alloc] initWithTitle:showInstruction ? NSLocalizedString(@"删除", nil) : nil imgIcon:normalImages[4] selectedIcon:selectedImages[4] handler:^(PanoAction * _Nonnull action) {
+        weakSelf.selectedOption = PanoAnnotationToolBrush;
+        [weakSelf didChooseAnnotationTool:kPanoWBToolDelete options:@{}];
         [weakSelf.penView dismiss];
+    }];
+    PanoAction *undoAction = [[PanoAction alloc] initWithTitle:nil imgIcon:normalImages[5] selectedIcon:nil handler:^(PanoAction * _Nonnull action) {
+        [weakSelf.delegate annotationToolDidChoosed:PanoAnnotationToolUndo];
+    }];
+    undoAction.HighlightedIcon = selectedImages[5];
+    
+    PanoAction *redoAction = [[PanoAction alloc] initWithTitle:nil imgIcon:normalImages[6] selectedIcon:nil handler:^(PanoAction * _Nonnull action) {
+        [weakSelf.delegate annotationToolDidChoosed:PanoAnnotationToolRedo];
+    }];
+    redoAction.HighlightedIcon = selectedImages[6];
+    PanoAction *closeAction = [[PanoAction alloc] initWithTitle:NSLocalizedString(@"收起白板", nil) imgIcon:nil selectedIcon:nil handler:^(PanoAction * _Nonnull action) {
+        [weakSelf.delegate annotationToolDidChoosed:PanoAnnotationToolClose];
     }];
     NSMutableArray *items = [NSMutableArray array];
     if (_option & PanoAnnotationToolSelect) {
@@ -84,14 +119,34 @@ PanoAnnotationToolKey PanoToolKeyFill = @"PanoToolKeyFill";
     if (_option & PanoAnnotationToolBrush) {
         [items addObject:brushAction];
     }
+    if (_option & PanoAnnotationToolUndo && !showInstruction) {
+        [items addObject:undoAction];
+    }
+    if (_option & PanoAnnotationToolRedo && !showInstruction) {
+        [items addObject:redoAction];
+    }
+    if (_option & PanoAnnotationToolClose && !showInstruction) {
+        closeAction.flex = 2;
+        closeAction.titleColor = [UIColor pano_colorWithHexString:@"#EF476B"];
+        [items addObject:closeAction];
+    }
+    _totalFlexValue = 0.0;
+    for (PanoAction *action in items) {
+        _totalFlexValue += (CGFloat)action.flex;
+    }
+    [_annotationTool removeFromSuperview];
+    _annotationTool = nil;
     _annotationTool = [[PanoAnnotationToolView alloc] initWithItems:items];
-    _annotationTool.hidden = true;
     _annotationTool.backgroundColor = [UIColor pano_colorWithHexString:@"#F4F4F4"];
     [_parentView addSubview:_annotationTool];
-    CGFloat bottom = pano_safeAreaInset(UIApplication.sharedApplication.keyWindow).bottom;
-    [_annotationTool mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.height.mas_equalTo(70 + bottom);
-        make.left.right.bottom.equalTo(_parentView);
+    CGFloat bottom = isIphoneX() ? bottomSafeValue() : 0;
+    CGFloat height = (showInstruction ? 70 : 50) + bottom;
+    CGFloat width = MIN(CGRectGetWidth(_parentView.frame), CGRectGetHeight(_parentView.frame));
+    [_annotationTool mas_remakeConstraints:^(MASConstraintMaker *make) {
+        make.height.mas_equalTo(height);
+        make.bottom.centerX.equalTo(_parentView);
+        showInstruction ? make.left.right.equalTo(_parentView) :
+        make.width.mas_equalTo(width);
     }];
 }
 
@@ -104,27 +159,34 @@ PanoAnnotationToolKey PanoToolKeyFill = @"PanoToolKeyFill";
     if (self.penView && [self.penView isShowing]) {
         [self.penView dismiss];
     } else {
+        _selectedOption = option;
         CGFloat ratio = 0.3;
+        CGFloat midValue = 1.0 / (_totalFlexValue * 2);
         switch (option) {
             case PanoAnnotationToolPath:
-                ratio = 0.3;
+                ratio = 1.0 / _totalFlexValue + midValue;
                 break;
             case PanoAnnotationToolText:
-                ratio = 0.5;
+                ratio = 2.0 / _totalFlexValue + midValue;
                 break;
             case PanoAnnotationToolShape:
-                ratio = 0.7;
+                ratio = 3.0 / _totalFlexValue + midValue;
                 break;
             default:
                 ratio = 0.3;
                 break;
         }
-        CGFloat p = CGRectGetWidth(_parentView.bounds) * ratio;
-        _penView = [PanoAnnotationPenView showWithParentView:_parentView arrowPositionScreenX:p toolOption:option colors: [PanoCallClient sharedInstance].config.penColors shapes:self.shapes];
-        PanoConfig *config = PanoCallClient.sharedInstance.config;
+        CGFloat p = CGRectGetWidth(_annotationTool.bounds) * ratio + CGRectGetMinX(_annotationTool.frame);
+        _penView = [PanoAnnotationPenView showWithParentView:_parentView arrowPositionScreenX:p toolOption:option colors: [PanoCallClient shared].config.penColors shapes:self.shapes];
+        PanoConfig *config = PanoCallClient.shared.config;
         _penView.delegate = self;
         _penView.bgColor = _annotationTool.backgroundColor;
         _penView.activeShape = _shapeType;
+        if (_currentWBType == kPanoWBToolPath) {
+            _penView.range = _lineWidthRange;
+        } else if (_currentWBType == kPanoWBToolText) {
+            _penView.range = _fontSizeRange;
+        }
         if (_option & PanoAnnotationToolWhiteBoardFlag) {
             _penView.activeColor = config.wbColor;
             _penView.lineWidth = _currentWBType == kPanoWBToolPath ? config.wbLineWidth:
@@ -133,11 +195,6 @@ PanoAnnotationToolKey PanoToolKeyFill = @"PanoToolKeyFill";
             _penView.activeColor = config.annoColor;
             _penView.lineWidth = _currentWBType == kPanoWBToolPath ?        config.annoLineWidth:
                 config.annoFontSize;
-        }
-        if (_currentWBType == kPanoWBToolPath) {
-            _penView.range = _lineWidthRange;
-        } else if (_currentWBType == kPanoWBToolText) {
-            _penView.range = _fontSizeRange;
         }
     }
 }
@@ -155,6 +212,8 @@ PanoAnnotationToolKey PanoToolKeyFill = @"PanoToolKeyFill";
 
 - (void)show {
     [_annotationTool show];
+    _selectedOption = PanoAnnotationToolPath;
+    [self updateAnnotationTool];
 }
 
 - (void)hide {
@@ -175,9 +234,10 @@ PanoAnnotationToolKey PanoToolKeyFill = @"PanoToolKeyFill";
     NSDictionary *options = nil;
     if (_currentWBType == kPanoWBToolPath) {
         options = @{PanoToolKeyLineWidth : @(width)};
-    } else {
+    } else if (_currentWBType == kPanoWBToolText){
         options = @{PanoToolKeyFontSize: @(width)};
     }
+    NSLog(@"lineWidth-> %ld, %u", (long)_currentWBType, (unsigned int)width);
     [_delegate annotationToolDidChooseType:_currentWBType options:options];
 }
 
@@ -192,7 +252,7 @@ PanoAnnotationToolKey PanoToolKeyFill = @"PanoToolKeyFill";
 
 - (PanoWBToolType)wbTool:(PanoShapeType)shape {
     if (shape == PanoShapeFillEllipse || shape == PanoShapeFillRect ) {
-        shape ^= PanoShapeFillFlag;
+        shape ^= PanoShapeFillFlag; // 取反
     }
     return (PanoWBToolType)shape;
 }

@@ -2,6 +2,7 @@
 //  PanoDefine.h
 //  PanoVideoDemo
 //
+//  
 //  Copyright © 2020 Pano. All rights reserved.
 //
 
@@ -19,11 +20,16 @@ typedef NS_ENUM(NSInteger, PanoFontSize) {
 static inline BOOL isIphoneX() {
     if (@available(iOS 11.0, *)) {
         UIEdgeInsets safeInsets = [UIApplication sharedApplication].keyWindow.safeAreaInsets;
-        return safeInsets.bottom > 0 && safeInsets.top > 0;
+        return safeInsets.top > 0 || safeInsets.bottom > 0;
     } else {
         return false;
     }
 }
+
+static inline CGFloat bottomSafeValue() {
+    return isIphoneX() ? 8 : 0;
+}
+
 static inline BOOL isiPad() {
     return (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad);
 }
@@ -39,7 +45,14 @@ static inline UIEdgeInsets pano_safeAreaInset(UIView *view) {
     return UIEdgeInsetsZero;
 }
 
+static inline BOOL isLandscape() {
+    return UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation);
+}
+
 static inline CGFloat statusBarHeight() {
+    if (isLandscape()) {
+        return 0;
+    }
     return isIphoneX() ? 44 : 20;
 }
 

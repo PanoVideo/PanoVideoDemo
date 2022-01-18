@@ -2,7 +2,7 @@
 //  PanoFeedAudioController.m
 //  PanoVideoDemo
 //
-
+//  
 //  Copyright © 2021 Pano. All rights reserved.
 //
 
@@ -36,8 +36,9 @@
 }
 
 - (IBAction)sendLogAction:(UIButton *)sender {
-    NSDictionary *startDumpMsg = @{ @"type" : @"command", @"command" : @"startDump", @"description": _textView.text ?: @""};
-    [PanoCallClient.sharedInstance.rtmService broadcastMessage:startDumpMsg sendBack:true];
+    NSString *desc = [NSString stringWithFormat:@"'%@'一键上报:%@",PanoCallClient.shared.userName,_textView.text];
+    NSDictionary *startDumpMsg = @{ @"type" : @"command", @"command" : @"startDump", @"description": desc};
+    [PanoCallClient.shared.rtcService broadcastMessage:startDumpMsg sendBack:true];
     [self dismiss:nil];
     
 }

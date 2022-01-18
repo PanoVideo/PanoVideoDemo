@@ -2,12 +2,12 @@
 //  PanoVideoView.m
 //  PanoVideoDemo
 //
+//  
 //  Copyright © 2020 Pano. All rights reserved.
 //
 
 #import "PanoVideoView.h"
-#import "PanoServiceManager.h"
-#import "PanoVideoService.h"
+#import "PanoCallClient.h"
 
 @interface PanoVideoView ()
 
@@ -88,21 +88,12 @@
 }
 
 - (UIImage *)micImage {
-    UIImage * image = nil;
-    BOOL small = self.instance.mode == PanoViewInstance_Avg || self.instance.mode == PanoViewInstance_Float;
-    small = false;
-    if (self.instance.user.audioStatus == PanoUserAudio_Unmute) {
-        image = [UIImage imageNamed:small ? @"image.unmute.small" : @"image.unmute.big"];
-    } else {
-        image = [UIImage imageNamed:small ? @"image.mute.small" : @"image.mute.big"];
-    }
+    UIImage * image = [UIImage imageNamed:self.instance.user.audioName];
     return image;
 }
 
 - (UIImage *)avatarImage {
     return [UIImage imageNamed:@"image.avatar.big"];
-//    BOOL max = self.instance.mode == PanoViewInstance_Max;
-//    return [UIImage imageNamed:max ?  @"image.avatar.big" : @"image.avatar.small"];
 }
 
 - (void)setActive:(BOOL)active {
@@ -116,22 +107,18 @@
     PanoUserInfo * user = self.instance.user;
     _avatarImageView.hidden = user.videoStaus == PanoUserVideo_Unmute;
     if (user.videoStaus == PanoUserVideo_Unmute) {
-        PanoVideoService *videoService = [PanoServiceManager serviceWithType:PanoVideoServiceType];
-        [videoService startVideoWithView:self.contentView instance:self.instance];
+        [PanoCallClient.shared.video startVideoWithView:self.contentView instance:self.instance];
     } else if (user.videoStaus == PanoUserVideo_Mute || user.videoStaus == PanoUserVideo_None) {
         [self stop];
     }
 }
 
 - (void)stop {
-    // TODO
-    PanoVideoService *videoService = [PanoServiceManager serviceWithType:PanoVideoServiceType];
-    [videoService stopViewWithUser:self.instance.user];
+    [PanoCallClient.shared.video unsubscribe:self.instance.user.userId];
 }
 
 - (void)update {
     _userName.text = self.instance.user.videoUserName;
-    [_userName sizeToFit];
     _micIcon.image = [self micImage];
     _avatarImageView.image = [self avatarImage];
     if (self.instance.mode == PanoViewInstance_Avg || self.instance.mode == PanoViewInstance_Float) {

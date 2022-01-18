@@ -2,10 +2,12 @@
 //  PanoPoolFullScreenLayout.m
 //  PanoVideoDemo
 //
+//  
 //  Copyright © 2020 Pano. All rights reserved.
 //
 
 #import "PanoPoolFullScreenLayout.h"
+#import "Masonry.h"
 
 @implementation PanoPoolFullScreenLayout
 

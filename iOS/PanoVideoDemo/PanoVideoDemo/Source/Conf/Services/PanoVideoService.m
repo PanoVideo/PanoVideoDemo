@@ -2,6 +2,7 @@
 //  PanoVideoService.m
 //  PanoVideoDemo
 //
+//  
 //  Copyright © 2020 Pano. All rights reserved.
 //
 
@@ -9,8 +10,6 @@
 #import "PanoRtc/PanoRtcEngineKit.h"
 #import "PanoCallClient.h"
 #import "PanoViewInstance.h"
-#import "PanoServiceManager.h"
-#import "PanoUserService.h"
 
 
 @interface PanoVideoService()
@@ -35,29 +34,36 @@
     }
     return _videoStatus;
 }
+
+- (BOOL)startVideo {
+    PanoRtcRenderConfig * renderConfig = [[PanoRtcRenderConfig alloc] init];
+    renderConfig.profileType = PanoCallClient.shared.videoProfile;
+    renderConfig.scalingMode = kPanoScalingCropFill;
+    renderConfig.mirror = [PanoCallClient.shared.engineKit isFrontCamera];
+    PanoResult result = [PanoCallClient.shared.engineKit startVideoWithView:nil config:renderConfig];
+    return result == kPanoResultOK;
+}
+
 - (void)startVideoWithView:(UIView * _Nonnull)view
                   instance:(PanoViewInstance *)instance {
     PanoUserInfo *user = instance.user;
     if ([self.videoStatus objectForKey:@(user.userId)].integerValue == PanoUserVideo_Unmute) {
-        //NSLog(@"%llu(%@) video has started",instance.userId, instance.user.userName);
         PanoVideoProfileType profileType = [self profileWithMode:instance.mode];
-        if (user.userId == PanoCallClient.sharedInstance.userId) {
+        if (user.userId == PanoCallClient.shared.userId) {
             return;
         } else if (profileType == [self.videoScalingModes[@(instance.userId)] integerValue]) {
             return;
         }
     }
-    // NSLog(@"startVideoWithView: %@",instance);
     // 1. 开启自己的视频
-    if (user.userId == PanoCallClient.sharedInstance.userId) {
-        NSLog(@"view-> %@",view);
+    if (user.userId == PanoCallClient.shared.userId) {
         PanoRtcRenderConfig * renderConfig = [[PanoRtcRenderConfig alloc] init];
-        renderConfig.profileType = PanoCallClient.sharedInstance.videoProfile;
+        renderConfig.profileType = PanoCallClient.shared.videoProfile;
         renderConfig.scalingMode = kPanoScalingCropFill;
-        renderConfig.mirror = [PanoCallClient.sharedInstance.engineKit isFrontCamera];
-        PanoResult result = [PanoCallClient.sharedInstance.engineKit startVideoWithView:view config:renderConfig];
+        renderConfig.mirror = [PanoCallClient.shared.engineKit isFrontCamera];
+        PanoResult result = [PanoCallClient.shared.engineKit startVideoWithView:view config:renderConfig];
         if (result != kPanoResultOK) {
-            [[PanoServiceManager serviceWithType:PanoUserServiceType] onUserVideoStop:user.userId];
+            [PanoCallClient.shared.userMgr onUserVideoStop:user.userId];
         }
         NSNumber *staus = result == kPanoResultOK ? @(PanoUserVideo_Unmute) : @(PanoUserVideo_None);
         [_videoStatus setObject:staus forKey:@(user.userId)];
@@ -67,7 +73,7 @@
         PanoRtcRenderConfig * renderConfig = [[PanoRtcRenderConfig alloc] init];
         renderConfig.profileType = [self profileWithMode:instance.mode];
         renderConfig.scalingMode = kPanoScalingFit;
-        PanoResult result = [PanoCallClient.sharedInstance.engineKit subscribeVideo:user.userId withView:view config:renderConfig];
+        PanoResult result = [PanoCallClient.shared.engineKit subscribeVideo:user.userId withView:view config:renderConfig];
         NSNumber *staus = result == kPanoResultOK ? @(PanoUserVideo_Unmute) : @(PanoUserVideo_None);
         [_videoStatus setObject:staus forKey:@(user.userId)];
         [self.videoScalingModes setObject:@(renderConfig.profileType) forKey:@(user.userId)];
@@ -84,19 +90,16 @@
     return profile;
 }
 
-- (void)stopViewWithUser:(PanoUserInfo *)user {
-    if ([self.videoStatus objectForKey:@(user.userId)].integerValue != PanoUserVideo_Unmute) {
-//        NSLog(@"%llu(%@) video has stopped",user.userId, user.userName);
+- (void)unsubscribe:(UInt64)userId {
+    if ([self.videoStatus objectForKey:@(userId)].integerValue != PanoUserVideo_Unmute) {
         return;
     }
-    NSLog(@"stopViewWithUser: %@", user);
-    PanoResult result = -1;
-    if (user.userId == PanoCallClient.sharedInstance.userId) {
-        [self.videoStatus removeObjectForKey:@(user.userId)];
+    if (userId == PanoCallClient.shared.userId) {
+        [self.videoStatus removeObjectForKey:@(userId)];
     } else {
-        [PanoCallClient.sharedInstance.engineKit unsubscribeVideo:user.userId];
-        [self.videoStatus setObject:@(PanoUserVideo_None) forKey:@(user.userId)];
-        [self.videoScalingModes removeObjectForKey:@(user.userId)];
+        [PanoCallClient.shared.engineKit unsubscribeVideo:userId];
+        [self.videoStatus setObject:@(PanoUserVideo_None) forKey:@(userId)];
+        [self.videoScalingModes removeObjectForKey:@(userId)];
     }
 }
 
@@ -104,20 +107,20 @@
 - (void)switchVideoEnable:(BOOL)enable {
     if (enable) {
         // 模拟加入了一路新视频
-        [[PanoServiceManager serviceWithType:PanoUserServiceType] onUserVideoStart:PanoCallClient.sharedInstance.userId withMaxProfile:PanoCallClient.sharedInstance.videoProfile];
+        [PanoCallClient.shared.userMgr onUserVideoStart:PanoCallClient.shared.userId withMaxProfile:PanoCallClient.shared.videoProfile];
     } else {
-        PanoUserInfo *user = [[PanoServiceManager serviceWithType:PanoUserServiceType] findUserWithId:PanoCallClient.sharedInstance.userId];
-        [PanoCallClient.sharedInstance.engineKit stopVideo];
-        [[PanoServiceManager serviceWithType:PanoUserServiceType] onUserVideoStop:user.userId];
+        PanoUserInfo *user = [PanoCallClient.shared.userMgr findUserWithId:PanoCallClient.shared.userId];
+        [PanoCallClient.shared.engineKit stopVideo];
+        [PanoCallClient.shared.userMgr onUserVideoStop:user.userId];
     }
 }
 
 - (void)switchCamera {
-    PanoUserService *userService = [PanoServiceManager serviceWithType:PanoUserServiceType];
-    PanoUserInfo *user = [userService findUserWithId:PanoCallClient.sharedInstance.userId];
+    PanoUserService *userService = PanoCallClient.shared.userMgr;
+    PanoUserInfo *user = [userService findUserWithId:PanoCallClient.shared.userId];
     if (user.videoStaus == PanoUserVideo_Unmute) {
-        [PanoCallClient.sharedInstance.engineKit switchCamera];
-        [[PanoServiceManager serviceWithType:PanoUserServiceType] onUserVideoStart:PanoCallClient.sharedInstance.userId withMaxProfile:PanoCallClient.sharedInstance.videoProfile];
+        [PanoCallClient.shared.engineKit switchCamera];
+        [userService onUserVideoStart:PanoCallClient.shared.userId withMaxProfile:PanoCallClient.shared.videoProfile];
     }
 }
 
@@ -125,17 +128,18 @@
                      config:(PanoRtcRenderConfig * _Nullable)config {
     if (!config) {
         PanoRtcRenderConfig * renderConfig = [[PanoRtcRenderConfig alloc] init];
-        renderConfig.profileType = PanoCallClient.sharedInstance.videoProfile;
+        renderConfig.profileType = PanoCallClient.shared.videoProfile;
         renderConfig.scalingMode = kPanoScalingCropFill;
-        renderConfig.mirror = [PanoCallClient.sharedInstance.engineKit isFrontCamera];
+        renderConfig.mirror = [PanoCallClient.shared.engineKit isFrontCamera];
         config = renderConfig;
     }
-    [PanoCallClient.sharedInstance.engineKit startVideoWithView:view config:config];
+    [PanoCallClient.shared.engineKit startVideoWithView:view config:config];
 }
 
 
 #pragma mark --
-- (void)onUserVideoSubscribe:(UInt64)userId withResult:(PanoSubscribeResult)result {
+- (void)onUserVideoSubscribe:(UInt64)userId
+                  withResult:(PanoSubscribeResult)result {
     NSNumber *staus = result == kPanoResultOK ? @(PanoUserVideo_Unmute) : @(PanoUserVideo_None);
     [_videoStatus setObject:staus forKey:@(userId)];
 }

@@ -2,33 +2,33 @@
 //  PanoDesktopService.h
 //  PanoVideoDemo
 //
+//  
 //  Copyright © 2020 Pano. All rights reserved.
 //
 
 #import "PanoBaseService.h"
 #import <UIKit/UIKit.h>
+#import "PanoRtc/PanoRtcEngineKit.h"
 
 @class PanoUserInfo;
 
 NS_ASSUME_NONNULL_BEGIN
-/// 卓曼共享的服务
-@interface PanoDesktopService : PanoBaseService
+/// 桌面共享核心接口
+@interface PanoDesktopService : PanoBaseService <PanoRtcEngineDelegate>
 
+/// 是否正在共享手机屏幕
 @property (nonatomic, readonly, assign) BOOL isSharingScreen;
 
-- (void)startScreenShareWithView:(UIView * _Nonnull)view
-                            user:(PanoUserInfo *)user;
+/// 订阅屏幕
+- (void)subscribe:(UInt64)userId WithView:(UIView * _Nonnull)view;
 
-- (void)stopScreenShareWithUser:(PanoUserInfo *)user;
+/// 取消订阅屏幕
+- (void)unsubscribe:(UInt64)userId;
 
+/// 启动桌面共享服务
+- (void)start;
 
-//- (void)startAnnotationWithView:(UIView * _Nonnull)view
-//                           user:(PanoUserInfo *)user;
-//
-//- (void)stopAnnotationWithUser:(PanoUserInfo *)user;
-
-- (void)startShareWithHandler:(void(^)(BOOL success))handler;
-
+/// 停止共享
 - (void)stopShare;
 
 

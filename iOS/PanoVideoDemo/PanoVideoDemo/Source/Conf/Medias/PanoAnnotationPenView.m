@@ -241,10 +241,11 @@ static PanoAnnotationPenView *tipView = nil;
         tipView.shapes = shapes;
         tipView.arrowPosition = arrowPosition;
         [parentView addSubview:tipView];
+         
         [tipView mas_remakeConstraints:^(MASConstraintMaker *make) {
             make.width.mas_equalTo(viewWidth);
             make.centerX.mas_equalTo(tipView.superview);
-            make.bottom.mas_equalTo(tipView.superview).mas_offset(-(80 + pano_safeAreaInset(parentView).bottom));
+            make.bottom.mas_equalTo(tipView.superview).mas_offset(-(isLandscape() ? 66 : 80 + bottomSafeValue()));
             make.height.mas_equalTo(viewHeight);
         }];
     }
@@ -308,9 +309,9 @@ static PanoAnnotationPenView *tipView = nil;
         [button setImage:image forState:UIControlStateNormal];
         [button setImage:image forState:UIControlStateHighlighted];
         button.tintColor = color;
+        button.tag = i;
         [button addTarget:self action:@selector(chooseColor:) forControlEvents:UIControlEventTouchUpInside];
         [_contentStackView addArrangedSubview:button];
-        button.tag = i;
     }
 }
 

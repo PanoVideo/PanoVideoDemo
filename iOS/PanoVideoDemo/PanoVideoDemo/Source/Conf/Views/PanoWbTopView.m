@@ -2,6 +2,7 @@
 //  PanoWbTopView.m
 //  PanoVideoDemo
 //
+//  
 //  Copyright © 2020 Pano. All rights reserved.
 //
 
@@ -110,7 +111,7 @@ CGFloat SectionHeaderHeight = 8;
 - (void)initViews {
     _contentView = [[UIView alloc] init];
     _contentView.backgroundColor = [UIColor pano_colorWithHexString:@"f1f1f1"];
-    _contentView.layer.cornerRadius = 5;
+    _contentView.layer.cornerRadius = 2;
     _contentView.layer.masksToBounds = true;
     [self addSubview:_contentView];
     

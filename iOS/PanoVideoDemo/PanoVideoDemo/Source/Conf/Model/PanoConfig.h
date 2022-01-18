@@ -27,7 +27,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (assign, nonatomic) PanoWBFontStyle annoFontStyle;
 @property (assign, nonatomic) UInt32 annoFontSize;
 
+@property (assign, nonatomic) NSDictionary *features;
+@property (assign, nonatomic, getter=enableVideoAnnotation) BOOL videoAnnotation; ///< 是否允许视频标注
+@property (assign, nonatomic, getter=enableShareScreen) BOOL mobileScreen; ///< 能否共享桌面
+@property (assign, nonatomic, getter=enableAV1) BOOL av1; ///< 是否启用AV1
+
 - (NSArray<NSString *> *)penColors;
+
+- (void)reset;
 
 @end
 

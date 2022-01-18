@@ -2,11 +2,12 @@
 //  PanoBaseMediaView.m
 //  PanoVideoDemo
 //
+//  
 //  Copyright © 2020 Pano. All rights reserved.
 //
 
 #import "PanoBaseMediaView.h"
-#import "PanoAnnotationService.h"
+#import "PanoCallClient.h"
 
 PanoMediaInfoKey const PanoTopToolBarState = @"PanoTopToolBarState";
 PanoMediaInfoKey const PanoNetworkStatus = @"PanoNetworkStatus";
@@ -79,21 +80,16 @@ PanoMediaInfoKey const PanoFloatViewPostionKey = @"PanoFloatViewPostionKey";
         [self bringSubviewToFront:_annotationView];
         return;
     }
-    _annotationView.hidden = false;
-    PanoAnnotationService *annotationService = [PanoAnnotationService new];
-    [annotationService startAnnotationWithItem:annotation];
 }
 
 - (void)stopAnnotation:(PanoAnnotationItem *)annotation {
-    _annotationView.hidden = true;
-    PanoAnnotationService *annotationService = [PanoAnnotationService new];
-    [annotationService stopAnnotationWithItem:annotation];
+    
 }
 
 - (void)hideAnnotation:(PanoAnnotationItem *)annotation {
-    _annotationView.hidden = true;
-    PanoAnnotationService *annotationService = [PanoAnnotationService new];
-    [annotationService hideAnnotationWithItem:annotation];
+    
 }
+
+
 
 @end

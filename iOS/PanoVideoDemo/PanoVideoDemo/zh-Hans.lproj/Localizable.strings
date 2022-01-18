@@ -1,7 +1,8 @@
 /* 
   Localizable.strings
-  PanoVideoDemo
+  PanoCall
 
+  
   Copyright © 2020 Pano. All rights reserved.
 */
 
@@ -109,3 +110,7 @@
 "Memory" = "内存";
 "Receive" = "接收";
 "复制成功" = "Copy successfully";
+"Call" = "联系客服";
+"ContactCustomer" = "请联系客服小拍，电话/微信：189-8988-0717";
+"OpenVideoAnnotation" = "未开通视频标注功能";
+"OpenShareScren" = "未开通共享屏幕功能";

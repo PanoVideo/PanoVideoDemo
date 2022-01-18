@@ -2,6 +2,7 @@
 //  PanoUserCell.h
 //  PanoVideoDemo
 //
+//  
 //  Copyright © 2020 Pano. All rights reserved.
 //
 
@@ -13,12 +14,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong, readonly) UILabel *titleLabel;
 
+@property (nonatomic, strong, readonly) UILabel *rightLabel;
+
 @property (nonatomic, strong, readonly) UIButton *iconButton;
 
 @property (nonatomic, strong, readonly) UIImageView *audioImageView;
 
 @property (nonatomic, strong, readonly) UIImageView *videoImageView;
-
 
 
 @end

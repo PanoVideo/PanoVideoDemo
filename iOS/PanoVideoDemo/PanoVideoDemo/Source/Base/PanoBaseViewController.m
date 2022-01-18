@@ -2,6 +2,7 @@
 //  PanoBaseViewController.m
 //  PanoVideoDemo
 //
+//  
 //  Copyright © 2020 Pano. All rights reserved.
 //
 
@@ -31,6 +32,10 @@
 
 - (void)initService {
     
+}
+
+- (void)dealloc {
+    NSLog(@"dealloc: %@", self);
 }
 
 @end

@@ -2,6 +2,7 @@
 //  PanoPoolView.h
 //  PanoVideoDemo
 //
+//  
 //  Copyright © 2020 Pano. All rights reserved.
 //
 
@@ -37,6 +38,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readonly) enum PanoWBToolType toolType;
 
 @property (nonatomic, assign, readonly) PanoViewPageLayoutType layoutType;
+
+@property (nonatomic, assign, readonly) UInt64 mainUserId;
 /**
  更新自己视频的分辨率
  */
@@ -50,17 +53,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)startRender;
 
 - (void)stopRender;
-
-#pragma mark -- Annotation Methods
-
-- (void)startAnnotation;
-
-- (void)stopAnnotation;
-
-- (void)setAnnotationToolType:(enum PanoWBToolType)type;
-
-- (PanoRtcAnnotation * _Nullable )activeAnnotation;
-
 @end
 
 NS_ASSUME_NONNULL_END

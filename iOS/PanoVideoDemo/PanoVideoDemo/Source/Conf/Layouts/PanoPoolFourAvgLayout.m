@@ -2,10 +2,12 @@
 //  PanoPoolFourAvgLayout.m
 //  PanoVideoDemo
 //
+//  
 //  Copyright © 2020 Pano. All rights reserved.
 //
 
 #import "PanoPoolFourAvgLayout.h"
+#import "Masonry.h"
 
 static const CGFloat kSpacing = 0;
 static const CGFloat kFixedSpacing = 1.5;

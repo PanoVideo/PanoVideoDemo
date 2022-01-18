@@ -2,10 +2,12 @@
 //  PanoPoolFloatLayout.m
 //  PanoVideoDemo
 //
+//  
 //  Copyright © 2020 Pano. All rights reserved.
 //
 
 #import "PanoPoolFloatLayout.h"
+#import "Masonry.h"
 
 @implementation PanoPoolFloatLayout {
     __weak UIView *_floatView;

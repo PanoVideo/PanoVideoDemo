@@ -86,7 +86,7 @@
 "Lh6-wr-Uai.text" = "倒计时";
 
 /* Class = "UIButton"; normalTitle = "打开白板"; ObjectID = "LmE-Px-QYP"; */
-"LmE-Px-QYP.normalTitle" = "打开白板";
+"LmE-Px-QYP.normalTitle" = "共享";
 
 /* Class = "UILabel"; text = "进入通话时打开扬声器"; ObjectID = "MaA-ms-yzn"; */
 "MaA-ms-yzn.text" = "进入通话时打开扬声器";

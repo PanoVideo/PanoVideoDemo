@@ -2,34 +2,22 @@
 //  PanoWhiteboardService.m
 //  PanoVideoDemo
 //
+//  
 //  Copyright © 2020 Pano. All rights reserved.
 //
 
 #import "PanoWhiteboardService.h"
 #import "PanoCallClient.h"
-#import "PanoUserService.h"
-#import "PanoServiceManager.h"
+
 
 NSString *const kWhiteBoradHostId = @"wbHostId";
 
 @interface PanoWhiteboardService () <PanoUserDelegate>
-{
-    NSDictionary *_message;
-}
 @property (nonatomic, strong) NSMutableArray *whiteboards;
 @end
 
 @implementation PanoWhiteboardService
 
-- (instancetype)init
-{
-    self = [super init];
-    if (self) {
-        PanoUserService *userService = [PanoServiceManager serviceWithType:PanoUserServiceType];
-        [userService addDelegate:self];
-    }
-    return self;
-}
 - (void)setDelegate:(id<PanoWhiteboardDelegate>)delegate {
     _delegate = delegate;
     [self addDelegate:delegate];
@@ -43,39 +31,28 @@ NSString *const kWhiteBoradHostId = @"wbHostId";
 }
 
 - (void)applyBecomePresenter {
-    if (PanoCallClient.sharedInstance.config.wbRole == kPanoWBRoleAdmin) {
-        [self notiyOthersAdmin];
-        return;
-    }
-    [PanoCallClient.sharedInstance.engineKit.whiteboardEngine setRoleType:kPanoWBRoleAdmin];
-}
-
-- (void)notiyOthersAdmin {
-    PanoUserService *userService = [PanoServiceManager serviceWithType:PanoUserServiceType];
-    _presenter = [userService findUserWithId:userService.me.userId];
-    NSDictionary *myUserId =  @{kWhiteBoradHostId : @(userService.me.userId)};
-    [self broadcastMessage:myUserId];
+    [PanoCallClient.shared.engineKit.whiteboardEngine setRoleType:kPanoWBRoleAdmin];
 }
 
 - (BOOL)isPresenter {
-    return self.presenter.userId == PanoCallClient.sharedInstance.userId;
+    return PanoCallClient.shared.userMgr.hostId == PanoCallClient.shared.userId;
 }
 
 - (BOOL)hasPresenter {
-    return self.presenter != nil;
+    return PanoCallClient.shared.userMgr.hostId != 0;
 }
 
 - (BOOL)sendMessage:(NSDictionary *)message toUser:(UInt64)userId {
     NSError *error = nil;
     NSData *data = [NSJSONSerialization dataWithJSONObject:message options:0 error:&error];
-    PanoResult result = [PanoCallClient.sharedInstance.engineKit.whiteboardEngine sendMessage:data toUser:userId];
+    PanoResult result = [PanoCallClient.shared.engineKit.whiteboardEngine sendMessage:data toUser:userId];
     return result = kPanoResultOK;
 }
 
 - (BOOL)broadcastMessage:(NSDictionary *)message {
     NSError *error = nil;
     NSData *data = [NSJSONSerialization dataWithJSONObject:message options:0 error:&error];
-    PanoResult result = [PanoCallClient.sharedInstance.engineKit.whiteboardEngine broadcastMessage:data];
+    PanoResult result = [PanoCallClient.shared.engineKit.whiteboardEngine broadcastMessage:data];
     return result = kPanoResultOK;
 }
 
@@ -83,14 +60,14 @@ NSString *const kWhiteBoradHostId = @"wbHostId";
     NSUInteger index = [[self fileNames] indexOfObject:fileName];
     NSArray *docfiles = [self enumerateFiles];
     if (index < docfiles.count) {
-        PanoResult result = [PanoCallClient.sharedInstance.engineKit.whiteboardEngine switchDoc:docfiles[index]];
+        PanoResult result = [PanoCallClient.shared.engineKit.whiteboardEngine switchDoc:docfiles[index]];
         return result == kPanoResultOK;
     }
     return false;
 }
 
 - (NSMutableArray<NSString *> *)enumerateFiles {
-    return [PanoCallClient.sharedInstance.engineKit.whiteboardEngine enumerateFiles];
+    return [PanoCallClient.shared.engineKit.whiteboardEngine enumerateFiles];
 }
 
 - (NSMutableArray<NSString *> *)fileNames {
@@ -104,7 +81,7 @@ NSString *const kWhiteBoradHostId = @"wbHostId";
     return mArray;
 }
 - (NSString *)getCurrentFileId {
-    return [PanoCallClient.sharedInstance.engineKit.whiteboardEngine getCurrentFileId];
+    return [PanoCallClient.shared.engineKit.whiteboardEngine getCurrentFileId];
 }
 
 - (NSString *)getCurrentFileName {
@@ -134,74 +111,60 @@ NSString *const kWhiteBoradHostId = @"wbHostId";
 }
 
 - (void)onStatusSynced {
-    [[self wbService] invokeWithAction:@selector(onStatusSynced) completion:^(id<PanoRtcWhiteboardDelegate>  _Nonnull del) {
+    [[self wbService] invokeWithAction:@selector(onStatusSynced) completion:^(id<PanoRtcWhiteboardDelegate, PanoWhiteboardDelegate>  _Nonnull del) {
         [del onStatusSynced];
     }];
 }
 
 - (void)onPageNumberChanged:(PanoWBPageNumber)curPage
              withTotalPages:(UInt32)totalPages {
-    [[self wbService] invokeWithAction:@selector(onPageNumberChanged:withTotalPages:) completion:^(id<PanoRtcWhiteboardDelegate>  _Nonnull del) {
+    [[self wbService] invokeWithAction:@selector(onPageNumberChanged:withTotalPages:) completion:^(id<PanoRtcWhiteboardDelegate, PanoWhiteboardDelegate>  _Nonnull del) {
         [del onPageNumberChanged:curPage withTotalPages:totalPages];
     }];
 }
 
 - (void)onImageStateChanged:(PanoWBImageState)state
                     withUrl:(NSString * _Nonnull)url {
-    [[self wbService] invokeWithAction:@selector(onImageStateChanged:withUrl:) completion:^(id<PanoRtcWhiteboardDelegate>  _Nonnull del) {
+    [[self wbService] invokeWithAction:@selector(onImageStateChanged:withUrl:) completion:^(id<PanoRtcWhiteboardDelegate, PanoWhiteboardDelegate>  _Nonnull del) {
         [del onImageStateChanged:state withUrl:url];
     }];
 }
 
 - (void)onViewScaleChanged:(Float32)scale {
-    [[self wbService] invokeWithAction:@selector(onViewScaleChanged:) completion:^(id<PanoRtcWhiteboardDelegate>  _Nonnull del) {
+    [[self wbService] invokeWithAction:@selector(onViewScaleChanged:) completion:^(id<PanoRtcWhiteboardDelegate, PanoWhiteboardDelegate>  _Nonnull del) {
         [del onViewScaleChanged:scale];
     }];
 }
 
 - (void)onRoleTypeChanged:(PanoWBRoleType)newRole {
-    [[self wbService] invokeWithAction:@selector(onRoleTypeChanged:) completion:^(id<PanoRtcWhiteboardDelegate>  _Nonnull del) {
+    [[self wbService] invokeWithAction:@selector(onRoleTypeChanged:) completion:^(id<PanoRtcWhiteboardDelegate, PanoWhiteboardDelegate>  _Nonnull del) {
         [del onRoleTypeChanged:newRole];
     }];
-    if (newRole == kPanoWBRoleAdmin) {
-        [self notiyOthersAdmin];
-    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self->_delegate onPresenterDidChanged];
+    });
 }
 
 - (void)onContentUpdated {
-    [[self wbService] invokeWithAction:@selector(onContentUpdated) completion:^(id<PanoRtcWhiteboardDelegate>  _Nonnull del) {
+    [[self wbService] invokeWithAction:@selector(onContentUpdated) completion:^(id<PanoRtcWhiteboardDelegate, PanoWhiteboardDelegate>  _Nonnull del) {
         [del onContentUpdated];
     }];
 }
 
 - (void)onSnapshotComplete:(PanoResult)result
                       name:(NSString* _Nonnull)filename {
-    [[self wbService] invokeWithAction:@selector(onSnapshotComplete:name:) completion:^(id<PanoRtcWhiteboardDelegate>  _Nonnull del) {
+    [[self wbService] invokeWithAction:@selector(onSnapshotComplete:name:) completion:^(id<PanoRtcWhiteboardDelegate, PanoWhiteboardDelegate>  _Nonnull del) {
         [del onSnapshotComplete:result name:filename];
     }];
 }
 
 #pragma mark Message Delegate Methods
 - (void)onMessageReceived:(NSData *)message fromUser:(UInt64)userId {
-    [[self wbService] invokeWithAction:@selector(onMessageReceived:fromUser:) completion:^(id<PanoRtcWhiteboardDelegate>  _Nonnull del) {
-        [del onMessageReceived:message fromUser:userId];
-    }];
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSDictionary *msg = [NSJSONSerialization JSONObjectWithData:message options:0 error:nil];
-        NSLog(@"onMessageReceived->%@ fromUser:%llu",msg, userId);
-        if ([msg isKindOfClass:[NSDictionary class]]) {
-            if (msg[kWhiteBoradHostId]) {
-                PanoUserService *userService = [PanoServiceManager serviceWithType:PanoUserServiceType];
-                PanoUserInfo *newPresenter = [userService findUserWithId:[msg[kWhiteBoradHostId] integerValue]];
-                BOOL changed = ![newPresenter isEqual:self->_presenter];
-                self->_presenter = newPresenter;
-                if (changed) {
-                    [[self wbService] invokeWithAction:@selector(onPresenterDidChanged:) completion:^(id<PanoRtcWhiteboardDelegate,PanoWhiteboardDelegate>  _Nonnull del) {
-                        [del onPresenterDidChanged:newPresenter];
-                    }];
-                }
-            }
-        }
+        [[self wbService] invokeWithAction:@selector(onMessageReceived:fromUser:) completion:^(id<PanoRtcWhiteboardDelegate, PanoWhiteboardDelegate>  _Nonnull del) {
+            [del onMessageReceived:message fromUser:userId];
+        }];
+        NSLog(@"onMessageReceived fromUser:%llu", userId);
     });
 }
 
@@ -209,7 +172,7 @@ NSString *const kWhiteBoradHostId = @"wbHostId";
 
 - (void)onAddBackgroundImages:(PanoResult)result
                          file:(NSString* _Nonnull)fileId {
-    [[self wbService] invokeWithAction:@selector(onAddBackgroundImages:file:) completion:^(id<PanoRtcWhiteboardDelegate>  _Nonnull del) {
+    [[self wbService] invokeWithAction:@selector(onAddBackgroundImages:file:) completion:^(id<PanoRtcWhiteboardDelegate, PanoWhiteboardDelegate>  _Nonnull del) {
         [del onAddBackgroundImages:result file:fileId];
     }];
 }
@@ -218,14 +181,14 @@ NSString *const kWhiteBoradHostId = @"wbHostId";
                         file:(NSString* _Nonnull)fileId
                     progress:(UInt32)progress
                    pageCount:(UInt32)count {
-    [[self wbService] invokeWithAction:@selector(onDocTranscodeStatus:file:progress:pageCount:) completion:^(id<PanoRtcWhiteboardDelegate>  _Nonnull del) {
+    [[self wbService] invokeWithAction:@selector(onDocTranscodeStatus:file:progress:pageCount:) completion:^(id<PanoRtcWhiteboardDelegate, PanoWhiteboardDelegate>  _Nonnull del) {
         [del onDocTranscodeStatus:result file:fileId progress:progress pageCount:count];
     }];
 }
 
 - (void)onDocCreate:(PanoResult)result
                file:(NSString* _Nonnull)fileId {
-    [[self wbService] invokeWithAction:@selector(onDocCreate:file:) completion:^(id<PanoRtcWhiteboardDelegate>  _Nonnull del) {
+    [[self wbService] invokeWithAction:@selector(onDocCreate:file:) completion:^(id<PanoRtcWhiteboardDelegate, PanoWhiteboardDelegate>  _Nonnull del) {
         [del onDocCreate:result file:fileId];
     }];
     if (result == kPanoResultOK) {
@@ -238,7 +201,7 @@ NSString *const kWhiteBoradHostId = @"wbHostId";
 
 - (void)onDocDelete:(PanoResult)result
                file:(NSString* _Nonnull)fileId {
-    [[self wbService] invokeWithAction:@selector(onDocDelete:file:) completion:^(id<PanoRtcWhiteboardDelegate>  _Nonnull del) {
+    [[self wbService] invokeWithAction:@selector(onDocDelete:file:) completion:^(id<PanoRtcWhiteboardDelegate, PanoWhiteboardDelegate>  _Nonnull del) {
         [del onDocDelete:result file:fileId];
     }];
     [[self wbService] invokeWithAction:@selector(onDocFilesDidChanged) completion:^(id<PanoRtcWhiteboardDelegate,PanoWhiteboardDelegate>  _Nonnull del) {
@@ -248,7 +211,7 @@ NSString *const kWhiteBoradHostId = @"wbHostId";
 
 - (void)onDocSwitch:(PanoResult)result
                file:(NSString* _Nonnull)fileId {
-    [[self wbService] invokeWithAction:@selector(onDocSwitch:file:) completion:^(id<PanoRtcWhiteboardDelegate>  _Nonnull del) {
+    [[self wbService] invokeWithAction:@selector(onDocSwitch:file:) completion:^(id<PanoRtcWhiteboardDelegate, PanoWhiteboardDelegate>  _Nonnull del) {
         [del onDocSwitch:result file:fileId];
     }];
 }
@@ -257,29 +220,23 @@ NSString *const kWhiteBoradHostId = @"wbHostId";
 
 - (void)onUserJoined:(UInt64)userId
             withName:(NSString * _Nullable)userName {
-    [[self wbService] invokeWithAction:@selector(onUserJoined:withName:) completion:^(id<PanoRtcWhiteboardDelegate>  _Nonnull del) {
+    [[self wbService] invokeWithAction:@selector(onUserJoined:withName:) completion:^(id<PanoRtcWhiteboardDelegate, PanoWhiteboardDelegate>  _Nonnull del) {
         [del onUserJoined:userId withName:userName];
     }];
-    if ([self isPresenter]) {
-        NSLog(@"begin broadcastMessage");
-        [self sendMessage:@{kWhiteBoradHostId : @(self.presenter.userId)} toUser:userId];
-    }
 }
 
 - (void)onUserLeft:(UInt64)userId {
     NSLog(@"onUserLeft->>>>: %llu",userId);
-    [[self wbService] invokeWithAction:@selector(onUserLeft:) completion:^(id<PanoRtcWhiteboardDelegate>  _Nonnull del) {
+    [[self wbService] invokeWithAction:@selector(onUserLeft:) completion:^(id<PanoRtcWhiteboardDelegate, PanoWhiteboardDelegate>  _Nonnull del) {
         [del onUserLeft:userId];
     }];
 }
 
-#pragma mark --
-- (void)onUserRemoved:(PanoUserInfo *)user {
-    if (_presenter.userId == user.userId) {
-        _presenter = nil;
-    }
+#pragma mark -- PanoUserDelegate
+- (void)onPresenterDidChanged {
+    [[self wbService] invokeWithAction:@selector(onPresenterDidChanged) completion:^(id<PanoRtcWhiteboardDelegate, PanoWhiteboardDelegate>  _Nonnull del) {
+        [del onPresenterDidChanged];
+    }];
 }
 
-- (void)onUserAdded:(PanoUserInfo *)user {
-}
 @end

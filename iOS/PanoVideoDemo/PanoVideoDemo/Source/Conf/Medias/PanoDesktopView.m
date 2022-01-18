@@ -2,13 +2,12 @@
 //  PanoDesktopView.m
 //  PanoVideoDemo
 //
+//  
 //  Copyright © 2020 Pano. All rights reserved.
 //
 
 #import "PanoDesktopView.h"
-#import "PanoDesktopService.h"
-#import "PanoServiceManager.h"
-#import "PanoAnnotationService.h"
+#import "PanoCallClient.h"
 
 @interface PanoDesktopView()
 @property (strong, nonatomic) UIView *bottomView;
@@ -51,9 +50,8 @@
 
 - (void)start {
     PanoUserInfo * user = self.instance.user;
-    PanoDesktopService *deskTopService = [PanoServiceManager serviceWithType:PanoDesktopServiceType];
     if (user.screenStatus == PanoUserScreen_Unmute) {
-        [deskTopService startScreenShareWithView:self.contentView user:user];
+        [PanoCallClient.shared.screen subscribe:user.userId WithView:self.contentView];
     }
     _userName.text = [NSString stringWithFormat:NSLocalizedString(@"%@’s screen", ),self.instance.user.userName];
     [_userName sizeToFit];
@@ -61,8 +59,7 @@
 
 - (void)stop {
     PanoUserInfo * user = self.instance.user;
-    PanoDesktopService *deskTopService = [PanoServiceManager serviceWithType:PanoDesktopServiceType];
-    [deskTopService stopScreenShareWithUser:user];
+    [PanoCallClient.shared.screen unsubscribe:user.userId];
 }
 
 - (void)dealloc {
