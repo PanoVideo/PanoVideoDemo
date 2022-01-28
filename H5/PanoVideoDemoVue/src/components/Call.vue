@@ -4,7 +4,6 @@
       <div class="call-header">
         <ul class="call-header-left">
           <li @click="switchCamera"></li>
-          <li @click="openFeedbackDialog"></li>
         </ul>
         <div class="call-header-title">
           <strong>房间号：{{ user.channelId }}</strong>
@@ -16,52 +15,64 @@
       </div>
       <div class="call-body">
         <div class="main-video-view">
-          <PvcVideo
-            v-if="isOpen(mainUser.videoStatus) && mainUser.videoTag"
-            :key="mainUser.userId"
-            :videoTag="mainUser.videoTag"
-          />
-          <div v-else class="no-video"></div>
+          <PvcVideo :videoTag="mainUser.videoTag" alias="mainVideo"
+            :shouldShow="!!mainUser.videoTag"
+            :mirror="userIdList.length === 0" />
+          <div v-show="!mainUser.videoTag" class="no-video"></div>
           <div class="user-bar">
             <span>{{ mainUser.userName || mainUser.userId }}</span>
-            <em v-if="userList.length === 0">(Me)</em>
-            <i :class="{ closed: !isOpen(mainUser.audioStatus) }"></i>
+            <em v-if="userIdList.length === 0">(Me)</em>
+            <i v-if="isOpen(mainUser.audioStatus)">
+              <i>
+                <i>
+                  <i :style="{
+                    height: audioLevelMap[mainUser.userId] !== undefined
+                      ? `${audioLevelMap[mainUser.userId] * 1000}%` : '0',
+                  }"></i>
+                </i>
+              </i>
+            </i>
+            <i v-else class="closed"></i>
+            <strong :class="networkStatusMap[mainUser.userId] || 'good'"></strong>
           </div>
         </div>
-        <div v-if="userList.length > 0" class="small-video-view">
-          <PvcVideo
-            v-if="isOpen(user.videoStatus) && user.videoTag"
-            :videoTag="user.videoTag"
-          />
-          <div v-else class="no-video"></div>
-          <div class="user-bar">
-            <span>{{ user.userName || user.userId }}</span>
-            <em>(Me)</em>
-            <i :class="{ closed: !isOpen(user.audioStatus) }"></i>
-          </div>
-        </div>
+        <SmallVideoView :shouldShow="userIdList.length > 0"
+          :user="userScreen ? activeUser : user" :isMe="userScreen ? false : true" />
       </div>
       <ul class="call-footer">
         <li :class="{ closed: !isOpen(user.audioStatus) }" @click="switchAudio">
-          <i></i>
+          <i>
+            <i v-if="isOpen(user.audioStatus)">
+              <i>
+                <i :style="{
+                  height: audioLevelMap[user.userId] !== undefined
+                    ? `${audioLevelMap[user.userId] * 1000}%` : '0',
+                }"></i>
+              </i>
+            </i>
+          </i>
           <span>{{ isOpen(user.audioStatus) ? "静音" : "开启音频" }}</span>
         </li>
         <li :class="{ closed: !isOpen(user.videoStatus) }" @click="switchVideo">
           <i></i>
           <span>{{ isOpen(user.videoStatus) ? "关闭视频" : "开启视频" }}</span>
         </li>
-        <!-- 测试中
         <li @click="openWhiteboard">
           <i></i>
-          <span>共享</span>
+          <span>打开白板</span>
         </li>
         <li @click="openUserList">
           <i></i>
           <span>用户</span>
         </li>
-        -->
+        <li @click="openBottomMore">
+          <i></i>
+          <span>更多</span>
+        </li>
       </ul>
     </div>
+    <ActionSheet v-model="bottomMoreShow" :actions="bottomMoreActionList" cancel-text="取消"
+      @select="bottomMoreActionSelect" @cancel="closeBottomMore" />
     <Dialog ref="leaveConfirm" width="70%">
       <div class="dialog-content-text">确定离开通话吗？</div>
       <div class="dialog-btn-wrapper">
@@ -69,83 +80,51 @@
         <a class="confirm" href="javascript:;" @click="leave">确定</a>
       </div>
     </Dialog>
-    <Dialog ref="feedbackDialog" width="80%">
-      <h3>反馈与报障</h3>
-      <div class="version">version: {{ version }}(web-sdk {{ sdkVersion }})</div>
-      <ul class="field-wrapper">
-        <li class="field-block">
-          <label>问题描述</label>
-          <div><textarea rows="4" placeholder="请输入(必填)，长度不超过200"
-            v-model="feedbackInfo.description" maxlength="200" /></div>
-        </li>
-        <li class="field-block">
-          <label>联系人/联系方式</label>
-          <div><input placeholder="请输入"  v-model="feedbackInfo.contact" maxlength="100"/></div>
-        </li>
-        <li class="field-line">
-          <label>上传日志</label>
-          <div><input type="checkbox" v-model="feedbackInfo.uploadLogs" /></div>
-        </li>
-      </ul>
-      <div class="dialog-btn-wrapper">
-        <a class="cancel" href="javascript:;">取消</a>
-        <a class="confirm" href="javascript:;" @click="feedback">提交</a>
-      </div>
-    </Dialog>
+    <Setting v-if="settingVisible" />
     <UserList v-if="userListVisible" />
   </div>
 </template>
 
 <script>
-import { mapState } from 'vuex';
+import { mapGetters, mapState } from 'vuex';
+import ActionSheet from 'vant/lib/action-sheet';
+import 'vant/lib/action-sheet/style';
+/* eslint-disable camelcase */
+import { isOpen, iOS_15_1 } from '@/utils';
 import UserList from '@/components/UserList.vue';
-import pkg from '@/../package.json';
+import Setting from '@/components/Setting.vue';
 import PvcVideo from './PvcVideo.vue';
 import Dialog from './Dialog/index.vue';
-
-const openStatusList = ['open', 'unmute'];
+import SmallVideoView from './SmallVideoView.vue';
 
 export default {
   name: 'Call',
   components: {
     PvcVideo,
     Dialog,
+    ActionSheet,
     UserList,
-  },
-  computed: {
-    ...mapState({
-      mainUser(state) {
-        return state.userList.length > 0 ? state.userList[0] : state.user;
-      },
-    }),
-    ...mapState(['user', 'remainTime', 'userList', 'userListVisible']),
+    Setting,
+    SmallVideoView,
   },
   data() {
     return {
-      version: pkg.version,
-      sdkVersion: '',
-      feedbackInfo: {
-        description: '',
-        contact: '',
-        uploadLogs: true,
-      },
+      bottomMoreShow: false,
+      bottomMoreActionList: [
+        { name: '设置' },
+      ],
     };
   },
-  created() {
-    this.sdkVersion = window.panoSDK.getSdkVersion();
-  },
-  mounted() {
-    if (this.user.audioStatus === 'open') {
-      window.panoSDK.startAudio();
-    }
-    if (this.user.videoStatus === 'open') {
-      window.panoSDK.startVideo();
-    }
+  computed: {
+    mainUser() {
+      return this.$store.getters.userScreen || this.$store.getters.activeUser ||
+        this.$store.state.user;
+    },
+    ...mapState(['user', 'audioLevelMap', 'remainTime', 'userIdList', 'settingVisible', 'userListVisible', 'networkStatusMap']),
+    ...mapGetters(['userScreen', 'activeUser']),
   },
   methods: {
-    isOpen(status) {
-      return openStatusList.includes(status);
-    },
+    isOpen,
     openLeaveConfirm() {
       this.$refs.leaveConfirm.open();
     },
@@ -154,6 +133,14 @@ export default {
       this.$emit('leaveChannel');
     },
     switchCamera() {
+      // 切换摄像头比较耗资源，增加一下节流，提升性能
+      if (this.cameraSwitching) {
+        return;
+      }
+      this.cameraSwitching = true;
+      setTimeout(() => {
+        this.cameraSwitching = false;
+      }, 2000);
       window.panoSDK.getCams((cameraList) => {
         if (cameraList.length <= 1) {
           return;
@@ -162,24 +149,12 @@ export default {
         if (cameraList[0].selected) {
           index = cameraList.length - 1;
         }
+        this.$toast(cameraList[index].label || '正在切换摄像头');
         window.panoSDK.selectCam(cameraList[index].deviceId);
       });
     },
-    openFeedbackDialog() {
-      this.$refs.feedbackDialog.open();
-    },
-    feedback() {
-      if (!this.feedbackInfo.description) {
-        this.$toast.show('请输入问题描述');
-        return;
-      }
-      window.panoSDK.sendFeedback({
-        type: 0,
-        product: 'pvch5',
-        ...this.feedbackInfo,
-        extraInfo: '',
-      });
-      this.$refs.feedbackDialog.close();
+    openSetting() {
+      this.$store.commit('openSetting');
     },
     switchAudio() {
       if (this.isOpen(this.user.audioStatus)) {
@@ -203,16 +178,21 @@ export default {
       }
     },
     switchVideo() {
+      if (iOS_15_1) {
+        this.$toast('iOS 15.1 不支持打开视频');
+        return;
+      }
       if (this.user.videoStatus === 'open') {
         this.$store.commit('updateUser', {
           videoStatus: 'close',
+          videoTag: null,
         });
         window.panoSDK.stopVideo();
       } else {
         this.$store.commit('updateUser', {
           videoStatus: 'open',
         });
-        window.panoSDK.startVideo();
+        window.panoSDK.startVideo(this.$store.state.setting.videoProfile);
       }
     },
     openUserList() {
@@ -221,14 +201,26 @@ export default {
     openWhiteboard() {
       const { whiteboardAvailable } = this.$store.state;
       if (whiteboardAvailable === null) {
-        this.$toast.show('白板不可用');
+        this.$toast('白板不可用');
         return;
       }
       if (whiteboardAvailable.type !== 'join') {
-        this.$toast.show(whiteboardAvailable.message);
+        this.$toast(whiteboardAvailable.message);
         return;
       }
       this.$store.commit('openWhiteboard');
+    },
+    openBottomMore() {
+      this.bottomMoreShow = true;
+    },
+    closeBottomMore() {
+      this.bottomMoreShow = false;
+    },
+    bottomMoreActionSelect(action) {
+      this.bottomMoreShow = false;
+      if (action.name === '设置') {
+        this.openSetting();
+      }
     },
   },
 };
@@ -245,6 +237,19 @@ export default {
   flex-direction: column;
   background-color: #000;
   color: #fff;
+  bottom: constant(safe-area-inset-bottom);
+  bottom: env(safe-area-inset-bottom);
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    height: 0;
+    height: constant(safe-area-inset-bottom);
+    height: env(safe-area-inset-bottom);
+    background-color: #333;
+  }
 }
 .call-header {
   height: 60px;
@@ -279,9 +284,6 @@ export default {
   > li {
     &:nth-child(1)::after {
       content: "\e76c";
-    }
-    &:nth-child(2)::after {
-      content: "\e610";
     }
   }
 }
@@ -334,6 +336,31 @@ export default {
     &::before {
       content: "\e776";
     }
+    > i {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      > i {
+        width: 0.25em;
+        height: 54 / 128 * 1em;
+        border-radius: 0.125em;
+        margin-bottom: 26 / 128 * 1em;
+        position: relative;
+        overflow: hidden;
+        > i {
+          position: absolute;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: #0f0;
+        }
+      }
+    }
     &.closed::after {
       position: absolute;
       left: 0;
@@ -342,20 +369,48 @@ export default {
       content: "\e7c4";
     }
   }
+  > strong {
+    font-weight: normal;
+    position: relative;
+    &::before,
+    &::after {
+      font-family: "pvc icon";
+      vertical-align: top;
+      line-height: inherit;
+    }
+    &::before {
+      content: "\e81d";
+    }
+    &::after {
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+    &.good::after {
+      content: "\e81e";
+      color: rgb(52, 199, 88);
+    }
+    &.poor::after {
+      content: "\e820";
+      color: rgb(255, 163, 16);;
+    }
+    &.bad::after {
+      content: "\e821";
+      color: rgb(247, 67, 64);;
+    }
+  }
 }
 .no-video::after {
   font-family: "pvc icon";
   line-height: 1;
   content: "\e76e";
 }
-.main-video-view, .small-video-view {
+.main-video-view {
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
-}
-.main-video-view {
-  flex: 1;
   > .no-video {
     font-size: 100px;
   }
@@ -367,38 +422,6 @@ export default {
     > i {
       margin-left: 2px;
       font-size: 18px;
-    }
-  }
-}
-.small-video-view {
-  position: absolute;
-  right: 15px;
-  top: 20px;
-  width: 100px;
-  height: 178px;
-  border-radius: 3px;
-  background-color: #333;
-  overflow: hidden;
-  > .no-video {
-    font-size: 44px;
-  }
-  > .user-bar {
-    left: 0;
-    padding: 0 2px 0 6px;
-    background-color: rgba(0, 0, 0, 0.56);
-    justify-content: flex-end;
-    font-size: 13px;
-    line-height: 19px;
-    > span {
-      flex: 1;
-      text-align: right;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-    > i {
-      margin-left: 1px;
-      font-size: 17px;
     }
   }
 }
@@ -414,18 +437,45 @@ export default {
     justify-content: center;
     align-items: center;
     > i {
+      font-size: 26px;
       font-style: normal;
       position: relative;
       &::before,
       &::after {
         font-family: "pvc icon";
-        font-size: 26px;
         line-height: 1;
       }
       &::after {
         position: absolute;
         left: 0;
         top: 0;
+      }
+    }
+    &:nth-child(1) > i {
+      > i {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        > i {
+          width: 0.25em;
+          height: 54 / 128 * 1em;
+          border-radius: 0.125em;
+          margin-bottom: 26 / 128 * 1em;
+          position: relative;
+          overflow: hidden;
+          > i {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #0f0;
+          }
+        }
       }
     }
     > span {
@@ -443,56 +493,13 @@ export default {
     &:nth-child(4) > i::before {
       content: "\e79c";
     }
+    &:nth-child(5) > i::before {
+      content: "\e76f";
+    }
     &.closed > i::after {
       color: #d51c18;
       content: "\e7c4";
     }
-  }
-}
-.version {
-  margin-top: 5px;
-  font-size: 12px;
-  color: #999;
-  text-align: center;
-}
-.field-wrapper {
-  padding: 15px;
-}
-.field-block {
-  margin-bottom: 15px;
-  > label {
-    display: block;
-    margin-bottom: 5px;
-  }
-  > div {
-    > textarea {
-      resize: none;
-      display: block;
-      width: 100%;
-      outline: none;
-      padding: 7px 6px;
-      border: 1px solid #dcdcdc;
-      border-radius: 3px;
-      font-size: inherit;
-      line-height: 20px;
-      color: inherit;
-    }
-    > input:not([type="checkbox"]) {
-      display: block;
-      width: 100%;
-      height: 37px;
-      padding: 0 6px;
-      border: 1px solid #dcdcdc;
-      border-radius: 3px;
-    }
-  }
-}
-.field-line {
-  margin-bottom: 15px;
-  display: flex;
-  align-items: center;
-  > label {
-    flex: 1;
   }
 }
 </style>

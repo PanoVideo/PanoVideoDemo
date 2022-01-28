@@ -1,7 +1,12 @@
 <template>
   <div class="login-wrapper">
+    <div v-if="antiFraudTipShow" class="anti-fraud-tip">
+      <label></label>
+      <div>本产品仅用于拍乐云产品功能演示。<br />注意个人信息保密，谨防诈骗。</div>
+      <i @click="closeAntiFraudTip"></i>
+    </div>
     <h1>
-      <img src="../assets/logo.png" alt="logo">
+      <img :src="'./logo.png'" alt="logo">
     </h1>
     <ul>
       <li class="fill-item">
@@ -14,28 +19,44 @@
       <li class="fill-item">
         <label>用户名</label>
         <div :class="{ error: userNameMsg }">
-          <input placeholder="长度不超过10" v-model="joinInfo.userName" maxlength="10" />
+          <input placeholder="长度不超过20" v-model="joinInfo.userName" maxlength="20" />
           <i v-if="userNameMsg">{{ userNameMsg }}</i>
         </div>
       </li>
     </ul>
     <div class="switch-wrapper">
       <label><input type="checkbox" v-model="joinInfo.audioStatus" />开启音频</label>
-      <label><input type="checkbox" v-model="joinInfo.videoStatus" />开启视频</label>
+      <label><template>
+        <input v-if="iOS_15_1" type="checkbox" :checked="joinInfo.videoStatus"
+          @click.prevent="toggleVideoStatus" />
+        <input v-else type="checkbox" v-model="joinInfo.videoStatus" />
+      </template>开启视频</label>
     </div>
-    <button :class="['join-btn', { loading: joinLoading }]" @click="join">加入通话</button>
+    <button class="join-btn" @click="join">加入通话</button>
+    <Dialog ref="availabilityDialog" width="70%">
+      <div class="dialog-content-text">{{ iOS_15_1 ? 'iOS 15.1 不支持打开视频' : '当前浏览器可能不支持' }}</div>
+      <div class="dialog-btn-wrapper">
+        <a class="cancel" href="javascript:;">知道了</a>
+      </div>
+    </Dialog>
   </div>
 </template>
 
 <script>
-import { mapState } from 'vuex';
+/* eslint-disable camelcase */
+import { iOS_15_1 } from '@/utils';
+import Dialog from '../../components/Dialog/index.vue';
 
 const joinInfoStorageName = 'PVC_JOIN_INFO';
 
 export default {
+  components: {
+    Dialog,
+  },
   name: 'Join',
   data() {
     return {
+      antiFraudTipShow: true,
       joinInfo: {
         channelId: '',
         userName: '',
@@ -44,9 +65,9 @@ export default {
       },
       channelIdMsg: '',
       userNameMsg: '',
+      iOS_15_1,
     };
   },
-  computed: mapState(['joinLoading']),
   created() {
     const storage = localStorage.getItem(joinInfoStorageName);
     if (!storage) {
@@ -58,10 +79,25 @@ export default {
         this.setJoinInfoDefault();
       }
     }
+    if (this.iOS_15_1) {
+      this.joinInfo.videoStatus = false;
+    }
+    if (this.$route.query.channelId) {
+      // 需要截取长度20，防止恶意输入
+      this.joinInfo.channelId = this.$route.query.channelId.substring(0, 20);
+    }
     this.$watch('joinInfo.channelId', this.validateChannelId);
     this.$watch('joinInfo.userName', this.validateUserName);
   },
+  mounted() {
+    if (this.iOS_15_1 || !window.panoSDK.checkEnvRequirement()) {
+      this.$refs.availabilityDialog.open();
+    }
+  },
   methods: {
+    closeAntiFraudTip() {
+      this.antiFraudTipShow = false;
+    },
     setJoinInfoDefault() {
       this.joinInfo = {
         channelId: `${Math.round(Math.random() * 100000)}`,
@@ -86,16 +122,16 @@ export default {
       const value = this.joinInfo.userName;
       if (!value) {
         this.userNameMsg = '请输入用户名';
-      } else if (value.length > 10) {
-        this.userNameMsg = '用户名长度不超过10';
+      } else if (value.length > 20) {
+        this.userNameMsg = '用户名长度不超过20';
       } else {
         this.userNameMsg = '';
       }
     },
+    toggleVideoStatus() {
+      this.$toast('iOS 15.1 不支持打开视频');
+    },
     join() {
-      if (this.joinLoading) {
-        return;
-      }
       if (this.channelIdMsg || this.userNameMsg) {
         return;
       }
@@ -105,10 +141,17 @@ export default {
         return;
       }
       localStorage.setItem(joinInfoStorageName, JSON.stringify(this.joinInfo));
-      this.$emit('join', {
+
+      this.$store.commit('updateUser', {
         ...this.joinInfo,
         audioStatus: this.joinInfo.audioStatus ? 'open' : 'close',
         videoStatus: this.joinInfo.videoStatus ? 'open' : 'close',
+      });
+      this.$router.replace({
+        path: 'call',
+        query: {
+          channelId: this.joinInfo.channelId,
+        },
       });
     },
   },
@@ -116,19 +159,62 @@ export default {
 </script>
 
 <style scoped lang="less">
-@base-path: "../";
+@base-path: "../../";
 @import "@{base-path}less/variables.less";
 
 .login-wrapper {
-  padding: 32px 15px 0;
+  padding: 15px 15px 0;
+  position: relative;
+}
+
+.anti-fraud-tip {
+  position: absolute;
+  left: 15px;
+  right: 15px;
+  top: 82px;
+  border-radius: 3px;
+  background: #fff;
+  box-shadow: 0px 0px 10px 0px rgba(169, 169, 169, 0.3);
+  opacity: 0.96;
+  padding: 0 0 0 8px;
+  display: flex;
+  align-items: flex-start;
+  > label {
+    padding: 6px 6px 0 0;
+    line-height: 1;
+    &::before {
+      content: '\e834';
+      font-family: "pvc icon";
+      font-size: 16px;
+      color: #EF1D1D;
+    }
+  }
+  > div {
+    flex: 1;
+    padding: 5px 0;
+    font-size: 13px;
+    line-height: 19px;
+  }
+  > i {
+    padding: 7px;
+    font-style: normal;
+    line-height: 1;
+    &::before {
+      content: '\e833';
+      font-family: "pvc icon";
+      font-size: 16px;
+      color: #666;
+    }
+  }
 }
 
 h1 {
-  margin: 0 0 60px;
+  margin: 0;
   text-align: center;
   > img {
     vertical-align: top;
-    height: 44px;
+    width: 240px;
+    margin: 17px 0 60px;
   }
 }
 

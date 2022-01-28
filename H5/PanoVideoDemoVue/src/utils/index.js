@@ -24,7 +24,7 @@ export function parseSearch(search, name) {
   const strList = search.split('&');
   const result = {};
   for (let i = 0, len = strList.length; i < len; i++) {
-    const str = strList[0];
+    const str = strList[i];
     if (str === '') {
       continue;
     }
@@ -36,15 +36,48 @@ export function parseSearch(search, name) {
       value = '';
     } else {
       key = str.substring(0, index);
-      value = str.substring(index + 1);
+      value = decodeURIComponent(str.substring(index + 1));
     }
     if (name) {
       if (name === key) {
         return value;
       }
     } else {
-      result[name] = value;
+      result[key] = value;
     }
   }
   return name ? undefined : result;
 }
+
+export const searchObj = parseSearch(window.location.search.substring(1));
+
+// 把 channelId 写到 url 中去，用于微信分享和复制url
+export function addChannelIdToUrl(channelId) {
+  if (!searchObj.channelId || searchObj.channelId !== channelId) {
+    if (searchObj.channelId) {
+      searchObj.channelId = channelId; // 更新channelId
+    }
+    // 编码一下，pvc只允许channelId为数字和字母可以不用编码，为了代码的完备性这里加上了一下编码
+    channelId = encodeURIComponent(channelId);
+    let url;
+    if (searchObj.channelId === undefined) {
+      url = window.location.href.replace(/#|$/, `${window.location.search ? '&' : '?'}channelId=${channelId}$&`);
+    } else {
+      url = window.location.href.replace(/([?&]channelId)(=?)[^&#]*/, (_, p1, p2) => `${p1}${p2 || '='}${channelId}`);
+    }
+    window.history.replaceState(null, '', url);
+  }
+}
+
+const openStatusList = ['open', 'unmute'];
+export function isOpen(status) {
+  return openStatusList.includes(status);
+}
+
+/* eslint-disable camelcase */
+function is_iOS_15_1(ua) {
+  return (/iPod touch|iPhone|iPad/.test(ua) && /OS (15_1|15_1_1)/.test(ua)) ||
+    (ua.includes('Macintosh') && ua.includes('Safari') && ua.includes('Version/15.1'));
+}
+/* eslint-disable camelcase */
+export const iOS_15_1 = is_iOS_15_1(navigator.userAgent);

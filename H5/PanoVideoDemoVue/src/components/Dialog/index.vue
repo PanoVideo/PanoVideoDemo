@@ -32,8 +32,8 @@ export default {
       let elem = e.target;
       while (elem !== e.currentTarget) {
         if (
-          elem.classList.contains('close')
-          || elem.classList.contains('cancel')
+          elem.classList.contains('close') ||
+          elem.classList.contains('cancel')
         ) {
           this.close();
           break;

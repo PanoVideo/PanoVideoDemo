@@ -11,6 +11,7 @@ module.exports = {
     parser: 'babel-eslint',
   },
   rules: {
+    "operator-linebreak": [2, "after"],
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-underscore-dangle': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
@@ -22,5 +23,6 @@ module.exports = {
     'no-continue': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-param-reassign': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'prefer-destructuring': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    'import/prefer-default-export': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
   },
 };
