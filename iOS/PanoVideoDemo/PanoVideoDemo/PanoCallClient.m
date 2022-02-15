@@ -348,7 +348,6 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
 }
 
 - (void)onActiveSpeakerListUpdated:(NSArray<NSNumber *> * _Nullable)userIds {
-    [_pool onActiveSpeakerListUpdated:userIds];
 }
 
 - (void)onFirstAudioDataReceived:(UInt64)userId {
