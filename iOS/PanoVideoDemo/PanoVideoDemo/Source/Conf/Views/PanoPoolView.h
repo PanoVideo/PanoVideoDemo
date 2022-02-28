@@ -13,6 +13,7 @@
 
 @protocol PanoPoolViewDelegate <PanoPoolActiveAudioDelegate, PanoAnnotationDelegate>
 
+/// 布局的类型发生改变
 - (void)onPageTypeChanged:(PanoViewPageLayoutType)type;
 
 
@@ -35,8 +36,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong, readonly) NSArray<PanoBaseMediaView *> *medias;
 
-@property (nonatomic, assign, readonly) enum PanoWBToolType toolType;
-
 @property (nonatomic, assign, readonly) PanoViewPageLayoutType layoutType;
 
 @property (nonatomic, assign, readonly) UInt64 mainUserId;
@@ -53,6 +52,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)startRender;
 
 - (void)stopRender;
+
+/// 是否可以标注白板
+- (void)enableWhiteboard:(BOOL)enable;
+
 @end
 
 NS_ASSUME_NONNULL_END

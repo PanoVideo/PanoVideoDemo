@@ -69,7 +69,7 @@ static NSTimeInterval kDelayDismissAlertTime = 3.0;
         PanoCallClient.shared.roomId = self.roomId.text;
         PanoCallClient.shared.userName = self.userName.text;
         PanoCallClient.shared.userId = [self getRandomUserId];
-        [self openCallView];
+            [self openCallView];
     } else {
         [self presentAlert:NSLocalizedString(@"joinAlert", nil)];
     }

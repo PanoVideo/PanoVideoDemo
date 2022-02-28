@@ -1,12 +1,12 @@
 //
-//  WhiteboardViewController.m
+//  PanoWhiteBoradView.m
 //  PanoVideoDemo
 //
 //  
 //  Copyright © 2020 Pano. All rights reserved.
 //
 
-#import "WhiteboardViewController.h"
+#import "PanoWhiteboardView.h"
 #import "PanoCallClient.h"
 #import "PanoWbTopView.h"
 #import "PanoItem.h"
@@ -15,27 +15,75 @@
 #import "PanoAnnotationTool.h"
 #import "UIImage+IconFont.h"
 #import "PanoDefine.h"
+#import "PanoVideoView.h"
 
-@interface WhiteboardViewController ()
+@interface PanoWhiteboardView()
 <PanoRtcWhiteboardDelegate,
  PanoWhiteboardDelegate,
- PanoAnnotationToolDelegate>
-
+ PanoAnnotationToolDelegate,
+ PanoPoolActiveAudioDelegate>
 @property (strong, nonatomic) UIView * drawView;
-@property (weak, nonatomic)   PanoRtcWhiteboard * whiteboardEngine;
-@property (assign, nonatomic) PanoWBPageNumber curPage;
-@property (assign, nonatomic) UInt32 totalPages;
 @property (strong, nonatomic) PanoWbTopView *topBarView;
 @property (strong, nonatomic) PanoArrayDataSource *moreItems;
 @property (strong, nonatomic) PanoAnnotationTool* annotationTool;
 @property (strong, nonatomic) UIView *topContentView;
-@property (weak, nonatomic) IBOutlet UIView *rightTopView;
-@property (weak, nonatomic) IBOutlet UIButton *leftTopView;
-@property (weak, nonatomic) IBOutlet UIButton *rarotionButton;
+@property (strong, nonatomic) UIStackView *rightTopView;
+@property (strong, nonatomic) UIButton *backButton;
+@property (strong, nonatomic) UIButton *rarotionButton;
+
 @property (strong, nonatomic) PanoWBVisionConfig *visionConfig;
+@property (weak, nonatomic)   PanoRtcWhiteboard * whiteboardEngine;
+@property (assign, nonatomic) PanoWBPageNumber curPage;
+@property (assign, nonatomic) UInt32 totalPages;
+
 @end
 
-@implementation WhiteboardViewController
+@implementation PanoWhiteboardView
+
+- (void)initViews {
+    
+    _enable = true;
+    
+    self.backgroundColor = [UIColor blackColor];
+    
+    self.whiteboardEngine = PanoCallClient.shared.engineKit.whiteboardEngine;
+    
+    [self.whiteboardEngine setLineWidth:self.config.wbLineWidth];
+    // 1. 添加白板的容器
+    _drawView = [[UIView alloc] init];
+    [self addSubview:_drawView];
+    // 2. 添加旋转按钮
+    [self bringSubviewToFront:self.rarotionButton];
+    // 3. 添加顶部工具栏
+    [self initTopView];
+    // 4. 添加标注工具栏
+    [self initAnnotationTool];
+    // 5. 初始化白板
+    [self initWhiteboard];
+    // 6. 打开白板
+    [self openWhiteboard];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(statusBarOrientationDidChange) name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
+    [self statusBarOrientationDidChange];
+}
+
+- (void)statusBarOrientationDidChange {
+    [_drawView resignFirstResponder];
+    [_annotationTool.penView dismiss];
+    [self updateWbViewConstraints];
+    BOOL islandcape = isLandscape();
+    _rarotionButton.selected = islandcape;
+    if (!_enable) {
+        return;
+    }
+    [UIView animateWithDuration:0.25 animations:^{
+        CGFloat alpha = islandcape ? 0.0 : 1.0;
+        self.rightTopView.alpha = alpha;
+        self.backButton.alpha = alpha;
+        self.topContentView.backgroundColor = islandcape ? [UIColor clearColor] : appMainColor();
+        islandcape ? [self.annotationTool hideToolInstruction] : [self.annotationTool showToolInstruction];
+    }];
+}
 
 - (PanoConfig *)config {
     return PanoCallClient.shared.config;
@@ -51,47 +99,7 @@
     return _visionConfig;
 }
 
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    self.view.backgroundColor = [UIColor blackColor];
-    self.whiteboardEngine = PanoCallClient.shared.engineKit.whiteboardEngine;
-    // 1. 添加白板的容器
-    _drawView = [[UIView alloc] init];
-    [self.view addSubview:_drawView];
-    // 2. 添加旋转按钮
-    [self.view bringSubviewToFront:self.rarotionButton];
-    // 3. 添加顶部工具栏
-    [self initTopView];
-    // 4. 添加标注工具栏
-    [self initAnnotationTool];
-    // 5. 初始化白板
-    [self initWhiteboard];
-    // 6. 打开白板
-    [self openWhiteboard];
-    // 7. 回调白板已经打开
-    if ([self.whiteboardViewDelegate respondsToSelector:@selector(whiteboardViewDidOpen)]) {
-        [self.whiteboardViewDelegate whiteboardViewDidOpen];
-    }
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(statusBarOrientationDidChange) name:UIApplicationDidChangeStatusBarOrientationNotification object:nil];
-    [self statusBarOrientationDidChange];
-}
-
-- (void)statusBarOrientationDidChange {
-    [_drawView resignFirstResponder];
-    [_annotationTool.penView dismiss];
-    [self updateWbViewConstraints];
-    BOOL islandcape = isLandscape();
-    _rarotionButton.selected = islandcape;
-    [UIView animateWithDuration:0.25 animations:^{
-        CGFloat alpha = islandcape ? 0.0 : 1.0;
-        self.rightTopView.alpha = alpha;
-        self.leftTopView.alpha = alpha;
-        self.topContentView.backgroundColor = islandcape ? [UIColor clearColor] : appMainColor();
-        islandcape ? [self.annotationTool hideToolInstruction] : [self.annotationTool showToolInstruction];
-    }];
-}
-
-- (IBAction)rotationScreen:(UIButton *)sender {
+- (void)rotationScreen:(UIButton *)sender {
     sender.selected = !sender.selected;
     [self setScreenLandscape:sender.selected];
 }
@@ -122,17 +130,17 @@
     [self.drawView mas_remakeConstraints:^(MASConstraintMaker *make) {
         if (!isLandscape() || screenRadio < radio) {
             // 竖屏 || 屏幕的宽高比 < (16 : 9)
-            make.left.right.centerY.mas_equalTo(self.view);
+            make.left.right.centerY.mas_equalTo(self);
             make.height.mas_equalTo(self.drawView.mas_width).dividedBy(radio);
         } else { // 横屏
-            make.top.bottom.centerX.mas_equalTo(self.view);
+            make.top.bottom.centerX.mas_equalTo(self);
             make.width.mas_equalTo(self.drawView.mas_height).multipliedBy(radio);
         }
     }];
 }
 
 - (void)initAnnotationTool {
-    _annotationTool = [[PanoAnnotationTool alloc] initWithView:self.view toolOption:PanoAnnotationToolWhiteBoard];
+    _annotationTool = [[PanoAnnotationTool alloc] initWithView:self toolOption:PanoAnnotationToolWhiteBoard];
     _annotationTool.delegate = self;
     [_annotationTool show];
 }
@@ -140,26 +148,47 @@
 - (void)initTopView {
     _topContentView = [[UIView alloc] init];
     _topContentView.backgroundColor = appMainColor();
-    [self.view addSubview:_topContentView];
-    [self.view bringSubviewToFront:_topContentView];
+    [self addSubview:_topContentView];
+    [self bringSubviewToFront:_topContentView];
     
     [_topContentView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.left.right.mas_equalTo(self.view);
+        make.top.left.right.mas_equalTo(self);
     }];
-    [_topContentView addSubview:_leftTopView];
+    _backButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    
+    [_backButton addTarget:self action:@selector(clickBack:) forControlEvents:UIControlEventTouchUpInside];
+    [_topContentView addSubview:_backButton];
+    
+    _rightTopView = [[UIStackView alloc] init];
+    _rightTopView.distribution = UIStackViewDistributionFillEqually;
+    _rightTopView.spacing = 10;
+    UIButton *undoBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    [undoBtn setImage:[UIImage imageNamed:@"btn.whiteboard.undo"] forState:UIControlStateNormal];
+    [undoBtn addTarget:self action:@selector(clickUndoButton:) forControlEvents:UIControlEventTouchUpInside];
+    [undoBtn sizeToFit];
+    [_rightTopView addArrangedSubview:undoBtn];
+    
+    UIButton *redoBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    [redoBtn setImage:[UIImage imageNamed:@"btn.whiteboard.redo"] forState:UIControlStateNormal];
+    [redoBtn addTarget:self action:@selector(clickRedoButton:) forControlEvents:UIControlEventTouchUpInside];
+    [redoBtn sizeToFit];
+    [_rightTopView addArrangedSubview:redoBtn];
     [_topContentView addSubview:_rightTopView];
 
     _topBarView = [[PanoWbTopView alloc] init];
     [_topContentView addSubview:_topBarView];
     
-    [_leftTopView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [_backButton mas_makeConstraints:^(MASConstraintMaker *make) {
         make.centerY.mas_equalTo(self.topBarView);
         make.left.mas_equalTo(self.topContentView).mas_offset(LargeFixSpace);
+        CGFloat top = pano_safeAreaInset(self).top + 6;
+        make.top.mas_equalTo(self).mas_offset(top);
     }];
 
     [_rightTopView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.centerY.mas_equalTo(self.topBarView);
-        make.right.mas_equalTo(self.topContentView).mas_offset(LargeFixSpace);
+        make.width.mas_equalTo(80);
+        make.right.mas_equalTo(self).mas_offset(-LargeFixSpace);
     }];
 
     [_topBarView mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -171,6 +200,8 @@
     [_topBarView.addBtn addTarget:self action:@selector(clickAddPageButton:) forControlEvents:UIControlEventTouchUpInside];
     [_topBarView.deleteBtn addTarget:self action:@selector(clickRemovePageButton:) forControlEvents:UIControlEventTouchUpInside];
     [_topBarView.moreButton addTarget:self action:@selector(toggleMoreAction:) forControlEvents:UIControlEventTouchUpInside];
+    
+    [self reloadTopBarView];
 }
 
 - (void)toggleMoreAction:(UIButton *)sender {
@@ -179,6 +210,15 @@
     } else {
         [self.topBarView hideMenuView];
     }
+}
+
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    [_backButton mas_updateConstraints:^(MASConstraintMaker *make) {
+        CGFloat top = pano_safeAreaInset(self).top + 6;
+        NSLog(@"top: %f",top);
+        make.top.mas_equalTo(self).mas_offset(top);
+    }];
 }
 
 - (void)showMenuView:(BOOL)animated {
@@ -226,7 +266,7 @@
     _topBarView.topMoreView.fileName = [wbService getCurrentFileName];
     _topBarView.topMoreView.presnterName = [PanoCallClient.shared.userMgr host].userName;
     _topBarView.topMoreView.tableView.dataSource = _moreItems;
-    [self.topBarView showMenuViewInView:self.view animated:animated selectedBlock:^(UITableView * _Nonnull tableView, NSIndexPath * _Nonnull indexPath) {
+    [self.topBarView showMenuViewInView:self animated:animated selectedBlock:^(UITableView * _Nonnull tableView, NSIndexPath * _Nonnull indexPath) {
         [weakSelf.topBarView hideMenuView];
         PanoArrayDataSource *dataSource = tableView.dataSource;
         id<PanoItemDelegate> item = [[dataSource.items objectAtIndex:indexPath.section] objectAtIndex:indexPath.row];
@@ -240,33 +280,19 @@
     [self clickBack:nil];
 }
 
-- (void)dismissViewControllerAnimated:(BOOL)flag completion:(void (^)(void))completion {
-    if ([self.whiteboardViewDelegate respondsToSelector:@selector(whiteboardViewWillClose)]) {
-        [self.whiteboardViewDelegate whiteboardViewWillClose];
-    }
-    [super dismissViewControllerAnimated:flag completion:completion];
-}
-
-- (UIStatusBarStyle)preferredStatusBarStyle {
-    return UIStatusBarStyleLightContent;
-}
-
-- (IBAction)clickBack:(id)sender {
-    [self closeWhiteboard];
-    if (!isiPad()) {
-        [self setScreenLandscape:false];
-    }
-    [self dismissViewControllerAnimated:YES completion:nil];
-    if ([self.whiteboardViewDelegate respondsToSelector:@selector(whiteboardViewDidClose)]) {
-        [self.whiteboardViewDelegate whiteboardViewDidClose];
+- (void)clickBack:(id)sender {
+    if (PanoCallClient.shared.userMgr.isHost) {
+        [self closeWhiteboard];
+    } else {
+        [self.delegate onMyRoleBecomeViewer];
     }
 }
 
-- (IBAction)clickUndoButton:(id)sender {
+- (void)clickUndoButton:(id)sender {
     [self.whiteboardEngine undo];
 }
 
-- (IBAction)clickRedoButton:(id)sender {
+- (void)clickRedoButton:(id)sender {
     [self.whiteboardEngine redo];
 }
 
@@ -307,7 +333,6 @@
     });
 }
 
-
 #pragma mark - Private
 - (void)initWhiteboard {
     [self.whiteboardEngine setRoleType:self.config.wbRole];
@@ -326,8 +351,7 @@
 }
 
 - (void)closeWhiteboard {
-    [self.whiteboardEngine close];
-    [PanoCallClient.shared.wb removeDelegate:self];
+    [PanoCallClient.shared.wb close];
 }
 
 - (void)updatePageNumber:(PanoWBPageNumber)curPage totalPages:(UInt32)totalPages {
@@ -363,14 +387,15 @@
     return wbColor;
 }
 
-#pragma mark -- PanoWhiteboardDelegate
-
 - (void)reloadTopBarView {
     if (self.topBarView.isShowing) {
         [self showMenuView:true];
     }
+    [_backButton setTitle:NSLocalizedString(PanoCallClient.shared.userMgr.isHost ? @"关闭白板" : @"收起工具栏", nil) forState:UIControlStateNormal];
+    _topBarView.moreButton.hidden = ![PanoCallClient.shared.userMgr isHost];
 }
 
+#pragma mark -- PanoWhiteboardDelegate
 - (void)onPresenterDidChanged {
     [self reloadTopBarView];
 }
@@ -423,6 +448,23 @@
         default:
             break;
     }
+}
+
+- (void)setEnable:(BOOL)enable {
+    _enable = enable;
+    if (enable) {
+        self.topContentView.hidden = false;
+        [self.annotationTool show];
+        [self.whiteboardEngine setRoleType:kPanoWBRoleAttendee];
+    } else {
+        [self.annotationTool hide];
+        self.topContentView.hidden = true;
+        [self.whiteboardEngine setRoleType:kPanoWBRoleViewer];
+    }
+}
+
+- (void)dealloc {
+    [PanoCallClient.shared.wb removeDelegate:self];
 }
 
 @end

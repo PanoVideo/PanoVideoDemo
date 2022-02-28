@@ -59,27 +59,11 @@
 - (instancetype)initWithUserId:(UInt64)userId
                           type:(PanoViewInstanceType)type
                       streamId:(SInt32)streamId {
-    self = [self initWithUserId:userId type:type];
+    self = [super initWithUserId:userId type:type];
     if (self) {
         self.streamId = streamId;
     }
     return self;
-}
-
-- (instancetype)initWithUserId:(UInt64)userId type:(PanoViewInstanceType)type {
-    self = [super init];
-    if (self) {
-        _userId = userId;
-        _type = type;
-    }
-    return self;
-}
-
-- (BOOL)isEqual:(PanoAnnotationItem *)object {
-    if (![object isKindOfClass:[PanoAnnotationItem class]]) {
-        return false;
-    }
-    return self.type == ((PanoAnnotationItem *)object).type && (self.userId == ((PanoAnnotationItem *)object).userId);
 }
 
 @end

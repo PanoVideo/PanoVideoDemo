@@ -15,7 +15,6 @@ CGFloat SectionHeaderHeight = 8;
 
 @interface PanoWbTopMoreView () <UITableViewDelegate>
 @property (nonatomic, strong) UILabel * wbNameLabel;
-@property (nonatomic, strong) UILabel * wbPresenterLabel;
 @property (nonatomic, copy) PanoSelectedBlock block;
 @end
 
@@ -50,30 +49,18 @@ CGFloat SectionHeaderHeight = 8;
     NSMutableAttributedString *fileName = [[NSMutableAttributedString alloc] initWithAttributedString:[[NSAttributedString alloc] initWithString:NSLocalizedString(@"Current whiteboard", nil) attributes:leftAttributes]];
     [fileName appendAttributedString:[[NSAttributedString alloc] initWithString:_fileName ?: @"" attributes:rightAttributes]];
     _wbNameLabel.attributedText = fileName;
-    
-    NSMutableAttributedString *presnterName = [[NSMutableAttributedString alloc] initWithAttributedString:[[NSAttributedString alloc] initWithString:NSLocalizedString(@"Current Presenter", nil) attributes:leftAttributes]];
-    [presnterName appendAttributedString:[[NSAttributedString alloc] initWithString:_presnterName ?: @"" attributes:rightAttributes]];
-    _wbPresenterLabel.attributedText = presnterName;
 //    [self.tableView reloadData];
 }
 
 - (UIView *)headerView {
-    UIView *header = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 150, 52)];
+    UIView *header = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 150, 30)];
     {
         _wbNameLabel = [[UILabel alloc] init];
         [header addSubview:_wbNameLabel];
-        
-        _wbPresenterLabel = [[UILabel alloc] init];
-        [header addSubview:_wbPresenterLabel];
     }
     {
         [_wbNameLabel mas_makeConstraints:^(MASConstraintMaker *make) {
             make.top.left.right.mas_equalTo(header).insets(UIEdgeInsetsMake(DefaultFixSpace, DefaultFixSpace, 0, DefaultFixSpace));
-        }];
-        [_wbPresenterLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.bottom.left.right.mas_equalTo(header).insets(UIEdgeInsetsMake(0, DefaultFixSpace, DefaultFixSpace, DefaultFixSpace));
-            make.top.mas_equalTo(_wbNameLabel.mas_bottom).mas_offset(DefaultFixSpace);
-            make.height.mas_equalTo(_wbNameLabel);
         }];
     }
     header.backgroundColor = [UIColor whiteColor];
@@ -114,10 +101,7 @@ CGFloat SectionHeaderHeight = 8;
     _contentView.layer.cornerRadius = 2;
     _contentView.layer.masksToBounds = true;
     [self addSubview:_contentView];
-    
-//    _prevBtn = [self buttonWithImage:[UIImage imageNamed:@"btn.whiteboard.prev"] hightedImage:nil];
-//    [self addSubview:_prevBtn];
-    
+        
     _pageNumber = [[UILabel alloc] init];
     _pageNumber.font = [UIFont systemFontOfSize:PanoFontSize_Little];
     _pageNumber.text = @"1/1";
@@ -135,15 +119,6 @@ CGFloat SectionHeaderHeight = 8;
     [self addSubview:_moreButton];
     
     _topMoreView = [[PanoWbTopMoreView alloc] init];
-    
-//    _nextBtn = [self buttonWithImage:[UIImage imageNamed:@"btn.whiteboard.next"] hightedImage:nil];
-//    [self addSubview:_nextBtn];
-//
-//    _addBtn = [self buttonWithImage:[UIImage imageNamed:@"btn.whiteboard.add"] hightedImage:nil];
-//    [self addSubview:_addBtn];
-//
-//    _deleteBtn = [self buttonWithImage:[UIImage imageNamed:@"btn.whiteboard.subtract"] hightedImage:nil];
-//    [self addSubview:_deleteBtn];
 }
 
 - (UIButton *)buttonWithImage:(UIImage *)image hightedImage:(UIImage *)selectedImage {
@@ -246,7 +221,7 @@ CGFloat SectionHeaderHeight = 8;
 
 - (void)showMenuAnimate;
 {
-    CGFloat height = 52;
+    CGFloat height = 30;
     NSInteger section = [_topMoreView.tableView.dataSource numberOfSectionsInTableView:_topMoreView.tableView];
     for (NSInteger i = 0; i<section; i++) {
         CGFloat rowNumbers = [_topMoreView.tableView.dataSource tableView:_topMoreView.tableView numberOfRowsInSection:i];

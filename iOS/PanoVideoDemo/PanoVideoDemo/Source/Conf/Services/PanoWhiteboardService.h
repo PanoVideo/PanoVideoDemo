@@ -21,6 +21,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// 通知白板文档发生改变
 - (void)onDocFilesDidChanged;
 
+/// 通知白板打开或者关闭
+- (void)onWhiteboardStatusChanged:(BOOL)on;
+
 @end
 
 /// 白板核心接口
@@ -30,6 +33,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong, readonly) NSMutableArray *whiteboards;
 
+
+/// 主动关闭白板
+- (BOOL)close;
+
+/// 主动打开白板
+- (BOOL)open;
+
+/// 白板是否打开
+- (BOOL)isOn;
 
 /// 申请成为演示者
 - (void)applyBecomePresenter;

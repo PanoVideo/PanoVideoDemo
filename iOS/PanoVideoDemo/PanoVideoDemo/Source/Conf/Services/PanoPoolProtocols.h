@@ -31,6 +31,7 @@ typedef NSUInteger PageIndex;
 
 @protocol PanoPoolActiveAudioDelegate <NSObject>
 
+@optional
 /// 语音激励用户发生改变， 一秒回调一次
 /// @param instance  被激励的用户，如果当前没有用户激励，instance 返回 nil
 /// @param activing
@@ -49,8 +50,15 @@ typedef NSUInteger PageIndex;
 
 @end
 
-@protocol PanoAnnotationDelegate <NSObject>
-@required
+@protocol PanoRoleDelegate <NSObject>
+@optional
+- (void)onMyRoleBecomeViewer;
+
+@end
+
+@protocol PanoAnnotationDelegate <PanoRoleDelegate>
+
+@optional
 - (void)onAnnotationStart:(PanoAnnotationItem *)item;
 
 - (void)onAnnotationStop:(PanoAnnotationItem *)item;

@@ -8,7 +8,11 @@
 
 #import <UIKit/UIKit.h>
 
+@class PanoPoolView;
+
 @interface CallViewController : UIViewController
+
+@property (strong, nonatomic) PanoPoolView *poolView;
 
 @end
 

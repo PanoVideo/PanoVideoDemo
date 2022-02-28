@@ -11,6 +11,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ 0 : 每次只有一位参会者可以共享, 默认值
+ 1 : 仅主持人可以共享
+ */
+typedef NS_ENUM(NSInteger, PanoShareOption) {
+    PanoSingleShare = 0, 
+    PanoOnlyHostShare = 1,
+};
+
+extern NSString *PanoSettingKey;
+
 @interface PanoConfig : NSObject
 
 @property (assign, nonatomic) PanoWBRoleType wbRole;
@@ -31,6 +42,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (assign, nonatomic, getter=enableVideoAnnotation) BOOL videoAnnotation; ///< 是否允许视频标注
 @property (assign, nonatomic, getter=enableShareScreen) BOOL mobileScreen; ///< 能否共享桌面
 @property (assign, nonatomic, getter=enableAV1) BOOL av1; ///< 是否启用AV1
+
+@property (assign, nonatomic) PanoShareOption shareOption;
+
+@property (strong, nonatomic) NSArray<NSString *> *shareOptions;
 
 - (NSArray<NSString *> *)penColors;
 

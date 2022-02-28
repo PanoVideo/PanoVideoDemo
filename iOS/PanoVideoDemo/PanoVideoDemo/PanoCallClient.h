@@ -8,16 +8,18 @@
 
 #import <Foundation/Foundation.h>
 #import "PanoRtc/PanoRtcEngineKit.h"
-#import "PanoLog.h"
 #import "Reachability.h"
 #import "PanoRtcService.h"
 #import "PanoWhiteboardService.h"
+
 #import "PanoPoolService.h"
 #import "PanoAudioService.h"
 #import "PanoVideoService.h"
 #import "PanoDesktopService.h"
 #import "PanoUserService.h"
+
 #import "PanoStatisticsService.h"
+
 #import "PanoConfig.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -62,7 +64,6 @@ extern NSString * _Nullable kDemoTempToken;
 @property (strong, nonatomic, readonly) PanoUserService *userMgr;
 @property (strong, nonatomic, readonly) PanoStatisticsService *statistics;
 
-
 + (instancetype)shared;
 
 - (instancetype)init NS_UNAVAILABLE;
@@ -76,7 +77,6 @@ extern NSString * _Nullable kDemoTempToken;
 - (PanoResult)stopAudioDump;
 
 - (void)updateAV1Encoding;
-
 
 + (NSString *)productName;
 

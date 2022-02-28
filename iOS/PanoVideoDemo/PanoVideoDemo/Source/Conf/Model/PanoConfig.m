@@ -8,6 +8,9 @@
 
 #import "PanoConfig.h"
 #import "UIColor+Extension.h"
+#import "PanoCallClient.h"
+
+NSString *PanoSettingKey = @"setting";
 
 @implementation PanoConfig
 
@@ -52,6 +55,22 @@
     _videoAnnotation = false;
     _mobileScreen = false;
     _av1 = false;
+    
+    _shareOption = PanoSingleShare;
 }
+
+
+- (NSArray *)shareOptions {
+    return @[
+        NSLocalizedString(@"每次只有一位参会者可以共享", nil),
+        NSLocalizedString(@"仅主持人可以共享", nil),
+    ];
+}
+
+/**
+ 0 : 每次只有一位参会者可以共享, 默认值
+ 1 : 仅主持人可以共享
+ key: setting,  value: { share : 0 };
+ */
 
 @end

@@ -41,6 +41,7 @@
     renderConfig.scalingMode = kPanoScalingCropFill;
     renderConfig.mirror = [PanoCallClient.shared.engineKit isFrontCamera];
     PanoResult result = [PanoCallClient.shared.engineKit startVideoWithView:nil config:renderConfig];
+    NSLog(@"startVideoWithView nil result:%zd", result);
     return result == kPanoResultOK;
 }
 
@@ -65,6 +66,7 @@
         if (result != kPanoResultOK) {
             [PanoCallClient.shared.userMgr onUserVideoStop:user.userId];
         }
+        NSLog(@"startVideoWithView:%@ result:%zd",view, result);
         NSNumber *staus = result == kPanoResultOK ? @(PanoUserVideo_Unmute) : @(PanoUserVideo_None);
         [_videoStatus setObject:staus forKey:@(user.userId)];
         
@@ -77,6 +79,7 @@
         NSNumber *staus = result == kPanoResultOK ? @(PanoUserVideo_Unmute) : @(PanoUserVideo_None);
         [_videoStatus setObject:staus forKey:@(user.userId)];
         [self.videoScalingModes setObject:@(renderConfig.profileType) forKey:@(user.userId)];
+        NSLog(@"subscribeVideo:%llu result:%zd",user.userId, result);
     }
 }
 
@@ -100,6 +103,7 @@
         [PanoCallClient.shared.engineKit unsubscribeVideo:userId];
         [self.videoStatus setObject:@(PanoUserVideo_None) forKey:@(userId)];
         [self.videoScalingModes removeObjectForKey:@(userId)];
+        NSLog(@"unsubscribeVideo:%llu ",userId);
     }
 }
 
@@ -134,6 +138,7 @@
         config = renderConfig;
     }
     [PanoCallClient.shared.engineKit startVideoWithView:view config:config];
+    NSLog(@"startVideoWithView:%@ config:%@",view, config);
 }
 
 
@@ -142,6 +147,7 @@
                   withResult:(PanoSubscribeResult)result {
     NSNumber *staus = result == kPanoResultOK ? @(PanoUserVideo_Unmute) : @(PanoUserVideo_None);
     [_videoStatus setObject:staus forKey:@(userId)];
+    NSLog(@"onUserVideoSubscribe:%llu result:%zd",userId, result);
 }
 
 - (void)onUserLeaveIndication:(UInt64)userId

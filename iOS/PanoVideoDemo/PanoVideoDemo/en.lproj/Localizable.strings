@@ -2,7 +2,7 @@
   Localizable.strings
   PanoCall
 
-  
+//  
   Copyright © 2020 Pano. All rights reserved.
 */
 
@@ -130,7 +130,7 @@
 "码率: " = "BitRate: ";
 "正在重连..." = "Reconnecting...";
 "共享白板" = "Whiteboard";
-"收起白板" = "Close";
+"关闭白板" = "Close";
 "选择" = "Select";
 "画笔" = "Pen";
 "文字" = "Text";
@@ -159,3 +159,29 @@
 "您已加入%@" = "Joined %@";
 "您将自动返回主会场" = "You will back to the main session automatically";
 "分组讨论将在%zd秒后结束" = "The discussion group will end in %zd seconds";
+"主持人禁止用户屏幕共享" = "You can not start screen share that Banned by host";
+"'%@'正在共享屏幕，此时您无法进行屏幕共享" = "You can not start screen share while '%@' is sharing";
+"主持人已打开'%@'视频标注，此时您无法进行屏幕共享" = "You can not start screen share while '%@' is video annotationing";
+"主持人已打开白板，此时您无法进行屏幕共享" = "You can not start screen share while the whiteboard is sharing";
+"开始共享" = "Share Screen";
+"这将中断'%@'的共享，是否继续" = "This will interrupt the sharing of %@, do you want to continue";
+"确定" = "Comfirm";
+"开始标注" = "Video Annotation";
+"选择用户" = "Select User";
+"打开白板" = "Open Whiteboard";
+"白板标注" = "Whiteboard";
+"共享屏幕设置" = "Share Screen";
+"每次只有一位参会者可以共享" = "Only one participant can share";
+"仅主持人可以共享" = "Only the host can share";
+"收起工具栏" = "Collapse";
+"关闭标注" = "Close";
+
+"无法使用麦克风" = "Cannot use microphone";
+
+"请在iPhone的”设置-隐私-麦克风“中允许PanoVideoCall访问您的麦克风" = "Please allow panovideocall to access your microphone in iPhone Settings - Privacy - Microphone";
+
+"前往设置" = "Go to settings";
+
+"无法使用相机" = "Cannot use camera";
+
+"请在iPhone的”设置-隐私-相机“中允许PanoVideoCall访问您的麦克风" = "Please allow panovideocall to access your microphone in iPhone Settings - Privacy - Video";

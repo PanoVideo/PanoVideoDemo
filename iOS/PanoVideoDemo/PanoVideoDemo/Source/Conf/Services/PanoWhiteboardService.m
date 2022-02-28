@@ -9,11 +9,12 @@
 #import "PanoWhiteboardService.h"
 #import "PanoCallClient.h"
 
-
-NSString *const kWhiteBoradHostId = @"wbHostId";
+// 打开关闭白板 Property key: Whiteboard, value: { on : true }
+NSString *const PanoWhiteBoardKey = @"Whiteboard";
 
 @interface PanoWhiteboardService () <PanoUserDelegate>
 @property (nonatomic, strong) NSMutableArray *whiteboards;
+@property (nonatomic, strong) NSDictionary *wbProps;
 @end
 
 @implementation PanoWhiteboardService
@@ -28,6 +29,26 @@ NSString *const kWhiteBoradHostId = @"wbHostId";
         _whiteboards = [NSMutableArray array];
     }
     return _whiteboards;
+}
+
+- (BOOL)close {
+    return [self setWhiteboardStatus:false];
+}
+
+- (BOOL)open {
+    return [self setWhiteboardStatus:true];
+}
+
+- (BOOL)isOn {
+    BOOL on = [self.wbProps[@"on"] boolValue];
+    return on;
+}
+
+- (BOOL)setWhiteboardStatus:(BOOL)on {
+    if (![PanoCallClient.shared.userMgr isHost]) {
+        return false;
+    }
+    return [PanoCallClient.shared.rtcService setProperty:@{@"on" : @(on)} forKey:PanoWhiteBoardKey];
 }
 
 - (void)applyBecomePresenter {
@@ -238,5 +259,16 @@ NSString *const kWhiteBoradHostId = @"wbHostId";
         [del onPresenterDidChanged];
     }];
 }
+
+#pragma mark -- PanoRtcDelegate
+- (void)onPropertyChanged:(NSDictionary *)value forKey:(NSString *_Nonnull)key {
+    if ([key isEqualToString:PanoWhiteBoardKey]) {
+        self.wbProps = value;
+        [[self wbService] invokeWithAction:@selector(onWhiteboardStatusChanged:) completion:^(id<PanoRtcWhiteboardDelegate, PanoWhiteboardDelegate>  _Nonnull del) {
+            [del onWhiteboardStatusChanged:[self isOn]];
+        }];
+    }
+}
+
 
 @end

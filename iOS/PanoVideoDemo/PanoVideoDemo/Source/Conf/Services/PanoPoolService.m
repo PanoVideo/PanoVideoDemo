@@ -10,28 +10,18 @@
 #import "PanoCallClient.h"
 #import "NSArray+Extension.h"
 
-
-static NSUInteger PoolFirstPageMaxCount = 2;
-
 static NSUInteger PoolOtherPageMaxCount = 4;
 
-@interface PanoPoolService () <PanoUserDelegate>{
+@interface PanoPoolService () <PanoUserDelegate, PanoWhiteboardDelegate>{
     __weak PanoUserService *_userService;
     PageIndex _index;
     NSMutableArray *_dataSource;
-    NSMutableArray<PanoViewInstance *> *_desktopInstances;
 }
-
-@property (assign, nonatomic) BOOL isActivingVoice; ///< 是否开启语音激励
 @property (assign, nonatomic) BOOL isSwitchFlag;
-@property (strong, nonatomic) NSMutableDictionary<NSNumber *, NSNumber*> *speakingUsers;
 @property (strong, nonatomic) NSDate *lastSpeakDate;
 @property (assign, nonatomic) NSInteger activeAudioUserID;
 @property (strong, nonatomic) PanoViewPage *currentPage;
-@property (strong, nonatomic, readonly) PanoViewInstance *desktopInstance;
-@property (strong, nonatomic) PanoViewInstance *pinInstance;
 @property (strong, nonatomic) NSMutableArray<NSNumber *> *myActiveAudios;
-@property (strong, nonatomic) NSDate *lastMySpeakDate;
 @end
 
 @implementation PanoPoolService
@@ -39,7 +29,6 @@ static NSUInteger PoolOtherPageMaxCount = 4;
 - (void)start {
     _index = 0;
     _dataSource = [NSMutableArray array];
-    _desktopInstances = [NSMutableArray array];
     _myActiveAudios = [NSMutableArray array];
     _enableRender = true;
     _userService = PanoCallClient.shared.userMgr;
@@ -47,12 +36,21 @@ static NSUInteger PoolOtherPageMaxCount = 4;
 
 - (void)stopRender{
     _enableRender = false;
-    [self.delegate onPoolMediaChanged: [[PanoViewPage alloc] init]];
+    [self.delegate onPoolMediaChanged:[[PanoViewPage alloc] init]];
 }
 
 - (void)startRender {
     _enableRender = true;
     [self notify];
+}
+
+- (void)setDelegate:(id<PanoPoolDelegate>)delegate {
+    if (delegate) {
+        [self addDelegate:delegate];
+    } else {
+        [self removeDelegate:_delegate];
+    }
+    _delegate = delegate;
 }
 
 - (PanoViewInstance *)videoInstanceWithUser:(nonnull PanoUserInfo *)user {
@@ -66,11 +64,9 @@ static NSUInteger PoolOtherPageMaxCount = 4;
     if (len == 1) {
         return PanoViewPageLayout_FullScreen;
     } else if (len == 2 && _index == 0) {
-        // 演讲者模式显示 浮动布局
-        return PanoViewPageLayout_Float;
+        return PanoViewPageLayout_Float; // 演讲者模式显示 浮动布局
     } else if (len == 3 || len == 4 || (len == 2 && _index > 0)) {
-        // 画廊模式显示 平均布局
-        return PanoViewPageLayout_4_Avg;
+        return PanoViewPageLayout_4_Avg; // 画廊模式显示 平均布局
     } else {
         NSLog(@"NOT SUPPORT");
         return PanoViewPageLayout_FullScreen;
@@ -80,21 +76,47 @@ static NSUInteger PoolOtherPageMaxCount = 4;
 - (NSArray<PanoViewInstance *> *)data {
     NSMutableArray *mArray = [NSMutableArray array];
     [mArray addObjectsFromArray:_dataSource];
-    [mArray addObjectsFromArray:self.otherDesktopInstances];
+    // 添加所有的桌面共享实例 && 移除Pin的桌面共享实例
+    NSArray *desktopInstances = [self allDesktopInstances];
+    [mArray addObjectsFromArray:desktopInstances];
+    if (_pinInstance && _pinInstance.type == PanoViewInstance_Desktop) {
+        [mArray removeObject:_pinInstance];
+    } else if (desktopInstances.firstObject) {
+        [mArray removeObject:desktopInstances.firstObject];
+    }
     return mArray;
 }
 
 /// 优先级最高的桌面共享实例
 - (PanoViewInstance *)desktopInstance {
-    return _desktopInstances.firstObject;
+    if (_pinInstance && _pinInstance.type == PanoViewInstance_Desktop) {
+        return _pinInstance;
+    }
+    return [self allDesktopInstances].firstObject;
 }
 
 /// 其它所有的桌面共享实例
-- (NSArray *)otherDesktopInstances {
-    UInt64 deskInstanceUserId = self.desktopInstance.userId;
-    return [_desktopInstances filteredArrayUsingBlock:^BOOL(PanoViewInstance * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        return obj.userId != deskInstanceUserId;
+- (NSArray *)allDesktopInstances {
+    return [[PanoCallClient.shared.userMgr allScreens] arrayByMappingObjectsUsingBlock:^id _Nullable(NSNumber * _Nonnull obj) {
+        PanoViewInstance *desktopInstance = [[PanoViewInstance alloc] initWithUserId:[obj unsignedIntegerValue] type:PanoViewInstance_Desktop];
+        return desktopInstance;
     }];
+}
+
+/// 主页面显示的数据源
+- (NSArray<PanoViewInstance *> *)mainPageData {
+    if ([PanoCallClient.shared.wb isOn]) {
+        PanoViewInstance *instance = [[PanoViewInstance alloc] initWithUserId:0 type:PanoViewInstance_Whiteboard];
+        return @[instance, self.activeSpeakerUser];
+    }
+    else if (self.desktopInstance != nil) {
+        return @[self.desktopInstance, self.activeSpeakerUser];
+    } else if (_pinInstance != nil) {
+        return @[_pinInstance, self.data.firstObject];
+    } else  {
+        BOOL flag = self.activeSpeakerUser.userId != PanoCallClient.shared.userId;
+        return flag ? @[self.activeSpeakerUser, self.data.firstObject] :   @[self.activeSpeakerUser];
+    }
 }
 
 - (void)notify {
@@ -104,33 +126,7 @@ static NSUInteger PoolOtherPageMaxCount = 4;
     if ([self.delegate respondsToSelector:@selector(onPoolMediaChanged:)]) {
         PanoViewPage *page = [[PanoViewPage alloc] init];
         if (_index == 0) {
-            NSInteger len = self.data.count >= 2 ? PoolFirstPageMaxCount : self.data.count;
-            NSArray * array = [self.data subarrayWithRange:NSMakeRange(0, len)];
-            // 1. 查找到正在语音激励的用户
-            PanoViewInstance *activeAudioInstance = nil;
-            for (PanoViewInstance *instance in self.data) {
-                if (instance.userId == _activeAudioUserID && instance.type == PanoViewInstance_Video) {
-                    activeAudioInstance = instance;
-                    break;
-                }
-            }
-            // 如果谁开启了批注
-            if (_pinInstance != nil) {
-                page.instances = @[_pinInstance, self.data.firstObject];
-            } else if (self.desktopInstance != nil) {
-                page.instances = @[self.desktopInstance, self.activeSpeakerUser];
-            }
-            // 2. 激励用户 生成对应的数组
-            else if (_isActivingVoice && activeAudioInstance) {
-                page.instances = @[activeAudioInstance, self.data.firstObject];
-            } else {
-                array = [[array reverseObjectEnumerator] allObjects];
-                // 3. 双击切换过布局
-                if (_isSwitchFlag) {
-                    array = [[array reverseObjectEnumerator] allObjects];
-                }
-                page.instances = array;
-            }
+            page.instances = [self mainPageData];
             page.type = [self layoutType:page.instances.count];
             if (page.instances.count == 2) {
                 page.instances.firstObject.mode = PanoViewInstance_Max;
@@ -161,16 +157,7 @@ static NSUInteger PoolOtherPageMaxCount = 4;
 }
 
 - (void)togglePinViewInstance:(PanoViewInstance *)instance completion:(nonnull void (^)(void))completion {
-    if (instance.type == PanoViewInstance_Desktop) {
-        //TODO: 交换屏幕共享的位置
-        NSUInteger index = [_desktopInstances indexOfObject:instance];
-        if (index != NSNotFound) {
-            [_desktopInstances exchangeObjectAtIndex:0 withObjectAtIndex:index];
-            _index = 0;
-            [self notify];
-        }
-        completion();
-    } else if (instance.userId != _userService.me.userId && instance.type == PanoViewInstance_Video && _desktopInstances.count == 0) {
+    if (instance.userId != _userService.me.userId && ![self isSharing]) {
         // 如果这个实例类型是视频, 且没有桌面共享
         _pinInstance = instance;
         _index = 0;
@@ -204,7 +191,8 @@ static NSUInteger PoolOtherPageMaxCount = 4;
 
 /// 是否正在开启共享
 - (BOOL)isSharing {
-    return self.desktopInstance != nil;
+    return self.desktopInstance != nil ||
+          [PanoCallClient.shared.wb isOn];
 }
 
 #pragma mark -- PanoUserDelegate
@@ -217,8 +205,6 @@ static NSUInteger PoolOtherPageMaxCount = 4;
 
 - (void)onUserRemoved:(nonnull PanoUserInfo *)user {
     PanoViewInstance *instance = [self videoInstanceWithUser:user];
-    PanoViewInstance *desktopInstance = [[PanoViewInstance alloc] initWithUserId:user.userId type:PanoViewInstance_Desktop];
-    [_desktopInstances removeObject:desktopInstance];
     [_dataSource removeObject:instance];
     [self updatePageIndex];
     if (user.userId == _activeAudioUserID) {
@@ -236,9 +222,9 @@ static NSUInteger PoolOtherPageMaxCount = 4;
         PanoViewInstance *instance = [[PanoViewInstance alloc] init];
         instance.type = PanoViewInstance_Video;
         instance.userId = user.userId;
-        if ([self.delegate respondsToSelector:@selector(onAudioActiveUserStatusChanged:)]) {
-            [self.delegate onAudioActiveUserStatusChanged:instance];
-        }
+        [self invokeWithAction:@selector(onAudioActiveUserStatusChanged:) completion:^(id  _Nonnull del) {
+            [del onAudioActiveUserStatusChanged:instance];
+        }];
     }
     if (user.userId == PanoCallClient.shared.userId &&
         user.videoStaus == PanoUserVideo_Unmute) {
@@ -251,18 +237,15 @@ static NSUInteger PoolOtherPageMaxCount = 4;
 }
 
 - (void)onUserDidEndShareingScreen:(PanoUserInfo *)user {
-    PanoViewInstance *desktopInstance = [[PanoViewInstance alloc] initWithUserId:user.userId type:PanoViewInstance_Desktop];
-    [_desktopInstances removeObject:desktopInstance];
+    if (_pinInstance && user.userId == _pinInstance.userId)  {
+        _pinInstance = nil;
+    }
     [self updatePageIndex];
     [self notify];
 }
 
 - (void)onUserDidBeginSharingScreen:(PanoUserInfo *)user {
     _pinInstance = nil;
-    PanoViewInstance *desktopInstance = [[PanoViewInstance alloc] initWithUserId:user.userId type:PanoViewInstance_Desktop];
-    if (![_desktopInstances containsObject:desktopInstance]) {
-        [_desktopInstances insertObject:desktopInstance atIndex:0];
-    }
     _index = 0;
     [self notify];
 }
@@ -273,78 +256,45 @@ static NSUInteger PoolOtherPageMaxCount = 4;
     }
 }
 
+#pragma mark -- PanoWhiteboardDelegate
+- (void)onWhiteboardStatusChanged:(BOOL)on {
+    if (on) {
+        [PanoCallClient.shared.screen stopShare];
+        [self switchToPage:0];
+    }
+    self.isAnnotationing = on;
+    [self notify];
+}
+
 #pragma mark -- PanoRtcEngineDelegate
-
-- (void)onUserAudioLevel:(PanoRtcAudioLevel * _Nonnull)level {
-    if (!_speakingUsers) {
-        _speakingUsers = [NSMutableDictionary dictionaryWithCapacity:4];
-    }
-    [_speakingUsers setObject:@(level.level) forKey:@(level.userId)];
-    if (!_lastSpeakDate) {
-        _lastSpeakDate = [NSDate date];
-    }
-    if ([[NSDate date] timeIntervalSinceDate:_lastSpeakDate] > 1.0) {
-        _lastSpeakDate = [NSDate date];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self startAtiveAudio];
-        });
-    }
-    if (level.userId == PanoCallClient.shared.userId) {
-        if (!_lastMySpeakDate) {
-            _lastMySpeakDate = [NSDate date];
-        }
-        [_myActiveAudios addObject:@(level.active)];
-        if (_myActiveAudios.count >= 300) {
-            NSInteger activeCount = 0;
-            for (NSNumber *value in _myActiveAudios) {
-                activeCount += value.integerValue;
-            }
-            [_myActiveAudios removeAllObjects];
-            if (activeCount >= 240) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [self.delegate onSpeakingWhenTheAudioMuted];
-                });
-            }
-        }
-    }
-}
-
-- (void)startAtiveAudio {
-    if ([self.delegate respondsToSelector:@selector(onMyAudioActiveChanged:)]) {
-        NSInteger level = [self->_speakingUsers[@(PanoCallClient.shared.userId)] integerValue];
-        [self.delegate onMyAudioActiveChanged: level > 500];
-    }
-    
-    // TODO 更新未说话语音
-    if (self->_activeAudioUserID > 0) {
-        _isActivingVoice = true;
-    }
-    BOOL activing = false;
-    if (self.activeSpeakerList.firstObject) {
-        NSInteger level = [[self->_speakingUsers objectForKey:self.activeSpeakerList.firstObject] integerValue];
-        activing  = level > 500;
-    }
-    
-    if ([self.delegate respondsToSelector:@selector(onAudioActiveUserChanged:activing:)]) {
-        PanoViewInstance *instance = nil;
-        if (self.activeSpeakerList.count > 0) {
-            instance = [[PanoViewInstance alloc] init];
-            instance.type = PanoViewInstance_Video;
-            instance.userId = self.activeSpeakerList.firstObject.integerValue;
-        }
-        [self.delegate onAudioActiveUserChanged:instance activing:activing];
-    }
-    
-    // 1. 如果当前在第一页 需要替换掉说话的用户
-    if (_index == 0) {
-        [self notify];
-    }
-}
-
+/**
+ - ASL声音最大的那个
+ - 如果是自己，则显声音第二大的那个, 一次类推
+ - 如果ASL为空，则保留上一个active video
+ - 如果active video离会了，则显声音第二大 或者第三大的那个， 如果ASL中没有，那么显示最早加入Room的用户
+ - 如果只有自己，则为自己
+ */
 - (PanoViewInstance *)activeSpeakerUser {
     PanoViewInstance *instance = [[PanoViewInstance alloc] init];
     instance.type = PanoViewInstance_Video;
-    instance.userId = PanoCallClient.shared.userId;
+    BOOL isFound = false;
+    NSUInteger index = [self.data indexOfObjectPassingTest:^BOOL(PanoViewInstance * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        return obj.userId == self.activeAudioUserID;
+    }];
+    if (index != NSNotFound) {
+        instance.userId = _activeAudioUserID;
+    } else {
+        for (PanoViewInstance *temp in self.data) {
+            if (temp.userId != PanoCallClient.shared.userId) {
+                instance = temp;
+                isFound = true;
+                break;
+            }
+        }
+        if (!isFound) {
+            instance.userId = PanoCallClient.shared.userId;
+        }
+    }
     return  instance;
 }
 
@@ -359,7 +309,6 @@ static NSUInteger PoolOtherPageMaxCount = 4;
     if ([self enableFetchLastPage]) {
         _index-- ;
         [self notify];
-        [self startAtiveAudio];
     }
 }
 
@@ -367,7 +316,6 @@ static NSUInteger PoolOtherPageMaxCount = 4;
     if ([self enableFetchNextPage]) {
         _index++ ;
         [self notify];
-        [self startAtiveAudio];
     }
 }
 

@@ -7,6 +7,7 @@
 //
 
 #import "PanoCallClient.h"
+#import "VideoFilterDelegate.h"
 #import "UIColor+Extension.h"
 
 //https://developer.pano.video/
@@ -36,7 +37,10 @@ static NSString * kFrameRateKey = @"FrameRate";
 static NSString * kAudioDumpFileName = @"pano_audio.dump";
 static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
 
+
 @interface PanoCallClient () <PanoRtcEngineDelegate, PanoRtcDelegate>
+
+@property (strong, nonatomic) VideoFilterDelegate * videoFilter;
 @property (assign, nonatomic) PanoVideoProfileType maxResolution;
 @end
 
@@ -180,6 +184,7 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
         _beautifyIntensity = beautifyIntensity;
         [self savePreference:[NSNumber numberWithFloat:_beautifyIntensity] forKey:kBeautifyIntensityKey];
         if (_advancedBeautify) {
+            [_videoFilter setBeautifyIntensity:_beautifyIntensity];
         } else {
             [self updateInternalFaceBeautify];
         }
@@ -198,6 +203,7 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
     if (_cheekThinningIntensity != cheekThinningIntensity) {
         _cheekThinningIntensity = cheekThinningIntensity;
         [self savePreference:@(_cheekThinningIntensity) forKey:kCheekThinningKey];
+        [_videoFilter setCheekThinningIntensity:_cheekThinningIntensity];
     }
 }
 
@@ -205,6 +211,7 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
     if (_eyeEnlargingIntensity != eyeEnlargingIntensity) {
         _eyeEnlargingIntensity = eyeEnlargingIntensity;
         [self savePreference:@(_eyeEnlargingIntensity) forKey:kEyeEnlargingKey];
+        [_videoFilter setEyeEnlargingIntensity:_eyeEnlargingIntensity];
     }
 }
 
@@ -234,12 +241,12 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
 #pragma mark - PanoRtcEngineDelegate
 
 - (void)onChannelJoinConfirm:(PanoResult)result {
-    [_channelDelegate onChannelJoinConfirm:result];
+    [self.channelDelegate onChannelJoinConfirm:result];
     [self queryDeviceRating];
 }
 
 - (void)onChannelLeaveIndication:(PanoResult)result {
-    [_channelDelegate onChannelLeaveIndication:result];
+    [self.channelDelegate onChannelLeaveIndication:result];
 }
 
 - (void)onChannelFailover:(PanoFailoverState)state {
@@ -249,12 +256,15 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
 }
 
 - (void)onChannelCountDown:(UInt32)remain {
-    [_channelDelegate onChannelCountDown:remain];
+    NSLog(@"Channel count down with %u seconds", (unsigned)remain);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.channelDelegate onChannelCountDown:remain];
+    });
 }
 
 - (void)onUserJoinIndication:(UInt64)userId withName:(NSString * _Nullable)userName {
     [_userMgr onUserJoinIndication:userId withName:userName];
-    [_channelDelegate onUserJoinIndication:userId withName:userName];
+    NSLog(@"The user %lu (%@) join channel", (unsigned long)userId, userName);
 }
 
 - (void)onUserLeaveIndication:(UInt64)userId
@@ -262,165 +272,142 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
     [_video onUserLeaveIndication:userId withReason:reason];
     [_userMgr onUserLeaveIndication:userId withReason:reason];
     [_screen onUserLeaveIndication:userId withReason:reason];
-    [_channelDelegate onUserLeaveIndication:userId withReason:reason];
+    NSLog(@"The user %lu leave room with %ld", (unsigned long)userId, (long)reason);
 }
 
 - (void)onUserAudioStart:(UInt64)userId {
     [_userMgr onUserAudioStart:userId];
-    [_channelDelegate onUserAudioStart:userId];
+    NSLog(@"The user %lu start audio", (unsigned long)userId);
 }
 
 - (void)onUserAudioStop:(UInt64)userId {
     [_userMgr onUserAudioStop:userId];
-    [_channelDelegate onUserAudioStop:userId];
+    NSLog(@"The user %lu stop audio", (unsigned long)userId);
 }
 
 - (void)onUserVideoStart:(UInt64)userId
           withMaxProfile:(PanoVideoProfileType)maxProfile {
     [_userMgr onUserVideoStart:userId withMaxProfile:maxProfile];
-    [_channelDelegate onUserVideoStart:userId withMaxProfile:maxProfile];
+    NSLog(@"The user %lu start video with max profile %ld", (unsigned long)userId, (long)maxProfile);
 }
 
 - (void)onUserVideoStop:(UInt64)userId {
     [_userMgr onUserVideoStop:userId];
-    [_channelDelegate onUserVideoStop:userId];
+    NSLog(@"The user %lu stop video", (unsigned long)userId);
 }
 
 - (void)onUserScreenStart:(UInt64)userId {
-    [_channelDelegate onUserScreenStart:userId];
+    NSLog(@"The user %lu start screen", (unsigned long)userId);
     [_userMgr onUserScreenStart:userId];
 }
 
 - (void)onUserScreenStop:(UInt64)userId {
-    [_channelDelegate onUserScreenStop:userId];
+    NSLog(@"The user %lu stop screen", (unsigned long)userId);
     [_userMgr onUserScreenStop:userId];
 }
 
 - (void)onUserAudioSubscribe:(UInt64)userId
                   withResult:(PanoSubscribeResult)result {
-    [_channelDelegate onUserAudioSubscribe:userId withResult:result];
+    NSLog(@"The user %lu audio subscribe result %ld", (unsigned long)userId, (long)result);
 }
 
 - (void)onUserVideoSubscribe:(UInt64)userId
                   withResult:(PanoSubscribeResult)result {
     [_video onUserVideoSubscribe:userId withResult:result];
-    [_channelDelegate onUserVideoSubscribe:userId withResult:result];
+    NSLog(@"The user %lu video subscribe result %ld", (unsigned long)userId, (long)result);
 }
 
 - (void)onUserScreenSubscribe:(UInt64)userId
                   withResult:(PanoSubscribeResult)result {
-    [_channelDelegate onUserScreenSubscribe:userId withResult:result];
     [_screen onUserScreenSubscribe:userId withResult:result];
+    NSLog(@"The user %lu screen subscribe result %ld", (unsigned long)userId, (long)result);
 }
 
 - (void)onUserAudioMute:(UInt64)userId {
     [_userMgr  onUserAudioMute:userId];
-    [_channelDelegate onUserAudioMute:userId];
+    NSLog(@"The user %lu mute audio", (unsigned long)userId);
 }
 
 - (void)onUserAudioUnmute:(UInt64)userId {
     [_userMgr  onUserAudioUnmute:userId];
-    [_channelDelegate onUserAudioUnmute:userId];
+    NSLog(@"The user %lu unmute audio", (unsigned long)userId);
 }
 
 - (void)onUserVideoMute:(UInt64)userId {
     [_userMgr  onUserVideoMute:userId];
-    [_channelDelegate onUserVideoMute:userId];
+    NSLog(@"The user %lu mute video", (unsigned long)userId);
 }
 
 - (void)onUserVideoUnmute:(UInt64)userId {
     [_userMgr  onUserVideoUnmute:userId];
-    [_channelDelegate onUserVideoUnmute:userId];
+    NSLog(@"The user %lu unmute video", (unsigned long)userId);
 }
 
 - (void)onUserScreenMute:(UInt64)userId {
-    [_channelDelegate onUserScreenMute:userId];
+    NSLog(@"The user %lu mute screen", (unsigned long)userId);
     [_userMgr onUserScreenMute:userId];
 }
 
 - (void)onUserScreenUnmute:(UInt64)userId {
-    [_channelDelegate onUserScreenUnmute:userId];
+    NSLog(@"The user %lu unmute screen", (unsigned long)userId);
     [_userMgr onUserScreenUnmute:userId];
 }
 
 - (void)onUserAudioLevel:(PanoRtcAudioLevel * _Nonnull)level {
-    [_pool onUserAudioLevel:level];
 }
 
 - (void)onActiveSpeakerListUpdated:(NSArray<NSNumber *> * _Nullable)userIds {
 }
 
 - (void)onFirstAudioDataReceived:(UInt64)userId {
-    [_channelDelegate onFirstAudioDataReceived:userId];
+    NSLog(@"The user %lu first audio data received", (unsigned long)userId);
 }
 
 - (void)onFirstVideoDataReceived:(UInt64)userId {
-    [_channelDelegate onFirstVideoDataReceived:userId];
+    NSLog(@"The user %lu first video data received", (unsigned long)userId);
 }
 
 - (void)onFirstScreenDataReceived:(UInt64)userId {
-    [_channelDelegate onFirstScreenDataReceived:userId];
+    NSLog(@"The user %lu first screen data received", (unsigned long)userId);
 }
 
 - (void)onAudioSendStats:(PanoRtcAudioSendStats * _Nonnull)stats {
-    [_channelDelegate onAudioSendStats:stats];
     [_statistics onAudioSendStats:stats];
 }
 
 - (void)onAudioRecvStats:(PanoRtcAudioRecvStats * _Nonnull)stats {
-    [_channelDelegate onAudioRecvStats:stats];
     [_statistics onAudioRecvStats:stats];
 }
 
 - (void)onVideoSendStats:(PanoRtcVideoSendStats * _Nonnull)stats {
-    [_channelDelegate onVideoSendStats:stats];
+    [self.channelDelegate onVideoSendStats:stats];
     [_statistics onVideoSendStats:stats];
 }
 
 - (void)onVideoRecvStats:(PanoRtcVideoRecvStats * _Nonnull)stats {
-    [_channelDelegate onVideoRecvStats:stats];
+    [self.channelDelegate onVideoRecvStats:stats];
     [_statistics onVideoRecvStats:stats];
 }
 
 - (void)onScreenSendStats:(PanoRtcScreenSendStats * _Nonnull)stats {
-    [_channelDelegate onScreenSendStats:stats];
     [_statistics onScreenSendStats:stats];
 }
 
 - (void)onScreenRecvStats:(PanoRtcScreenRecvStats * _Nonnull)stats {
-    [_channelDelegate onScreenRecvStats:stats];
+    [self.channelDelegate onScreenRecvStats:stats];
     [_statistics onScreenRecvStats:stats];
 }
 
 - (void)onVideoSendBweStats:(PanoRtcVideoSendBweStats * _Nonnull)stats {
-    [_channelDelegate onVideoSendBweStats:stats];
     [_statistics onVideoSendBweStats:stats];
 }
 
 - (void)onVideoRecvBweStats:(PanoRtcVideoRecvBweStats * _Nonnull)stats {
-    [_channelDelegate onVideoRecvBweStats:stats];
     [_statistics onVideoRecvBweStats:stats];
 }
 
 - (void)onSystemStats:(PanoRtcSystemStats * _Nonnull)stats {
-    [_channelDelegate onSystemStats:stats];
     [_statistics onSystemStats:stats];
-}
-
-- (void)onWhiteboardAvailable {
-    [_channelDelegate onWhiteboardAvailable];
-}
-
-- (void)onWhiteboardUnavailable {
-    [_channelDelegate onWhiteboardUnavailable];
-}
-
-- (void)onWhiteboardStart {
-    [_channelDelegate onWhiteboardStart];
-}
-
-- (void)onWhiteboardStop {
-    [_channelDelegate onWhiteboardStop];
 }
 
 - (void)onNetworkQuality:(PanoQualityRating)quality withUser:(UInt64)userId {
@@ -495,6 +482,10 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
     // User Service
     _userMgr = [[PanoUserService alloc] init];
     
+    // 共享池 Service
+    _pool = [[PanoPoolService alloc] init];
+    [_userMgr addDelegate:_pool];
+    
     // RTM Service
     _rtcService = [[PanoRtcService alloc] init];
     [self.engineKit.messageService setDelegate:(id<PanoRtcMessageDelegate>)_rtcService];
@@ -505,25 +496,24 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
     _wb = [[PanoWhiteboardService alloc] init];
     [self.engineKit.whiteboardEngine setDelegate:(id<PanoRtcWhiteboardDelegate>)_wb];
     [_userMgr addDelegate:_wb];
+    [_rtcService addDelegate:(id<PanoRtcDelegate>)_wb];
+    [_wb addDelegate:(id<PanoWhiteboardDelegate>)_pool];
     
-    // Annotation Service
-    
-    // 共享池 Service
-    _pool = [[PanoPoolService alloc] init];
-    
-    [_userMgr setDelegate:(id<PanoUserDelegate>)_pool];
-    
+
     _audio = [[PanoAudioService alloc] init];
     
     _video = [[PanoVideoService alloc] init];
     
     _screen = [[PanoDesktopService alloc] init];
-    
+
     _statistics = [[PanoStatisticsService alloc] init];
     
 }
 
 - (void)stop {
+    if (self.debugMode) {
+        [self stopAudioDump];
+    }
     [_engineKit leaveChannel];
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
     [_rtcService removeDelegate:self];
@@ -644,7 +634,15 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
 
 - (void)updateExternalFaceBeautify {
     BOOL externalBeautify = _faceBeautify && _advancedBeautify;
-    NSObject * processor = nil;
+    if (externalBeautify) {
+        if (nil == _videoFilter) {
+            _videoFilter = [VideoFilterDelegate new];
+        }
+        [_videoFilter setBeautifyIntensity:_beautifyIntensity];
+        [_videoFilter setCheekThinningIntensity:_cheekThinningIntensity];
+        [_videoFilter setEyeEnlargingIntensity:_eyeEnlargingIntensity];
+    }
+    NSObject * processor = externalBeautify ? _videoFilter : nil;
     [_engineKit setMediaProcessor:kVideoPreprocessor processor:processor param:nil];
     PanoVideoFrameRateType frameRateType = externalBeautify ? kPanoFrameRateLow : kPanoFrameRateStandard;
     [_engineKit setOption:@(frameRateType) forType:kPanoOptionVideoFrameRate];
@@ -698,6 +696,12 @@ static SInt64 kMaxAudioDumpFileSize = 200 * 1024 * 1024;
             [_rtcService sendMessageToUser:userId msg:[self myUserInfo]];
         }
         [userService onUserUpdated:userId message:message];
+    }
+}
+
+- (void)onPropertyChanged:(NSDictionary *)value forKey:(NSString *)key {
+    if ([key isEqualToString:PanoSettingKey]) {
+        _config.shareOption = [value[@"share"] unsignedIntegerValue];
     }
 }
 

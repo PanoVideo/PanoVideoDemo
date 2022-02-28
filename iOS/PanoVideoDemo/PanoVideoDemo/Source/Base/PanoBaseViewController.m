@@ -34,6 +34,11 @@
     
 }
 
+- (void)dismiss {
+    [self dismissViewControllerAnimated:true completion:^{
+    }];
+}
+
 - (void)dealloc {
     NSLog(@"dealloc: %@", self);
 }

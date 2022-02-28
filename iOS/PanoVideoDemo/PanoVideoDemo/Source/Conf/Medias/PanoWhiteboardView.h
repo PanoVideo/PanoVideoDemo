@@ -9,10 +9,15 @@
 #import "PanoBaseMediaView.h"
 
 NS_ASSUME_NONNULL_BEGIN
+@protocol PanoRoleDelegate;
 /**
- 后续重写白板VIew
+ 白板VIew
  */
-@interface PanoWhiteBoradView : PanoBaseMediaView
+@interface PanoWhiteboardView : PanoBaseMediaView
+
+@property (nonatomic, weak) id <PanoRoleDelegate> delegate;
+
+@property (nonatomic, assign) BOOL enable;
 
 @end
 

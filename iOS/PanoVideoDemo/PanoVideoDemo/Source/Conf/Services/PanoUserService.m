@@ -8,6 +8,7 @@
 
 #import "PanoUserService.h"
 #import "PanoCallClient.h"
+#import "NSArray+Extension.h"
 
 NSString * PropHostID = @"host";
 
@@ -15,12 +16,14 @@ NSString * PropHostID = @"host";
 @property (nonatomic, strong) NSMutableArray<PanoUserInfo *> *dataSource;
 @property (nonatomic, assign) BOOL applyFlag; // 申请主持人Flag
 @property (nonatomic, assign) NSUInteger propHostId;
+@property (nonatomic, strong) NSMutableArray<NSNumber *> *screens;
 @end
 
 @implementation PanoUserService
 
 - (void)initService {
     _dataSource = [NSMutableArray array];
+    _screens = [NSMutableArray array];
 }
 
 - (PanoUserInfo *)me {
@@ -29,6 +32,11 @@ NSString * PropHostID = @"host";
 
 - (PanoUserInfo *)host {
     return [self findUserWithId:self.hostId];
+}
+
+- (BOOL)isHost {
+    return self.hostId == PanoCallClient.shared.userId &&
+           self.hostId != 0;
 }
 
 - (PanoUserInfo *)findUserWithId:(UInt64)userId {
@@ -40,8 +48,33 @@ NSString * PropHostID = @"host";
     return nil;
 }
 
+- (PanoUserInfo *)findGroupUserWithId:(UInt64)userId {
+    for (PanoUserInfo * userInfo in self.allUsers) {
+        if (userInfo.userId == userId) {
+            return userInfo;
+        }
+    }
+    return nil;
+}
+
 - (NSArray<PanoUserInfo *> *)allUsers {
     return self.dataSource.copy;
+}
+
+- (NSArray<NSNumber *> *)allScreens {
+    NSArray *allUsers = [self.allUsers arrayByMappingObjectsUsingBlock:^NSNumber * _Nullable(PanoUserInfo * _Nonnull user) {
+        return @(user.userId);
+    }];
+    return [self.screens filteredArrayUsingBlock:^BOOL(NSNumber * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        return [allUsers containsObject:obj];
+    }];
+}
+
+- (PanoUserInfo *)sharingUser {
+    if (PanoCallClient.shared.screen.isSharingScreen) {
+        return [self me];
+    }
+    return [self findUserWithId:[self allScreens].firstObject.unsignedLongLongValue];
 }
 
 - (void)setMeetingHostId:(UInt64)hostId {
@@ -61,12 +94,12 @@ NSString * PropHostID = @"host";
     [self invokeWithAction:@selector(onPresenterDidChanged) completion:^(id <PanoUserDelegate> _Nonnull del) {
         [del onPresenterDidChanged];
     }];
+    if (PanoCallClient.shared.userId == self.hostId) {
+        [PanoCallClient.shared.engineKit.whiteboardEngine setRoleType:kPanoWBRoleAdmin];
+    }
 }
 
 - (void)notifyRefresh:(PanoUserInfo *)user {
-    if ([self.delegate respondsToSelector:@selector(onUserStatusChanged:)]) {
-        [self.delegate onUserStatusChanged:user];
-    }
     [self invokeWithAction:@selector(onUserStatusChanged:) completion:^(id <PanoUserDelegate> _Nonnull del) {
         [del onUserStatusChanged:user];
     }];
@@ -94,13 +127,9 @@ NSString * PropHostID = @"host";
 }
 
 - (void)onRtmServiceAvailable {
-    if (!_applyFlag) {
+    if (!_applyFlag && self.firstJoin) {
         _applyFlag = true;
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            if (self.hostId == 0 && self.propHostId == 0) {
-                [self setMeetingHostId:[PanoCallClient shared].userId];
-            }
-        });
+        [self setMeetingHostId:[PanoCallClient shared].userId];
     }
 }
 
@@ -115,9 +144,6 @@ NSString * PropHostID = @"host";
         if (userId == self.propHostId) {
             [self notifyHostChanged];
         }
-        if ([self.delegate respondsToSelector:@selector(onUserAdded:)]) {
-            [self.delegate onUserAdded:user];
-        }
         [self notifyUserListChanged];
         [self invokeWithAction:@selector(onUserAdded:) completion:^(id <PanoUserDelegate>  _Nonnull del) {
             [del onUserAdded:user];
@@ -130,11 +156,9 @@ NSString * PropHostID = @"host";
     dispatch_async(dispatch_get_main_queue(), ^{
         PanoUserInfo *user = [[PanoUserInfo alloc] initWithId:userId name:nil];
         [self.dataSource removeObject:user];
+        [self.screens removeObject:@(userId)];
         if (userId == self.propHostId) {
             [self notifyHostChanged];
-        }
-        if ([self.delegate respondsToSelector:@selector(onUserRemoved:)]) {
-            [self.delegate onUserRemoved:user];
         }
         [self notifyUserListChanged];
         [self invokeWithAction:@selector(onUserRemoved:) completion:^(id <PanoUserDelegate>  _Nonnull del) {
@@ -219,21 +243,25 @@ NSString * PropHostID = @"host";
 #pragma mark -- Screen
 - (void)onUserScreenStart:(UInt64)userId {
     dispatch_async(dispatch_get_main_queue(), ^{
+        if (![self.screens containsObject:@(userId)]) {
+            [self.screens insertObject:@(userId) atIndex:0];
+        }
         PanoUserInfo *user = [self findUserWithId:userId];
         user.screenStatus = PanoUserScreen_Unmute;
-        if ([self.delegate respondsToSelector:@selector(onUserDidBeginSharingScreen:)]) {
-            [self.delegate onUserDidBeginSharingScreen:user];
-        }
+        [self invokeWithAction:@selector(onUserDidBeginSharingScreen:) completion:^(id  _Nonnull del) {
+            [del onUserDidBeginSharingScreen:user];
+        }];
     });
 }
 
 - (void)onUserScreenStop:(UInt64)userId {
     dispatch_async(dispatch_get_main_queue(), ^{
+        [self.screens removeObject:@(userId)];
         PanoUserInfo *user = [self findUserWithId:userId];
         user.screenStatus = PanoUserScreen_None;
-        if ([self.delegate respondsToSelector:@selector(onUserDidEndShareingScreen:)]) {
-            [self.delegate onUserDidEndShareingScreen:user];
-        }
+        [self invokeWithAction:@selector(onUserDidEndShareingScreen:) completion:^(id  _Nonnull del) {
+            [del onUserDidEndShareingScreen:user];
+        }];
     });
 }
 
@@ -241,9 +269,9 @@ NSString * PropHostID = @"host";
     dispatch_async(dispatch_get_main_queue(), ^{
         PanoUserInfo *user = [self findUserWithId:userId];
         user.screenStatus = PanoUserScreen_Mute;
-        if ([self.delegate respondsToSelector:@selector(onUserDidEndShareingScreen:)]) {
-            [self.delegate onUserDidEndShareingScreen:user];
-        }
+        [self invokeWithAction:@selector(onUserDidEndShareingScreen:) completion:^(id  _Nonnull del) {
+            [del onUserDidEndShareingScreen:user];
+        }];
     });
 }
 
@@ -251,9 +279,9 @@ NSString * PropHostID = @"host";
     dispatch_async(dispatch_get_main_queue(), ^{
         PanoUserInfo *user = [self findUserWithId:userId];
         user.screenStatus = PanoUserScreen_Unmute;
-        if ([self.delegate respondsToSelector:@selector(onUserDidBeginSharingScreen:)]) {
-            [self.delegate onUserDidBeginSharingScreen:user];
-        }
+        [self invokeWithAction:@selector(onUserDidBeginSharingScreen:) completion:^(id  _Nonnull del) {
+            [del onUserDidBeginSharingScreen:user];
+        }];
     });
 }
 
@@ -276,12 +304,19 @@ NSString * PropHostID = @"host";
     return name;
 }
 
-- (NSString *)audioName {
+- (UIImage *)audioImage {
     NSString *name = self.audioStatus == PanoUserAudio_Unmute ? @"image.unmute.big" : @"image.mute.big";
     if (self.audioCallType != kPanoAudioCallTypeVoIP) {
         name = [NSString stringWithFormat:@"%@.pstn",name];
     }
-    return name;
+    if (self.audioStatus == PanoUserAudio_Unmute && [self activeAudioImage] != nil) {
+        return [self activeAudioImage];
+    }
+    return [UIImage imageNamed:name];
+}
+
+- (UIImage *)activeAudioImage {
+    return nil;
 }
 
 - (UIImage *)userListAudioImage {

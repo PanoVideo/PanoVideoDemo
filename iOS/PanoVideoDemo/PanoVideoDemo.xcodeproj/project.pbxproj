@@ -20,13 +20,20 @@
 		57C6E4AB2434780500ADF2CB /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 57C6E4AA2434780500ADF2CB /* main.m */; };
 		57C6E4C62434A4C400ADF2CB /* JoinViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57C6E4BF2434A4C400ADF2CB /* JoinViewController.m */; };
 		57C6E4C72434A4C400ADF2CB /* CallViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57C6E4C02434A4C400ADF2CB /* CallViewController.m */; };
-		57C6E4C82434A4C400ADF2CB /* WhiteboardViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57C6E4C22434A4C400ADF2CB /* WhiteboardViewController.m */; };
 		57E4F32F244A18170004A856 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 57E4F331244A18170004A856 /* InfoPlist.strings */; };
 		57FC408C243769B500508035 /* WebViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 57FC408B243769B500508035 /* WebViewController.m */; };
 		BD0C24DE256F44E7001FDA58 /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = BD0C24DD256F44E7001FDA58 /* Reachability.m */; };
 		BD1ABD782530510600973819 /* PanoPoolLayout.m in Sources */ = {isa = PBXBuildFile; fileRef = BD1ABD77253050F800973819 /* PanoPoolLayout.m */; };
 		BD1ABD7B253055E100973819 /* UIView+Extension.m in Sources */ = {isa = PBXBuildFile; fileRef = BD1ABD7A253055E100973819 /* UIView+Extension.m */; };
 		BD1ABDAC2531BC2100973819 /* PanoDesktopService.m in Sources */ = {isa = PBXBuildFile; fileRef = BD1ABDAB2531BC2100973819 /* PanoDesktopService.m */; };
+		BD27002C27CC760A00E4AB04 /* UIAlertController+Blocks.m in Sources */ = {isa = PBXBuildFile; fileRef = BD27002927CC760A00E4AB04 /* UIAlertController+Blocks.m */; };
+		BD27002D27CC760A00E4AB04 /* UIViewController+Extension.m in Sources */ = {isa = PBXBuildFile; fileRef = BD27002B27CC760A00E4AB04 /* UIViewController+Extension.m */; };
+		BD27003027CC762800E4AB04 /* PanoPermission.m in Sources */ = {isa = PBXBuildFile; fileRef = BD27002F27CC762800E4AB04 /* PanoPermission.m */; };
+		BD27003527CC767400E4AB04 /* PanoTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = BD27003127CC767400E4AB04 /* PanoTableView.m */; };
+		BD27003627CC767400E4AB04 /* PanoWhiteboardView.m in Sources */ = {isa = PBXBuildFile; fileRef = BD27003427CC767400E4AB04 /* PanoWhiteboardView.m */; };
+		BD27003A27CC772300E4AB04 /* VideoFilterDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = BD27003827CC772300E4AB04 /* VideoFilterDelegate.m */; };
+		BD27003D27CC77F100E4AB04 /* PanoShareTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = BD27003B27CC77F100E4AB04 /* PanoShareTableViewController.m */; };
+		BD27004627CC8ACD00E4AB04 /* PanoPoolService.m in Sources */ = {isa = PBXBuildFile; fileRef = BD27004527CC8ACD00E4AB04 /* PanoPoolService.m */; };
 		BD3DC4292611729300BF844D /* PanoRtcService.m in Sources */ = {isa = PBXBuildFile; fileRef = BD3DC4282611729300BF844D /* PanoRtcService.m */; };
 		BD3DC42C26117AD000BF844D /* PanoFeedAudioController.m in Sources */ = {isa = PBXBuildFile; fileRef = BD3DC42B26117AD000BF844D /* PanoFeedAudioController.m */; };
 		BD43D62025381DC700FDA5F5 /* PanoMulticastDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = BD43D61F25381DC700FDA5F5 /* PanoMulticastDelegate.m */; };
@@ -36,7 +43,6 @@
 		BD451C12255D18E50034376E /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = BD451C11255D18E00034376E /* libc++.tbd */; };
 		BD4BB41925418B9400C81A6E /* PanoEmptyView.m in Sources */ = {isa = PBXBuildFile; fileRef = BD4BB41825418B9400C81A6E /* PanoEmptyView.m */; };
 		BD4D4510252462220098EE28 /* PanoDesktopView.m in Sources */ = {isa = PBXBuildFile; fileRef = BD4D450F252462220098EE28 /* PanoDesktopView.m */; };
-		BD4D4513252462370098EE28 /* PanoWhiteBoradView.m in Sources */ = {isa = PBXBuildFile; fileRef = BD4D4512252462370098EE28 /* PanoWhiteBoradView.m */; };
 		BD4D4516252465720098EE28 /* PanoWbTopView.m in Sources */ = {isa = PBXBuildFile; fileRef = BD4D4515252465720098EE28 /* PanoWbTopView.m */; };
 		BD55505826463B6400B6539E /* PanoAnnotationPenView.m in Sources */ = {isa = PBXBuildFile; fileRef = BD55505726463B6400B6539E /* PanoAnnotationPenView.m */; };
 		BD55505C26463FAB00B6539E /* UIImage+Extension.m in Sources */ = {isa = PBXBuildFile; fileRef = BD55505B26463FAB00B6539E /* UIImage+Extension.m */; };
@@ -58,21 +64,18 @@
 		BD64B7E3252353D500DAB342 /* PanoUserService.m in Sources */ = {isa = PBXBuildFile; fileRef = BD64B7D1252353D500DAB342 /* PanoUserService.m */; };
 		BD64B7E5252353D500DAB342 /* PanoAudioService.m in Sources */ = {isa = PBXBuildFile; fileRef = BD64B7D4252353D500DAB342 /* PanoAudioService.m */; };
 		BD64B7E6252353D500DAB342 /* PanoVideoService.m in Sources */ = {isa = PBXBuildFile; fileRef = BD64B7D8252353D500DAB342 /* PanoVideoService.m */; };
-		BD6A6CA3255B87CC00EC6D78 /* PanoLog.m in Sources */ = {isa = PBXBuildFile; fileRef = BD6A6CA2255B87CC00EC6D78 /* PanoLog.m */; };
 		BD7C155525661F2800DAC911 /* PanoBaseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = BD7C155425661F2800DAC911 /* PanoBaseViewController.m */; };
 		BD7C15712566812F00DAC911 /* PanoStatisticsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = BD7C15702566812F00DAC911 /* PanoStatisticsViewController.m */; };
 		BD7C1587256BB2C700DAC911 /* PanoStatisticsView.m in Sources */ = {isa = PBXBuildFile; fileRef = BD7C1586256BB2C700DAC911 /* PanoStatisticsView.m */; };
 		BD7C158E256DEC4000DAC911 /* PanoOverallHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = BD7C158D256DEC3F00DAC911 /* PanoOverallHeaderView.m */; };
 		BD8A30182563C5CA00B03474 /* MBProgressHUD+Extension.m in Sources */ = {isa = PBXBuildFile; fileRef = BD8A30172563C5CA00B03474 /* MBProgressHUD+Extension.m */; };
 		BD8A30422564FA9400B03474 /* PanoStatisticsService.m in Sources */ = {isa = PBXBuildFile; fileRef = BD8A30412564FA9400B03474 /* PanoStatisticsService.m */; };
-		BD8A304825651ACA00B03474 /* PanoNetworkManager.m in Sources */ = {isa = PBXBuildFile; fileRef = BD8A304725651ACA00B03474 /* PanoNetworkManager.m */; };
 		BD8F5DA0265E20BB005CCC29 /* UIView+Designable.m in Sources */ = {isa = PBXBuildFile; fileRef = BD8F5D9F265E20BB005CCC29 /* UIView+Designable.m */; };
 		BD9889EE2692AFD0000F75DA /* PanoAnnotationTool.m in Sources */ = {isa = PBXBuildFile; fileRef = BD9889ED2692AFCF000F75DA /* PanoAnnotationTool.m */; };
 		BD988A9926942B3D000F75DA /* UIImage+IconFont.m in Sources */ = {isa = PBXBuildFile; fileRef = BD988A9726942B3D000F75DA /* UIImage+IconFont.m */; };
 		BD988AA326943416000F75DA /* iconfont.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BD988AA126943416000F75DA /* iconfont.ttf */; };
 		BDA011D4263A65D700E8EED1 /* PanoNotificationCenter.m in Sources */ = {isa = PBXBuildFile; fileRef = BDA011D3263A65D700E8EED1 /* PanoNotificationCenter.m */; };
 		BDB9C5B0279590D800BC45DF /* NSArray+Extension.m in Sources */ = {isa = PBXBuildFile; fileRef = BDB9C5AE279590D800BC45DF /* NSArray+Extension.m */; };
-		BDB9C5C02795944000BC45DF /* PanoPoolService.m in Sources */ = {isa = PBXBuildFile; fileRef = BDB9C5B72795944000BC45DF /* PanoPoolService.m */; };
 		BDB9C5FF2796A90E00BC45DF /* PanoRtc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BDB9C5FE2796A8FB00BC45DF /* PanoRtc.framework */; };
 		BDB9C6002796A90E00BC45DF /* PanoRtc.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = BDB9C5FE2796A8FB00BC45DF /* PanoRtc.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		BDB9C6582797EC0800BC45DF /* NSLayoutConstraint+MASDebugAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = BDB9C6402797EC0800BC45DF /* NSLayoutConstraint+MASDebugAdditions.m */; };
@@ -93,7 +96,6 @@
 		BDE679F62577C5A700FD24AF /* NSURL+Extension.m in Sources */ = {isa = PBXBuildFile; fileRef = BDE679F52577C5A600FD24AF /* NSURL+Extension.m */; };
 		BDE8AD3A25FB6AC400B1026E /* PanoAnnotationToolView.m in Sources */ = {isa = PBXBuildFile; fileRef = BDE8AD3925FB6AC400B1026E /* PanoAnnotationToolView.m */; };
 		BDE8AD3D25FB6E6D00B1026E /* PanoAction.m in Sources */ = {isa = PBXBuildFile; fileRef = BDE8AD3C25FB6E6D00B1026E /* PanoAction.m */; };
-		BDE8AD4325FF4E4100B1026E /* PanoAnnotationService.m in Sources */ = {isa = PBXBuildFile; fileRef = BDE8AD4225FF4E4100B1026E /* PanoAnnotationService.m */; };
 		BDEC6FA32631631600E34765 /* PanoBroadcastButton.m in Sources */ = {isa = PBXBuildFile; fileRef = BDEC6FA22631631600E34765 /* PanoBroadcastButton.m */; };
 		BDEEEEAE253D4192005EE09B /* PanoWhiteboardService.m in Sources */ = {isa = PBXBuildFile; fileRef = BDEEEEAD253D4192005EE09B /* PanoWhiteboardService.m */; };
 		BDEEEEB4253DA469005EE09B /* PanoArrayDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = BDEEEEB3253DA469005EE09B /* PanoArrayDataSource.m */; };
@@ -138,12 +140,10 @@
 		57C6E4A72434780500ADF2CB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		57C6E4A92434780500ADF2CB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		57C6E4AA2434780500ADF2CB /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		57C6E4BC2434A4C400ADF2CB /* WhiteboardViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WhiteboardViewController.h; sourceTree = "<group>"; };
 		57C6E4BD2434A4C400ADF2CB /* JoinViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JoinViewController.h; sourceTree = "<group>"; };
 		57C6E4BF2434A4C400ADF2CB /* JoinViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JoinViewController.m; sourceTree = "<group>"; };
 		57C6E4C02434A4C400ADF2CB /* CallViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CallViewController.m; sourceTree = "<group>"; };
 		57C6E4C12434A4C400ADF2CB /* CallViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CallViewController.h; sourceTree = "<group>"; };
-		57C6E4C22434A4C400ADF2CB /* WhiteboardViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WhiteboardViewController.m; sourceTree = "<group>"; };
 		57E4F330244A18170004A856 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		57FC408A243769B500508035 /* WebViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WebViewController.h; sourceTree = "<group>"; };
 		57FC408B243769B500508035 /* WebViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WebViewController.m; sourceTree = "<group>"; };
@@ -156,6 +156,22 @@
 		BD1ABD7A253055E100973819 /* UIView+Extension.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+Extension.m"; sourceTree = "<group>"; };
 		BD1ABDAA2531BC2100973819 /* PanoDesktopService.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PanoDesktopService.h; sourceTree = "<group>"; };
 		BD1ABDAB2531BC2100973819 /* PanoDesktopService.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PanoDesktopService.m; sourceTree = "<group>"; };
+		BD27002827CC760A00E4AB04 /* UIAlertController+Blocks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIAlertController+Blocks.h"; sourceTree = "<group>"; };
+		BD27002927CC760A00E4AB04 /* UIAlertController+Blocks.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIAlertController+Blocks.m"; sourceTree = "<group>"; };
+		BD27002A27CC760A00E4AB04 /* UIViewController+Extension.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIViewController+Extension.h"; sourceTree = "<group>"; };
+		BD27002B27CC760A00E4AB04 /* UIViewController+Extension.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIViewController+Extension.m"; sourceTree = "<group>"; };
+		BD27002E27CC762800E4AB04 /* PanoPermission.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PanoPermission.h; sourceTree = "<group>"; };
+		BD27002F27CC762800E4AB04 /* PanoPermission.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PanoPermission.m; sourceTree = "<group>"; };
+		BD27003127CC767400E4AB04 /* PanoTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PanoTableView.m; sourceTree = "<group>"; };
+		BD27003227CC767400E4AB04 /* PanoWhiteboardView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PanoWhiteboardView.h; sourceTree = "<group>"; };
+		BD27003327CC767400E4AB04 /* PanoTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PanoTableView.h; sourceTree = "<group>"; };
+		BD27003427CC767400E4AB04 /* PanoWhiteboardView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PanoWhiteboardView.m; sourceTree = "<group>"; };
+		BD27003827CC772300E4AB04 /* VideoFilterDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VideoFilterDelegate.m; sourceTree = "<group>"; };
+		BD27003927CC772300E4AB04 /* VideoFilterDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoFilterDelegate.h; sourceTree = "<group>"; };
+		BD27003B27CC77F100E4AB04 /* PanoShareTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PanoShareTableViewController.m; sourceTree = "<group>"; };
+		BD27003C27CC77F100E4AB04 /* PanoShareTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PanoShareTableViewController.h; sourceTree = "<group>"; };
+		BD27004427CC8ACD00E4AB04 /* PanoPoolService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PanoPoolService.h; sourceTree = "<group>"; };
+		BD27004527CC8ACD00E4AB04 /* PanoPoolService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PanoPoolService.m; sourceTree = "<group>"; };
 		BD3DC4272611729300BF844D /* PanoRtcService.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PanoRtcService.h; sourceTree = "<group>"; };
 		BD3DC4282611729300BF844D /* PanoRtcService.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PanoRtcService.m; sourceTree = "<group>"; };
 		BD3DC42A26117AD000BF844D /* PanoFeedAudioController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PanoFeedAudioController.h; sourceTree = "<group>"; };
@@ -171,7 +187,6 @@
 		BD4D450E252462220098EE28 /* PanoDesktopView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PanoDesktopView.h; sourceTree = "<group>"; };
 		BD4D450F252462220098EE28 /* PanoDesktopView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PanoDesktopView.m; sourceTree = "<group>"; };
 		BD4D4511252462370098EE28 /* PanoWhiteBoradView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PanoWhiteBoradView.h; sourceTree = "<group>"; };
-		BD4D4512252462370098EE28 /* PanoWhiteBoradView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PanoWhiteBoradView.m; sourceTree = "<group>"; };
 		BD4D4514252465720098EE28 /* PanoWbTopView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PanoWbTopView.h; sourceTree = "<group>"; };
 		BD4D4515252465720098EE28 /* PanoWbTopView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PanoWbTopView.m; sourceTree = "<group>"; };
 		BD55505626463B6400B6539E /* PanoAnnotationPenView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PanoAnnotationPenView.h; sourceTree = "<group>"; };
@@ -218,8 +233,6 @@
 		BD64B7D8252353D500DAB342 /* PanoVideoService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PanoVideoService.m; sourceTree = "<group>"; };
 		BD64B7D9252353D500DAB342 /* PanoAudioService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PanoAudioService.h; sourceTree = "<group>"; };
 		BD64B7E72523568200DAB342 /* PanoPoolProtocols.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PanoPoolProtocols.h; sourceTree = "<group>"; };
-		BD6A6CA1255B87CC00EC6D78 /* PanoLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PanoLog.h; sourceTree = "<group>"; };
-		BD6A6CA2255B87CC00EC6D78 /* PanoLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PanoLog.m; sourceTree = "<group>"; };
 		BD7C155325661F2800DAC911 /* PanoBaseViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PanoBaseViewController.h; sourceTree = "<group>"; };
 		BD7C155425661F2800DAC911 /* PanoBaseViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PanoBaseViewController.m; sourceTree = "<group>"; };
 		BD7C156F2566812F00DAC911 /* PanoStatisticsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PanoStatisticsViewController.h; sourceTree = "<group>"; };
@@ -232,8 +245,6 @@
 		BD8A30172563C5CA00B03474 /* MBProgressHUD+Extension.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "MBProgressHUD+Extension.m"; sourceTree = "<group>"; };
 		BD8A30402564FA9400B03474 /* PanoStatisticsService.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PanoStatisticsService.h; sourceTree = "<group>"; };
 		BD8A30412564FA9400B03474 /* PanoStatisticsService.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PanoStatisticsService.m; sourceTree = "<group>"; };
-		BD8A304625651ACA00B03474 /* PanoNetworkManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PanoNetworkManager.h; sourceTree = "<group>"; };
-		BD8A304725651ACA00B03474 /* PanoNetworkManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PanoNetworkManager.m; sourceTree = "<group>"; };
 		BD8F5D9E265E20BB005CCC29 /* UIView+Designable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIView+Designable.h"; sourceTree = "<group>"; };
 		BD8F5D9F265E20BB005CCC29 /* UIView+Designable.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+Designable.m"; sourceTree = "<group>"; };
 		BD9889EC2692AFCF000F75DA /* PanoAnnotationTool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PanoAnnotationTool.h; sourceTree = "<group>"; };
@@ -246,8 +257,6 @@
 		BDA011D3263A65D700E8EED1 /* PanoNotificationCenter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PanoNotificationCenter.m; sourceTree = "<group>"; };
 		BDB9C5AE279590D800BC45DF /* NSArray+Extension.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+Extension.m"; sourceTree = "<group>"; };
 		BDB9C5AF279590D800BC45DF /* NSArray+Extension.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray+Extension.h"; sourceTree = "<group>"; };
-		BDB9C5B72795944000BC45DF /* PanoPoolService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PanoPoolService.m; sourceTree = "<group>"; };
-		BDB9C5BC2795944000BC45DF /* PanoPoolService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PanoPoolService.h; sourceTree = "<group>"; };
 		BDB9C5FE2796A8FB00BC45DF /* PanoRtc.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PanoRtc.framework; path = ../SDK/PanoRtc.framework; sourceTree = "<group>"; };
 		BDB9C63F2797EC0800BC45DF /* MASCompositeConstraint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MASCompositeConstraint.h; sourceTree = "<group>"; };
 		BDB9C6402797EC0800BC45DF /* NSLayoutConstraint+MASDebugAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSLayoutConstraint+MASDebugAdditions.m"; sourceTree = "<group>"; };
@@ -289,8 +298,6 @@
 		BDE8AD3925FB6AC400B1026E /* PanoAnnotationToolView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PanoAnnotationToolView.m; sourceTree = "<group>"; };
 		BDE8AD3B25FB6E6D00B1026E /* PanoAction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PanoAction.h; sourceTree = "<group>"; };
 		BDE8AD3C25FB6E6D00B1026E /* PanoAction.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PanoAction.m; sourceTree = "<group>"; };
-		BDE8AD4125FF4E4100B1026E /* PanoAnnotationService.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PanoAnnotationService.h; sourceTree = "<group>"; };
-		BDE8AD4225FF4E4100B1026E /* PanoAnnotationService.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PanoAnnotationService.m; sourceTree = "<group>"; };
 		BDEC6F552631196100E34765 /* ReplayKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ReplayKit.framework; path = System/Library/Frameworks/ReplayKit.framework; sourceTree = SDKROOT; };
 		BDEC6F572631196100E34765 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		BDEC6FA12631631600E34765 /* PanoBroadcastButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PanoBroadcastButton.h; sourceTree = "<group>"; };
@@ -384,6 +391,15 @@
 			path = CallView;
 			sourceTree = "<group>";
 		};
+		BD27003727CC772300E4AB04 /* Other */ = {
+			isa = PBXGroup;
+			children = (
+				BD27003827CC772300E4AB04 /* VideoFilterDelegate.m */,
+				BD27003927CC772300E4AB04 /* VideoFilterDelegate.h */,
+			);
+			path = Other;
+			sourceTree = "<group>";
+		};
 		BD55505F2646732200B6539E /* TCPopupMenu */ = {
 			isa = PBXGroup;
 			children = (
@@ -398,6 +414,10 @@
 		BD64B70C251DBBBB00DAB342 /* Categary */ = {
 			isa = PBXGroup;
 			children = (
+				BD27002827CC760A00E4AB04 /* UIAlertController+Blocks.h */,
+				BD27002927CC760A00E4AB04 /* UIAlertController+Blocks.m */,
+				BD27002A27CC760A00E4AB04 /* UIViewController+Extension.h */,
+				BD27002B27CC760A00E4AB04 /* UIViewController+Extension.m */,
 				BDB9C5AF279590D800BC45DF /* NSArray+Extension.h */,
 				BDB9C5AE279590D800BC45DF /* NSArray+Extension.m */,
 				BD64B70D251DBBD900DAB342 /* UIColor+Extension.h */,
@@ -430,6 +450,7 @@
 		BD64B77E2521702E00DAB342 /* Conf */ = {
 			isa = PBXGroup;
 			children = (
+				BD27003727CC772300E4AB04 /* Other */,
 				BD64B7C7252353D500DAB342 /* Layouts */,
 				BD64B7BF252353D500DAB342 /* Medias */,
 				BD64B7BA252353D500DAB342 /* Model */,
@@ -455,10 +476,10 @@
 		BD64B7AF2521BB3000DAB342 /* Common */ = {
 			isa = PBXGroup;
 			children = (
+				BD27002E27CC762800E4AB04 /* PanoPermission.h */,
+				BD27002F27CC762800E4AB04 /* PanoPermission.m */,
 				BDB9C6622797EC1400BC45DF /* MBProgressHUD */,
 				BDB9C63E2797EC0800BC45DF /* Masonry */,
-				BD6A6CA1255B87CC00EC6D78 /* PanoLog.h */,
-				BD6A6CA2255B87CC00EC6D78 /* PanoLog.m */,
 				BD58864325400E3500EF389C /* PanoItem.h */,
 				BD58864525400E3500EF389C /* PanoItem.m */,
 				BD58864425400E3500EF389C /* PanoItemDelegate.h */,
@@ -471,8 +492,6 @@
 				BDEEEEB3253DA469005EE09B /* PanoArrayDataSource.m */,
 				BD4BB41725418B9400C81A6E /* PanoEmptyView.h */,
 				BD4BB41825418B9400C81A6E /* PanoEmptyView.m */,
-				BD8A304625651ACA00B03474 /* PanoNetworkManager.h */,
-				BD8A304725651ACA00B03474 /* PanoNetworkManager.m */,
 				BD0C24DC256F44E7001FDA58 /* Reachability.h */,
 				BD0C24DD256F44E7001FDA58 /* Reachability.m */,
 				BDE679F1257627AA00FD24AF /* PanoAvatorUtil.h */,
@@ -502,6 +521,10 @@
 		BD64B7BF252353D500DAB342 /* Medias */ = {
 			isa = PBXGroup;
 			children = (
+				BD27003327CC767400E4AB04 /* PanoTableView.h */,
+				BD27003127CC767400E4AB04 /* PanoTableView.m */,
+				BD27003227CC767400E4AB04 /* PanoWhiteboardView.h */,
+				BD27003427CC767400E4AB04 /* PanoWhiteboardView.m */,
 				BD64B7C2252353D500DAB342 /* PanoBaseMediaView.h */,
 				BD64B7C0252353D500DAB342 /* PanoBaseMediaView.m */,
 				BD64B7C3252353D500DAB342 /* PanoVideoView.h */,
@@ -509,7 +532,6 @@
 				BD4D450E252462220098EE28 /* PanoDesktopView.h */,
 				BD4D450F252462220098EE28 /* PanoDesktopView.m */,
 				BD4D4511252462370098EE28 /* PanoWhiteBoradView.h */,
-				BD4D4512252462370098EE28 /* PanoWhiteBoradView.m */,
 				BD9889EC2692AFCF000F75DA /* PanoAnnotationTool.h */,
 				BD9889ED2692AFCF000F75DA /* PanoAnnotationTool.m */,
 				BDE8AD3825FB6AC400B1026E /* PanoAnnotationToolView.h */,
@@ -523,6 +545,8 @@
 		BD64B7C4252353D500DAB342 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				BD27003C27CC77F100E4AB04 /* PanoShareTableViewController.h */,
+				BD27003B27CC77F100E4AB04 /* PanoShareTableViewController.m */,
 				BD2383E8278457EA0031DBEC /* CallView */,
 				BDEC6FA02631627C00E34765 /* ShareScreen */,
 				BD3DC42A26117AD000BF844D /* PanoFeedAudioController.h */,
@@ -551,8 +575,6 @@
 				57C6E4BF2434A4C400ADF2CB /* JoinViewController.m */,
 				57FC408A243769B500508035 /* WebViewController.h */,
 				57FC408B243769B500508035 /* WebViewController.m */,
-				57C6E4BC2434A4C400ADF2CB /* WhiteboardViewController.h */,
-				57C6E4C22434A4C400ADF2CB /* WhiteboardViewController.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -576,7 +598,6 @@
 		BD64B7CF252353D500DAB342 /* Services */ = {
 			isa = PBXGroup;
 			children = (
-				BDB9C5B62795943F00BC45DF /* Pool */,
 				BD64B7E72523568200DAB342 /* PanoPoolProtocols.h */,
 				BD64B7D9252353D500DAB342 /* PanoAudioService.h */,
 				BD64B7D4252353D500DAB342 /* PanoAudioService.m */,
@@ -586,14 +607,14 @@
 				BD64B7D8252353D500DAB342 /* PanoVideoService.m */,
 				BD1ABDAA2531BC2100973819 /* PanoDesktopService.h */,
 				BD1ABDAB2531BC2100973819 /* PanoDesktopService.m */,
-				BDE8AD4125FF4E4100B1026E /* PanoAnnotationService.h */,
-				BDE8AD4225FF4E4100B1026E /* PanoAnnotationService.m */,
 				BDEEEEAC253D4192005EE09B /* PanoWhiteboardService.h */,
 				BDEEEEAD253D4192005EE09B /* PanoWhiteboardService.m */,
 				BD8A30402564FA9400B03474 /* PanoStatisticsService.h */,
 				BD8A30412564FA9400B03474 /* PanoStatisticsService.m */,
 				BD3DC4272611729300BF844D /* PanoRtcService.h */,
 				BD3DC4282611729300BF844D /* PanoRtcService.m */,
+				BD27004427CC8ACD00E4AB04 /* PanoPoolService.h */,
+				BD27004527CC8ACD00E4AB04 /* PanoPoolService.m */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -605,15 +626,6 @@
 				BD988AA126943416000F75DA /* iconfont.ttf */,
 			);
 			path = iconFont;
-			sourceTree = "<group>";
-		};
-		BDB9C5B62795943F00BC45DF /* Pool */ = {
-			isa = PBXGroup;
-			children = (
-				BDB9C5BC2795944000BC45DF /* PanoPoolService.h */,
-				BDB9C5B72795944000BC45DF /* PanoPoolService.m */,
-			);
-			path = Pool;
 			sourceTree = "<group>";
 		};
 		BDB9C63E2797EC0800BC45DF /* Masonry */ = {
@@ -761,11 +773,10 @@
 				57C6E49A2434780200ADF2CB /* AppDelegate.m in Sources */,
 				BD64B7DC252353D500DAB342 /* PanoBaseMediaView.m in Sources */,
 				BD8F5DA0265E20BB005CCC29 /* UIView+Designable.m in Sources */,
+				BD27003A27CC772300E4AB04 /* VideoFilterDelegate.m in Sources */,
 				BD64B7E3252353D500DAB342 /* PanoUserService.m in Sources */,
-				BDE8AD4325FF4E4100B1026E /* PanoAnnotationService.m in Sources */,
 				BD55505826463B6400B6539E /* PanoAnnotationPenView.m in Sources */,
 				BD5550672646732200B6539E /* TCRectConst.m in Sources */,
-				BD8A304825651ACA00B03474 /* PanoNetworkManager.m in Sources */,
 				BD64B788252171D400DAB342 /* PanoBaseService.m in Sources */,
 				BD58864625400E3500EF389C /* PanoItem.m in Sources */,
 				57C6E4AB2434780500ADF2CB /* main.m in Sources */,
@@ -776,7 +787,6 @@
 				BD55505C26463FAB00B6539E /* UIImage+Extension.m in Sources */,
 				BD64B7DB252353D500DAB342 /* PanoViewInstance.m in Sources */,
 				BD8A30182563C5CA00B03474 /* MBProgressHUD+Extension.m in Sources */,
-				BD4D4513252462370098EE28 /* PanoWhiteBoradView.m in Sources */,
 				BD7C15712566812F00DAC911 /* PanoStatisticsViewController.m in Sources */,
 				BD1ABDAC2531BC2100973819 /* PanoDesktopService.m in Sources */,
 				BDB9C65A2797EC0800BC45DF /* MASCompositeConstraint.m in Sources */,
@@ -784,19 +794,22 @@
 				BD64B7DF252353D500DAB342 /* PanoPoolFullScreenLayout.m in Sources */,
 				BDE8AD3A25FB6AC400B1026E /* PanoAnnotationToolView.m in Sources */,
 				BD64B70F251DBBD900DAB342 /* UIColor+Extension.m in Sources */,
+				BD27003527CC767400E4AB04 /* PanoTableView.m in Sources */,
 				BD4D4510252462220098EE28 /* PanoDesktopView.m in Sources */,
 				BD1ABD7B253055E100973819 /* UIView+Extension.m in Sources */,
 				BD0C24DE256F44E7001FDA58 /* Reachability.m in Sources */,
 				BD64B7E1252353D500DAB342 /* PanoPoolFloatLayout.m in Sources */,
 				BDE679F02576232400FD24AF /* PanoUserCell.m in Sources */,
 				BD64B7DE252353D500DAB342 /* PanoPoolView.m in Sources */,
-				57C6E4C82434A4C400ADF2CB /* WhiteboardViewController.m in Sources */,
+				BD27004627CC8ACD00E4AB04 /* PanoPoolService.m in Sources */,
+				BD27002D27CC760A00E4AB04 /* UIViewController+Extension.m in Sources */,
 				575943D7243D811100266F59 /* PanoCallClient.m in Sources */,
 				BD3DC42C26117AD000BF844D /* PanoFeedAudioController.m in Sources */,
 				BDEEEEB4253DA469005EE09B /* PanoArrayDataSource.m in Sources */,
 				BDE679F3257627AA00FD24AF /* PanoAvatorUtil.m in Sources */,
 				5752F3EB2437653400CAEA64 /* BeautifyTableViewController.m in Sources */,
 				BDB9C65E2797EC0800BC45DF /* View+MASAdditions.m in Sources */,
+				BD27003027CC762800E4AB04 /* PanoPermission.m in Sources */,
 				BD64B7DA252353D500DAB342 /* PanoUserInfo.m in Sources */,
 				57C6E4C72434A4C400ADF2CB /* CallViewController.m in Sources */,
 				BD7C155525661F2800DAC911 /* PanoBaseViewController.m in Sources */,
@@ -805,6 +818,7 @@
 				BDE679F62577C5A700FD24AF /* NSURL+Extension.m in Sources */,
 				57FC408C243769B500508035 /* WebViewController.m in Sources */,
 				BDB9C6582797EC0800BC45DF /* NSLayoutConstraint+MASDebugAdditions.m in Sources */,
+				BD27002C27CC760A00E4AB04 /* UIAlertController+Blocks.m in Sources */,
 				572A0B14243715600003C457 /* SettingTableViewController.m in Sources */,
 				BD7C158E256DEC4000DAC911 /* PanoOverallHeaderView.m in Sources */,
 				BD43D62025381DC700FDA5F5 /* PanoMulticastDelegate.m in Sources */,
@@ -813,6 +827,7 @@
 				BD64B7E6252353D500DAB342 /* PanoVideoService.m in Sources */,
 				BD988A9926942B3D000F75DA /* UIImage+IconFont.m in Sources */,
 				BD9889EE2692AFD0000F75DA /* PanoAnnotationTool.m in Sources */,
+				BD27003D27CC77F100E4AB04 /* PanoShareTableViewController.m in Sources */,
 				BDB9C6672797EC1400BC45DF /* MBProgressHUD.m in Sources */,
 				BDB9C65F2797EC0800BC45DF /* MASConstraint.m in Sources */,
 				BD64B7E5252353D500DAB342 /* PanoAudioService.m in Sources */,
@@ -820,11 +835,10 @@
 				BD58864225400E0100EF389C /* PanoMenuCell.m in Sources */,
 				BDE8AD3D25FB6E6D00B1026E /* PanoAction.m in Sources */,
 				BD64B7E0252353D500DAB342 /* PanoPoolFourAvgLayout.m in Sources */,
+				BD27003627CC767400E4AB04 /* PanoWhiteboardView.m in Sources */,
 				BDB9C6592797EC0800BC45DF /* ViewController+MASAdditions.m in Sources */,
 				BDE679EC2576121D00FD24AF /* PanoUserListViewController.m in Sources */,
-				BDB9C5C02795944000BC45DF /* PanoPoolService.m in Sources */,
 				57C6E4C62434A4C400ADF2CB /* JoinViewController.m in Sources */,
-				BD6A6CA3255B87CC00EC6D78 /* PanoLog.m in Sources */,
 				BD64B7852521712F00DAB342 /* PanoBaseView.m in Sources */,
 				575943D4243D7B7F00266F59 /* FeedbackViewController.m in Sources */,
 				BD4D4516252465720098EE28 /* PanoWbTopView.m in Sources */,

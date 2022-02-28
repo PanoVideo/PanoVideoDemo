@@ -10,16 +10,20 @@
 #import "PanoPoolService.h"
 #import "PanoVideoView.h"
 #import "PanoDesktopView.h"
+#import "PanoWhiteboardView.h"
 #import "PanoCallClient.h"
 #import "PanoPoolFullScreenLayout.h"
 #import "PanoPoolFloatLayout.h"
 #import "PanoPoolFourAvgLayout.h"
 #import "UIView+Extension.h"
 #import "MBProgressHUD+Extension.h"
-#import "PanoAnnotationService.h"
 #import "UIColor+Extension.h"
 
-@interface PanoPoolView () <PanoPoolDelegate> {
+@interface PanoPoolView ()
+<PanoPoolDelegate,
+ PanoRoleDelegate,
+ PanoWhiteboardDelegate>
+{
     NSMutableDictionary<PanoMediaInfoKey,id> *_layoutInfo;
 }
 
@@ -34,13 +38,15 @@
 @property (nonatomic, strong) UIPanGestureRecognizer *panGestureRecognizer;
 
 @property (nonatomic, assign) CGPoint initialPoint;
+
+@property (nonatomic, strong) PanoWhiteboardView *wbView;
+
 @end
 
 @implementation PanoPoolView
 
 - (void)initViews {
     [super initViews];
-    
     _contentView = [[UIView alloc] init];
     _contentView.backgroundColor = [UIColor pano_colorWithHexString:@"111111"];
     [self addSubview:_contentView];
@@ -57,6 +63,7 @@
 }
 
 - (void)initService {
+    [PanoCallClient.shared.wb addDelegate:self];
     _poolService = PanoCallClient.shared.pool;
     _poolService.delegate = self;
     [_poolService start];
@@ -68,6 +75,14 @@
 
 - (void)statusBarOrientationDidChange {
     [self.layoutState layoutWithInfo:_layoutInfo];
+}
+
+- (PanoWhiteboardView *)wbView {
+    if (!_wbView) {
+        _wbView = [[PanoWhiteboardView alloc] init];
+        _wbView.delegate = self;
+    }
+    return _wbView;
 }
 
 - (void)fetchNextPage:(id)gesture {
@@ -108,13 +123,10 @@
     }
 }
 
-- (void)stopRender{
+- (void)stopRender {
     [_poolService stopRender];
     [_prevMedias removeAllObjects];
     for (PanoBaseMediaView *media in self.contentView.subviews) {
-//        if (media.instance.userId == PanoCallClient.shared.userId) {
-//            continue;
-//        }
         [media stop];
         [media removeFromSuperview];
     }
@@ -122,6 +134,16 @@
 
 - (void)startRender {
     [_poolService startRender];
+}
+
+- (void)enableWhiteboard:(BOOL)enable {
+    [self.gestureRecognizers enumerateObjectsUsingBlock:^(__kindof UIGestureRecognizer * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        obj.enabled = !enable;
+    }];
+    if (enable) {
+        [self.poolService switchToPage:0];
+    }
+    [self.wbView setEnable:enable];
 }
 
 - (void)onPoolMediaChanged:(PanoViewPage *)page {
@@ -141,7 +163,6 @@
     }
     
     if (needLayout) {
-        
         if ([self.delegate respondsToSelector:@selector(onPageTypeChanged:)]) {
             _layoutType = page.type;
             [self.delegate onPageTypeChanged:page.type];
@@ -251,6 +272,9 @@
         case PanoViewInstance_Desktop:
             mediaView = [[PanoDesktopView alloc] init];
             break;
+        case PanoViewInstance_Whiteboard:
+            mediaView =  self.wbView;
+            break;
         default:
             break;
     }
@@ -272,12 +296,6 @@
     }
 }
 
-- (void)onAudioActiveUserStatusChanged:(PanoViewInstance *)instance {
-    if ([self.delegate respondsToSelector:@selector(onAudioActiveUserStatusChanged:)]) {
-        [self.delegate onAudioActiveUserStatusChanged:instance];
-    }
-}
-
 - (void)onMyAudioActiveChanged:(BOOL)activing {
     if ([self.delegate respondsToSelector:@selector(onMyAudioActiveChanged:)]) {
         [self.delegate onMyAudioActiveChanged:activing];
@@ -288,7 +306,7 @@
     [self.delegate onSpeakingWhenTheAudioMuted];
 }
 
-- (void) dragView:(UIPanGestureRecognizer *)gestureRecognizer{
+- (void)dragView:(UIPanGestureRecognizer *)gestureRecognizer{
     if (self.currentPage.type != PanoViewPageLayout_Float) {
         return;
     }
@@ -376,7 +394,19 @@
     [self.layoutState layoutWithInfo:_layoutInfo];
 }
 
+#pragma mark -- PanoRoleDelegate
+- (void)onMyRoleBecomeViewer {
+    [self enableWhiteboard:false];
+    [self.delegate onMyRoleBecomeViewer];
+}
+
+#pragma mark -- PanoWhiteboardDelegate
+- (void)onWhiteboardStatusChanged:(BOOL)on {
+    [self enableWhiteboard:on];
+}
+
 - (void)dealloc {
+    [PanoCallClient.shared.wb removeDelegate:self];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 

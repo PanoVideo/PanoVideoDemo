@@ -75,21 +75,4 @@ PanoMediaInfoKey const PanoFloatViewPostionKey = @"PanoFloatViewPostionKey";
     
 }
 
-- (void)startAnnotation:(PanoAnnotationItem *)annotation {
-    if (!_annotationView.hidden) {
-        [self bringSubviewToFront:_annotationView];
-        return;
-    }
-}
-
-- (void)stopAnnotation:(PanoAnnotationItem *)annotation {
-    
-}
-
-- (void)hideAnnotation:(PanoAnnotationItem *)annotation {
-    
-}
-
-
-
 @end

@@ -15,11 +15,11 @@ NS_ASSUME_NONNULL_BEGIN
 typedef id _Nullable (^MapBlock)(ObjectType object);
 typedef id _Nullable (^MapBlockWithIndex)(ObjectType object, NSUInteger idx, BOOL *stop);
 
-- (NSArray *)filteredArrayUsingBlock:(BOOL (^)(ObjectType obj, NSUInteger idx, BOOL *stop))predicate;
+- (NSArray<ObjectType> *)filteredArrayUsingBlock:(BOOL (^)(ObjectType obj, NSUInteger idx, BOOL *stop))predicate;
 
-- (NSArray *)arrayByMappingObjectsUsingBlock:(MapBlock)block;
+- (NSArray<ObjectType> *)arrayByMappingObjectsUsingBlock:(MapBlock)block;
 
-- (NSArray *)arrayByMappingObjectsUsingBlockWithIndex:(MapBlockWithIndex)blockWithIndex;
+- (NSArray<ObjectType> *)arrayByMappingObjectsUsingBlockWithIndex:(MapBlockWithIndex)blockWithIndex;
 
 @end
 

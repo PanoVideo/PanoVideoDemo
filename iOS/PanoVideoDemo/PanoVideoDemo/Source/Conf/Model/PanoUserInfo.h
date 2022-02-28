@@ -69,9 +69,11 @@ typedef NS_ENUM(NSInteger, PanoUserRole) {
 
 @interface PanoUserInfo (Add)
 
-@property (copy, nonatomic, readonly) NSString * _Nullable videoUserName;
+@property (copy, nonatomic, readonly) NSString *videoUserName;;
 
-@property (copy, nonatomic, readonly) NSString * audioName;
+@property (copy, nonatomic, readonly) UIImage *audioImage;
+
+@property (copy, nonatomic, readonly) UIImage *activeAudioImage;
 
 @property (copy, nonatomic, readonly) UIImage *userListAudioImage;
 

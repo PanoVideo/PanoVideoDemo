@@ -88,8 +88,7 @@
 }
 
 - (UIImage *)micImage {
-    UIImage * image = [UIImage imageNamed:self.instance.user.audioName];
-    return image;
+    return self.instance.user.audioImage;
 }
 
 - (UIImage *)avatarImage {
@@ -115,13 +114,15 @@
 
 - (void)stop {
     [PanoCallClient.shared.video unsubscribe:self.instance.user.userId];
+    [self update];
 }
 
 - (void)update {
     _userName.text = self.instance.user.videoUserName;
     _micIcon.image = [self micImage];
     _avatarImageView.image = [self avatarImage];
-    if (self.instance.mode == PanoViewInstance_Avg || self.instance.mode == PanoViewInstance_Float) {
+    if (self.instance.mode == PanoViewInstance_Avg||
+        self.instance.mode == PanoViewInstance_Float) {
         self.contentView.backgroundColor = [UIColor pano_colorWithHexString:@"555555"];
         [_userName setFont:[UIFont systemFontOfSize:PanoFontSize_Little]];
         [_bottomView mas_updateConstraints:^(MASConstraintMaker *make) {

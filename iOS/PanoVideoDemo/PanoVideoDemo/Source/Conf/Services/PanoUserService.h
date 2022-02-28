@@ -43,17 +43,25 @@ typedef void(^PanoUserChangedBlock_t)(PanoUserInfo *user);
 
 @property (nonatomic, copy) PanoUserChangedBlock_t userChangeBlock;
 
-@property (nonatomic, weak) id <PanoUserDelegate> delegate;
-
 @property (assign, nonatomic, readonly) NSUInteger hostId;
+
+@property (assign, nonatomic) BOOL firstJoin; ///<是否是第一个加入
 
 - (PanoUserInfo *)me;
 
 - (PanoUserInfo *)findUserWithId:(UInt64)userId;
 
+- (PanoUserInfo *)findGroupUserWithId:(UInt64)userId;
+
 - (PanoUserInfo *)host;
 
+- (BOOL)isHost;
+
 - (NSArray<PanoUserInfo *> *)allUsers;
+
+- (NSArray<NSNumber *> *)allScreens;
+
+- (PanoUserInfo *)sharingUser;
 
 - (void)setMeetingHostId:(UInt64)hostId;
 

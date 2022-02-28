@@ -72,7 +72,15 @@
 }
 
 - (void)reloadViews {
-    self.dataSource = [PanoCallClient.shared.userMgr allUsers];
+    self.dataSource = [[PanoCallClient.shared.userMgr allUsers] sortedArrayUsingComparator:^NSComparisonResult(PanoUserInfo *_Nonnull obj1, PanoUserInfo *_Nonnull obj2) {
+        if (obj1.userId == PanoCallClient.shared.userId) {
+            return NSOrderedAscending;
+        }
+        if (obj2.userId == PanoCallClient.shared.userMgr.hostId) {
+            return NSOrderedDescending;
+        }
+        return NSOrderedSame;
+    }];
     if (self.searchText && self.searchText.length > 0) {
         // https://www.coder.work/article/10468 NSPredicate 对多关系不区分大小写匹配
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"userName CONTAINS[c] %@", self.searchText];
@@ -150,6 +158,9 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:true];
     [self.view endEditing:true];
+    if (indexPath.row >= self.dataSource.count) {
+        return;
+    }
     PanoUserInfo *user = self.dataSource[indexPath.row];
     UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
     if (user.role == PanoUserRole_None && PanoCallClient.shared.userMgr.me.role == PanoUserRole_Host) {
@@ -177,11 +188,6 @@
     UIAlertAction * cancel = [UIAlertAction actionWithTitle:NSLocalizedString(@"取消", nil) style:UIAlertActionStyleCancel handler:nil];
     [alert addAction:cancel];
     [self presentViewController:alert animated:YES completion:nil];
-}
-
-- (void)dismiss {
-    [self dismissViewControllerAnimated:true completion:^{
-    }];
 }
 
 - (void)shareAction {

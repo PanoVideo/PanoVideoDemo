@@ -100,7 +100,7 @@ PanoAnnotationToolKey PanoToolKeyFill = @"PanoToolKeyFill";
         [weakSelf.delegate annotationToolDidChoosed:PanoAnnotationToolRedo];
     }];
     redoAction.HighlightedIcon = selectedImages[6];
-    PanoAction *closeAction = [[PanoAction alloc] initWithTitle:NSLocalizedString(@"收起白板", nil) imgIcon:nil selectedIcon:nil handler:^(PanoAction * _Nonnull action) {
+    PanoAction *closeAction = [[PanoAction alloc] initWithTitle:NSLocalizedString(@"关闭白板", nil) imgIcon:nil selectedIcon:nil handler:^(PanoAction * _Nonnull action) {
         [weakSelf.delegate annotationToolDidChoosed:PanoAnnotationToolClose];
     }];
     NSMutableArray *items = [NSMutableArray array];
@@ -212,12 +212,12 @@ PanoAnnotationToolKey PanoToolKeyFill = @"PanoToolKeyFill";
 
 - (void)show {
     [_annotationTool show];
-    _selectedOption = PanoAnnotationToolPath;
     [self updateAnnotationTool];
 }
 
 - (void)hide {
     [_annotationTool hide];
+    [_penView dismiss];
 }
 
 - (BOOL)isVisible {

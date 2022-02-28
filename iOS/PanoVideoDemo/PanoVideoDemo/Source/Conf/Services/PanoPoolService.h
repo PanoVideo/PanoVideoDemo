@@ -34,6 +34,23 @@ NS_ASSUME_NONNULL_BEGIN
 ///  总共的页码数
 @property (nonatomic, assign, readonly) PageIndex numbersOfIndexs;
 
+/// 正在进行共享、视频标注 , 白板
+@property (nonatomic, assign) BOOL isAnnotationing;
+
+
+@property (strong, nonatomic) NSMutableDictionary<NSNumber *, NSNumber*> *speakingUsers;
+
+///  Pin
+@property (strong, nonatomic) PanoViewInstance *pinInstance;
+
+/// 更新当前页面索引
+- (void)updatePageIndex;
+
+- (void)notify;
+
+/// 优先级最高的桌面共享实例
+- (PanoViewInstance *)desktopInstance;
+
 
 - (void)start;
 
@@ -56,9 +73,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)startRender;
 
 - (void)stopRender;
-
-/// 是否开启了共享
-- (BOOL)isSharing;
 
 @end
 

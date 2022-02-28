@@ -60,18 +60,11 @@ typedef NS_ENUM(NSInteger, PanoViewInstanceMode) {
 
 typedef enum PanoViewInstanceType PanoAnnotationType;
 
-@interface PanoAnnotationItem : NSObject
-
-@property (nonatomic, assign) UInt64 userId;
+@interface PanoAnnotationItem : PanoViewInstance
 
 @property (nonatomic, assign) SInt32 streamId;
 
 @property (nonatomic, weak, nullable) id view;
-
-@property (nonatomic, assign) PanoAnnotationType type;
-
-- (instancetype)initWithUserId:(UInt64)userId
-                          type:(PanoViewInstanceType)type;
 
 - (instancetype)initWithUserId:(UInt64)userId
                           type:(PanoViewInstanceType)type

@@ -42,11 +42,6 @@ typedef void(^PanoDoubleTapBlock)(PanoViewInstance *instance);
 
 - (void)update:(NSDictionary<PanoMediaInfoKey,id> *)info;
 
-- (void)startAnnotation:(PanoAnnotationItem *)annotation;
-
-- (void)stopAnnotation:(PanoAnnotationItem *)annotation;
-
-- (void)hideAnnotation:(PanoAnnotationItem *)annotation;
 @end
 
 NS_ASSUME_NONNULL_END

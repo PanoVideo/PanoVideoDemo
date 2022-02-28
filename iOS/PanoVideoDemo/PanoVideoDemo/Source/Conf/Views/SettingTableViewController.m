@@ -22,23 +22,22 @@
 @property (strong, nonatomic) IBOutlet UISwitch * debugMode;
 @property (strong, nonatomic) IBOutlet UILabel * version;
 @property (weak, nonatomic) IBOutlet UISegmentedControl *frameControl;
-
+@property (weak, nonatomic) IBOutlet UILabel *shareOptionLabel;
 @end
 
 @implementation SettingTableViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
-    // Uncomment the following line to preserve selection between presentations.
-    // self.clearsSelectionOnViewWillAppear = NO;
-    
-    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-//     self.navigationItem.rightBarButtonItem = self.editButtonItem;
-    
     [self setLocalizable];
     [self setTextFieldDelegate];
     [self initialize];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    PanoConfig *config = PanoCallClient.shared.config;
+    self.shareOptionLabel.text = config.shareOptions[config.shareOption];
 }
 
 - (IBAction)clickBack:(id)sender {
@@ -176,5 +175,12 @@
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
     return UIInterfaceOrientationMaskAllButUpsideDown;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    if (section == 1 && ![PanoCallClient.shared.userMgr isHost]) {
+        return 4;
+    }
+    return [super tableView:tableView numberOfRowsInSection:section];
 }
 @end

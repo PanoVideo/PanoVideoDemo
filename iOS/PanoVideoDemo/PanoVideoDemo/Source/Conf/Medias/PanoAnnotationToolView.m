@@ -101,6 +101,7 @@
         return;
     }
     self.hidden = false;
+    [self.superview bringSubviewToFront:self];
 }
 
 - (void)hide {

@@ -72,4 +72,11 @@ static inline UIColor* appHighlightedColor() {
     return [UIColor pano_colorWithHexString:@"#0899F9"];
 }
 
+#define Pano_AVAILABLE(...) \
+_Pragma("clang diagnostic push") \
+_Pragma("clang diagnostic ignored \"-Wunsupported-availability-guard\"") \
+_Pragma("clang diagnostic ignored \"-Wunguarded-availability-new\"") \
+__builtin_available(__VA_ARGS__) \
+_Pragma("clang diagnostic pop")
+
 #endif /* PanoDefine_h */
