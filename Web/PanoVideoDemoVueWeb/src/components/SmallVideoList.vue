@@ -165,7 +165,7 @@ $mobile-v-h: 80px;
     height: $mobile-v-h + 20px;
     .panoTinyVideo {
       height: $mobile-v-h - 20px;
-      width: ($mobile-v-h - 20px) * 16 / 9 - 3px;
+      width: 104px;
     }
   }
 
