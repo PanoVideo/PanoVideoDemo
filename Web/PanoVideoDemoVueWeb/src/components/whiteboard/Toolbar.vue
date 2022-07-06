@@ -955,7 +955,10 @@ export default {
     },
     thumbUrls() {
       // 课件预览图
-      return this.activeDoc.courseware.thumbUrls || [];
+      if (this.activeDoc.courseware) {
+        return this.activeDoc.courseware.thumbUrls || [];
+      }
+      return [];
     }
   },
   methods: {
