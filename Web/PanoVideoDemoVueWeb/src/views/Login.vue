@@ -10,8 +10,8 @@
         <el-form-item label="AppId" key="appid" required>
           <el-input clearable v-model="form.appId" />
         </el-form-item>
-        <el-form-item label="Token" key="token" required>
-          <el-input clearable v-model="form.token" />
+        <el-form-item label="appSecret" key="appSecret" required>
+          <el-input clearable v-model="form.appSecret" />
         </el-form-item>
         <el-form-item label="房间号" key="channelId" required>
           <el-input clearable v-model="form.channelId" />
@@ -86,6 +86,7 @@ import logopng from '@/assets/img/logo.png';
 import { mapMutations, mapGetters } from 'vuex';
 import * as Constants from '../constants';
 import PanoRtc, { statusCodeToQResult } from '@pano.video/panortc';
+import { genToken } from '../utils/panortc';
 
 export default {
   data() {
@@ -98,11 +99,12 @@ export default {
         videoOn: true,
         appId: '',
         userId: '',
-        token: ''
+        appSecret: ''
       },
       loading: false,
       priSettingsVisible: false,
-      priSettings: { rtcServer: '' }
+      priSettings: { rtcServer: '' },
+      generatedToken: ''
     };
   },
   computed: {
@@ -121,13 +123,16 @@ export default {
      * 加会逻辑
      */
     async joinChannel() {
-      const { channelId, userName, appId, userId, token } = this.form;
-      if (!channelId || !appId || !userId || !token) {
+      const { channelId, userName, appId, userId, appSecret } = this.form;
+      if (!channelId || !appId || !userId || !appSecret) {
         this.$message.warning('请填写必要的参数再加入会议');
         return;
       }
+      const token = genToken(appId, appSecret, channelId, userId);
+      this.generatedToken = token;
+
       localStorage.setItem(Constants.localCacheKeyAppId, appId);
-      localStorage.setItem(Constants.localCacheKeyToken, token);
+      localStorage.setItem(Constants.localCacheKeyAppSecret, token);
       localStorage.setItem(Constants.localCacheKeyChannelId, channelId);
       localStorage.setItem(Constants.localCacheKeyUserName, userName);
       localStorage.setItem(Constants.localCacheKeyUserId, userId);
@@ -171,11 +176,11 @@ export default {
         console.log('rtcEngine 入会成功');
         // 媒体入会成功之后再连接白板，因为用户列表从媒体连接中获取
         // 而标注等事件从白板（rts）中获取，保证在接收到用户开启标注事件时，用户已经存在于用户列表中
-        const { channelId, userName, appId, userId, token } = this.form;
+        const { channelId, userName, appId, userId } = this.form;
         window.rtcWhiteboard.joinChannel(
           {
             appId,
-            token,
+            token: this.generatedToken,
             channelId,
             name: userName,
             userId: userId
@@ -241,7 +246,9 @@ export default {
     this.form.audioOn = !this.userMe.audioMuted;
     this.form.videoOn = !this.userMe.videoMuted;
     this.form.appId = localStorage.getItem(Constants.localCacheKeyAppId);
-    this.form.token = localStorage.getItem(Constants.localCacheKeyToken);
+    this.form.appSecret = localStorage.getItem(
+      Constants.localCacheKeyAppSecret
+    );
     this.form.channelId = localStorage.getItem(
       Constants.localCacheKeyChannelId
     );

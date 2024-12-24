@@ -9,9 +9,10 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@pano.video/panortc": ">=1.4.9",
+    "@pano.video/panortc": "2.2.10",
     "axios": "^0.21.0",
     "core-js": "^3.6.5",
+    "crypto-js": "^4.2.0",
     "element-ui": "^2.14.1",
     "lodash-es": "^4.17.15",
     "vue": "^2.6.11",
