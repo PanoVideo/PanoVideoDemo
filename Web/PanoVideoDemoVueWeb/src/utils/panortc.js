@@ -7,6 +7,7 @@ import {
   MOMENT_FOR_UNSUBSCRIBE
 } from '../constants';
 import { MessageBox, Message } from 'element-ui';
+import { HmacSHA256, enc } from 'crypto-js';
 
 // 初始化 panortc
 // 全局单例
@@ -576,3 +577,32 @@ function showStartMediaFailureMessage(type, data) {
     Message.info(`开启${device}失败`);
   }
 }
+
+export const genToken = (appId, appSecret, channelId, userId) => {
+  console.error(
+    'You must not use use appSecret in frontend code in product environment.'
+  );
+  console.error(
+    'WARNING: 本项目只是为了简单演示 rtc 能力，在前端代码使用 appSecret。生产环境不应在前端代码直接使用appSecret'
+  );
+  const version = '02';
+  const timestamp = Math.floor(Date.now() / 1000);
+  const params = enc.Base64.stringify(
+    enc.Utf8.parse(
+      JSON.stringify({
+        channelId,
+        userId,
+        channelDuration: 0,
+        privileges: 0,
+        duration: 86400,
+        size: 25,
+        delayClose: 60
+      })
+    )
+  );
+  const signContent = `${version}${appId}${timestamp}${params}`;
+  const signatureValue = enc.Base64.stringify(
+    HmacSHA256(signContent, appSecret)
+  );
+  return `${version}.${appId}.${timestamp}.${params}.${signatureValue}`;
+};

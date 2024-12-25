@@ -15,7 +15,7 @@ export const routes = {
 };
 
 export const localCacheKeyAppId = 'pano.democlient.appId';
-export const localCacheKeyToken = 'pano.democlient.token';
+export const localCacheKeyAppSecret = 'pano.democlient.appSecret';
 export const localCacheKeyChannelId = 'pano.democlient.channelId';
 export const localCacheKeyUserName = 'pano.democlient.userName';
 export const localCacheKeyUserId = 'pano.democlient.userId';
